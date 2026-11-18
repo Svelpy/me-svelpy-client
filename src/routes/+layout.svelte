@@ -4,6 +4,7 @@
 	import '@fontsource-variable/plus-jakarta-sans';
 	import '@fontsource-variable/jetbrains-mono';
 	import favicon from '#lib/assets/favicon.svg';
+	import GoogleAnalytics from '#lib/components/layout/googleAnalytics.svelte';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
@@ -16,5 +17,7 @@
 	<link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
 	<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 </svelte:head>
+
+<GoogleAnalytics />
 
 {@render children()}

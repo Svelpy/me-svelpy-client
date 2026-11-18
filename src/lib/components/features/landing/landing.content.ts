@@ -382,9 +382,9 @@ export const CIERRE = {
 // ── Metadatos
 
 export const LANDING_SEO = {
-	titulo: 'ME | Tarjeta digital profesional con SEO y GEO',
+	titulo: 'ME | Tarjeta digital profesional',
 	descripcion:
-		'Tu mini-web profesional autoadministrable: guarda tu contacto en un toque (.vcf), muestra tu catálogo y sucursales, y aparece en Google y en la IA.',
+		'Tu mini-web profesional autoadministrable: guarda tu contacto en un toque, muestra tu catálogo y sucursales.',
 	keywords: [
 		'tarjeta digital',
 		'tarjeta de presentación digital',

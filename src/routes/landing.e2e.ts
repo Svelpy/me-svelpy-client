@@ -61,6 +61,39 @@ test.describe('Landing ME by Svelpy', () => {
 		}
 	});
 
+	test('Google Analytics no se carga en localhost', async ({ page }) => {
+		const pedidos: string[] = [];
+		page.on('request', (r) => {
+			if (r.url().includes('googletagmanager.com')) pedidos.push(r.url());
+		});
+		await page.reload();
+		await page.waitForLoadState('networkidle');
+		expect(pedidos).toEqual([]);
+	});
+
+	test('Google Analytics se carga con el ID configurado en un dominio real', async ({
+		page,
+		request
+	}) => {
+		// Se sirve el HTML prerenderizado bajo un dominio ficticio y se intercepta gtag.js.
+		const html = await (await request.get('/')).text();
+		await page.route('https://me.svelpy.test/**', (route) =>
+			route.request().url() === 'https://me.svelpy.test/'
+				? route.fulfill({ contentType: 'text/html', body: html })
+				: route.abort()
+		);
+		const gtag = page.waitForRequest(/googletagmanager\.com\/gtag\/js\?id=G-[A-Z0-9]+$/);
+		await page.route(/googletagmanager\.com/, (route) =>
+			route.fulfill({ contentType: 'text/javascript', body: '' })
+		);
+		await page.goto('https://me.svelpy.test/');
+		expect((await gtag).url()).toMatch(/id=G-[A-Z0-9]+$/);
+		const comandos = await page.evaluate(() =>
+			(window as unknown as { dataLayer: IArguments[] }).dataLayer.map((a) => a[0])
+		);
+		expect(comandos).toEqual(['js', 'config']);
+	});
+
 	test('muestra el titular y las llamadas a la acción del hero', async ({ page }) => {
 		await expect(
 			page.getByRole('heading', {

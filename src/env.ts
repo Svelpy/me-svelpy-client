@@ -12,5 +12,18 @@ export const variables = defineEnvVars({
 		public: true,
 		static: true,
 		description: 'URL base del backend FastAPI.'
+	},
+	PUBLIC_GA_ID: {
+		public: true,
+		static: true,
+		description: 'ID de medición de Google Analytics 4 (G-XXXXXXXXXX). Opcional: sin él no se carga GA.',
+		schema: (valor) => {
+			const id = valor?.trim();
+			if (!id) return undefined;
+			if (!/^G-[A-Z0-9]+$/.test(id)) {
+				throw new Error(`PUBLIC_GA_ID debe tener el formato G-XXXXXXXXXX (recibido: "${id}")`);
+			}
+			return id;
+		}
 	}
 });
