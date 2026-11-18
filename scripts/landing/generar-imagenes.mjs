@@ -128,7 +128,7 @@ const PROFILES = [
 	{
 		slug: 'valeria-rojas',
 		name: 'Valeria Rojas',
-		role: 'Agente inmobiliaria · Asesora de inversión',
+		role: 'Agente inmobiliaria y asesora de inversión',
 		company: 'Horizonte Propiedades',
 		initials: 'HP',
 		bio: 'Te ayudo a comprar, vender o invertir con información clara y visitas sin vueltas. Más de 120 operaciones cerradas.',
@@ -152,27 +152,27 @@ const PROFILES = [
 			{
 				t: 'casa',
 				title: 'Casa en condominio cerrado',
-				meta: '3 dorm. · 2 baños · 220 m²',
+				meta: '3 dorm., 2 baños, 220 m²',
 				price: 'USD 185.000'
 			},
 			{
 				t: 'depto',
 				title: 'Departamento con vista al parque',
-				meta: '2 dorm. · Piso 9 · 86 m²',
+				meta: '2 dorm., piso 9, 86 m²',
 				price: 'USD 98.500'
 			}
 		],
 		branch: {
 			name: 'Oficina central',
 			addr: 'Av. Las Américas 1450, of. 3',
-			hours: 'Abierto · cierra 19:00'
+			hours: 'Abierto hasta las 19:00'
 		},
 		cta: 'Agendar visita'
 	},
 	{
 		slug: 'dra-camila-rivas',
 		name: 'Dra. Camila Rivas',
-		role: 'Odontóloga · Estética dental',
+		role: 'Odontóloga en estética dental',
 		company: 'Clínica Sonríe',
 		initials: 'CS',
 		bio: 'Diseño de sonrisa, blanqueamiento y ortodoncia invisible. Atiendo en dos consultorios con turnos de lunes a sábado.',
@@ -202,7 +202,7 @@ const PROFILES = [
 			{
 				t: 'diente',
 				title: 'Blanqueamiento LED',
-				meta: '1 sesión · 60 minutos',
+				meta: '1 sesión de 60 minutos',
 				price: 'Bs 850',
 				old: 'Bs 1.000'
 			}
@@ -210,7 +210,7 @@ const PROFILES = [
 		branch: {
 			name: 'Consultorio Centro',
 			addr: 'Calle 7 Oeste 23, piso 2',
-			hours: 'Abierto · cierra 20:00'
+			hours: 'Abierto hasta las 20:00'
 		},
 		cta: 'Agendar cita'
 	},
@@ -241,27 +241,27 @@ const PROFILES = [
 			{
 				t: 'camion',
 				title: 'Transporte refrigerado',
-				meta: 'Rutas nacionales · GPS 24/7',
+				meta: 'Rutas nacionales con GPS 24/7',
 				price: 'Cotizar ruta'
 			},
 			{
 				t: 'almacen',
 				title: 'Almacenaje y picking',
-				meta: '4.000 m² · Temperatura controlada',
+				meta: '4.000 m² con temperatura controlada',
 				price: 'Cotizar espacio'
 			}
 		],
 		branch: {
 			name: 'Centro logístico',
 			addr: 'Parque Industrial, Mz. 12',
-			hours: 'Abierto · cierra 18:00'
+			hours: 'Abierto hasta las 18:00'
 		},
 		cta: 'Solicitar cotización'
 	},
 	{
 		slug: 'mariana-ortiz',
 		name: 'Mariana Ortiz',
-		role: 'Abogada · Derecho corporativo',
+		role: 'Abogada en derecho corporativo',
 		company: 'Ortiz & Asociados',
 		initials: 'OA',
 		bio: 'Asesoro a empresas en contratos, sociedades y relaciones laborales. 14 años de práctica y atención en dos idiomas.',
@@ -298,7 +298,7 @@ const PROFILES = [
 		branch: {
 			name: 'Estudio jurídico',
 			addr: 'Torre Empresarial, piso 11',
-			hours: 'Abierto · cierra 18:30'
+			hours: 'Abierto hasta las 18:30'
 		},
 		cta: 'Agendar reunión'
 	}

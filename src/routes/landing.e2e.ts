@@ -50,9 +50,13 @@ test.describe('Landing ME by Svelpy', () => {
 				name: 'Que no solo guarden tu contacto: haz que te encuentren primero.'
 			})
 		).toBeVisible();
+		const hero = page.locator('#inicio');
 		await expect(
-			page.getByRole('link', { name: 'Ver perfiles de ejemplo en vivo' })
+			hero.getByRole('link', { name: 'Ver perfiles de ejemplo', exact: true })
 		).toHaveAttribute('href', '#sectores');
+		// Sin etiquetas sobre los titulares.
+		await expect(page.getByText('Nueva generación de identidad digital')).toHaveCount(0);
+		await expect(page.getByText('Tecnología exclusiva de posicionamiento')).toHaveCount(0);
 		await expect(
 			page
 				.getByRole('navigation', { name: 'Principal' })
@@ -60,22 +64,32 @@ test.describe('Landing ME by Svelpy', () => {
 		).toHaveAttribute('href', '/auth/sign-in');
 	});
 
-	test('los botones de WhatsApp abren el chat de ventas con un mensaje', async ({ page }) => {
-		const wa = /^https:\/\/wa\.me\/59176727537\?text=/;
+	test('la acción principal tiene un solo nombre y abre WhatsApp', async ({ page }) => {
+		const wa = /^https:\/\/wa\.me\/59176727537\?text=Hola%2C%20quiero%20crear%20mi%20ME\.$/;
 
-		const quiero = page.getByRole('link', { name: 'Quiero mi ME', exact: true }).first();
-		await expect(quiero).toHaveAttribute('href', wa);
-		await expect(quiero).toHaveAttribute('target', '_blank');
-		await expect(quiero).toHaveAttribute('rel', 'noopener noreferrer');
-
-		await expect(page.getByRole('link', { name: 'Crear mi ME ahora' })).toHaveAttribute('href', wa);
-		await expect(page.getByRole('link', { name: 'Solicitar mi ME por WhatsApp' })).toHaveAttribute(
-			'href',
-			/text=Hola%2C%20quiero%20crear%20mi%20ME\.$/
-		);
+		const solicitar = page.getByRole('link', { name: 'Solicitar mi ME por WhatsApp' });
+		await expect(solicitar).toHaveCount(3); // hero, sectores y cierre
+		for (const link of await solicitar.all()) {
+			await expect(link).toHaveAttribute('href', wa);
+			await expect(link).toHaveAttribute('target', '_blank');
+			await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+		}
 		await expect(
-			page.getByRole('link', { name: 'Ver perfiles de ejemplo', exact: true })
-		).toHaveAttribute('href', '#sectores');
+			page
+				.getByRole('navigation', { name: 'Principal' })
+				.getByRole('link', { name: 'Solicitar mi ME' })
+		).toHaveAttribute('href', wa);
+
+		// El enlace de dudas abre WhatsApp con un mensaje de consulta.
+		await expect(page.getByRole('link', { name: 'Escríbenos por WhatsApp' })).toHaveAttribute(
+			'href',
+			/text=Hola%2C%20tengo%20una%20consulta%20sobre%20ME\.$/
+		);
+		for (const link of await page
+			.getByRole('link', { name: 'Ver perfiles de ejemplo', exact: true })
+			.all()) {
+			await expect(link).toHaveAttribute('href', '#sectores');
+		}
 	});
 
 	test('no ofrece plan corporativo', async ({ page }) => {

@@ -61,7 +61,7 @@
 				Iniciar sesión
 			</LandingButton>
 			<LandingButton href={LANDING_LINKS.crearMe} external={crearExterno} tone="dark" size="sm">
-				Crear mi ME ahora
+				Solicitar mi ME
 			</LandingButton>
 			<button
 				type="button"

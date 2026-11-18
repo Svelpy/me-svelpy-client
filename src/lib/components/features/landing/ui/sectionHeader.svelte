@@ -2,7 +2,6 @@
 	Encabezado de sección (h2 + bajada). El `id` se usa en el aria-labelledby de la sección.
 -->
 <script lang="ts">
-	import type { Snippet } from 'svelte';
 	import { cn } from '#lib/utils/cn.ts';
 
 	interface Props {
@@ -11,15 +10,12 @@
 		subtitle?: string;
 		tone?: 'light' | 'dark';
 		class?: string;
-		/** Contenido opcional sobre el título (p. ej. una etiqueta técnica). */
-		before?: Snippet;
 	}
 
-	let { id, title, subtitle, tone = 'light', class: className = '', before }: Props = $props();
+	let { id, title, subtitle, tone = 'light', class: className = '' }: Props = $props();
 </script>
 
 <header class={cn('max-w-3xl', className)}>
-	{@render before?.()}
 	<h2
 		{id}
 		class={cn(

@@ -57,11 +57,8 @@
 <figure
 	class={cn('overflow-hidden rounded-[1.75rem] bg-primary-900 ring-1 ring-primary-700', className)}
 >
-	<figcaption
-		class="flex flex-wrap items-center justify-between gap-2 border-b border-primary-700 px-5 py-3 text-sm text-primary-300"
-	>
+	<figcaption class="border-b border-primary-700 px-5 py-3 text-sm text-primary-300">
 		<span>Lo que leen Google y la IA en el perfil de la Dra. Camila Rivas</span>
-		<span class="font-mono text-xs text-primary-400">application/ld+json</span>
 	</figcaption>
 	<pre class="overflow-x-auto p-5 font-mono text-[12.5px] leading-relaxed sm:text-[13px]"><code
 			>{#each tokens as token, i (i)}<span class={colores[token.tipo]}>{token.texto}</span

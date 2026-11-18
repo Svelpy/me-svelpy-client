@@ -7,11 +7,7 @@
 </script>
 
 <LandingSection id="seo-geo" labelledby="seo-geo-titulo" tone="night">
-	<SectionHeader id="seo-geo-titulo" title={SEO_GEO.titulo} subtitle={SEO_GEO.cuerpo} tone="dark">
-		{#snippet before()}
-			<p class="mb-5 font-mono text-sm text-secondary">{SEO_GEO.badge}</p>
-		{/snippet}
-	</SectionHeader>
+	<SectionHeader id="seo-geo-titulo" title={SEO_GEO.titulo} subtitle={SEO_GEO.cuerpo} tone="dark" />
 
 	<div class="mt-16 grid gap-12 lg:grid-cols-2 lg:gap-8">
 		<div class="flex flex-col">

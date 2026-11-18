@@ -29,9 +29,13 @@ export const LANDING_LINKS = {
 	// TODO: usar resolve('/auth/sign-in') cuando exista la ruta.
 	iniciarSesion: '/auth/sign-in',
 	crearMe: whatsapp('Hola, quiero crear mi ME.'),
+	consulta: whatsapp('Hola, tengo una consulta sobre ME.'),
 	perfilesEjemplo: '#sectores',
 	svelpy: 'https://svelpy.com'
 } as const;
+
+/** Nombre único de la acción principal (abre WhatsApp) en toda la landing. */
+export const CTA_SOLICITAR = 'Solicitar mi ME por WhatsApp';
 
 export const LOGOS = {
 	isotipoOscuro: '/images/landing/me-isotipo-oscuro.svg',
@@ -111,12 +115,11 @@ export const PERFILES = {
 // ── Hero
 
 export const HERO = {
-	badge: 'Nueva generación de identidad digital · SEO + GEO ready',
 	titulo: 'Que no solo guarden tu contacto: haz que te encuentren primero.',
 	subtitulo:
 		'Reemplaza las antiguas tarjetas de papel por tu propia vitrina digital autoadministrable. Comparte tu contacto en un toque, exhibe tu catálogo de propiedades o servicios, muestra tus sucursales y posiciona tu nombre en Google e Inteligencia Artificial.',
-	ctaPrimario: 'Quiero mi ME',
-	ctaSecundario: 'Ver perfiles de ejemplo en vivo',
+	ctaPrimario: CTA_SOLICITAR,
+	ctaSecundario: 'Ver perfiles de ejemplo',
 	garantias: ['Listo en 24 horas', '100% autoadministrable', 'Sin instalar aplicaciones'],
 	perfiles: [PERFILES.valeria, PERFILES.camila, PERFILES.andres]
 };
@@ -220,7 +223,6 @@ export const FUNCIONES = {
 // ── SEO + GEO
 
 export const SEO_GEO = {
-	badge: 'Tecnología exclusiva de posicionamiento',
 	titulo: 'Diseñada para que Google y la Inteligencia Artificial te recomienden.',
 	cuerpo:
 		'Una tarjeta común solo funciona cuando tú la entregas en mano. ME estructura técnicamente tu perfil profesional con metadatos avanzados y esquemas semánticos para que trabajes mientras duermes.',
@@ -241,7 +243,6 @@ export const SEO_GEO = {
 export interface Sector {
 	id: string;
 	tab: string;
-	para?: string;
 	titular: string;
 	descripcion: string;
 	destaca: string[];
@@ -254,7 +255,6 @@ export const SECTORES = {
 		{
 			id: 'inmobiliarios',
 			tab: 'Agentes inmobiliarios',
-			para: 'Para agentes de RE/MAX, Century 21 y brokers independientes.',
 			titular: 'Que tu comprador recuerde tu cara y tus propiedades, no un papel.',
 			descripcion:
 				'Destaca tus captaciones más rentables del mes, actualiza precios al instante, permite que agenden visitas por WhatsApp y haz que tu contacto quede guardado con tu foto en el celular de cada inversionista.',
@@ -268,7 +268,6 @@ export const SECTORES = {
 		{
 			id: 'salud',
 			tab: 'Médicos y odontólogos',
-			para: 'Para médicos, odontólogos y medicina estética.',
 			titular: 'Llena tu agenda de consultas y facilita que tus pacientes te recomienden.',
 			descripcion:
 				'Cuando un paciente te recomiende a un familiar, compartirá tu perfil completo con tus credenciales, ubicación exacta de tus consultorios en el mapa, horarios actualizados y botón de reserva de turno en dos toques.',
@@ -282,7 +281,6 @@ export const SECTORES = {
 		{
 			id: 'profesionales',
 			tab: 'Abogados y consultores',
-			para: 'Para abogados, ingenieros y consultores.',
 			titular: 'Autoridad y prestigio corporativo desde el primer saludo.',
 			descripcion:
 				'Presenta tus especialidades, certificaciones, portafolio de proyectos u obras ejecutadas y ubicación de tu estudio con una estética sobria y ejecutiva.',
@@ -296,10 +294,9 @@ export const SECTORES = {
 		{
 			id: 'otros',
 			tab: 'Cualquier profesión',
-			para: 'Para ejecutivos, arquitectos, contadores, fotógrafos, coaches y cualquier profesional o negocio.',
 			titular: 'Sea cual sea tu rubro, tu ME se adapta a lo que haces.',
 			descripcion:
-				'Indicas tu rubro, eliges qué secciones mostrar y cargas tus servicios o productos. Tu perfil queda listo para compartir en un toque y para que Google y la IA te encuentren.',
+				'Ejecutivos, arquitectos, contadores, fotógrafos, coaches o cualquier profesional: indicas tu rubro, eliges qué secciones mostrar y cargas tus servicios o productos. Tu perfil queda listo para compartir en un toque y para que Google y la IA te encuentren.',
 			destaca: [
 				'Tu rubro, para que Google y la IA sepan a qué te dedicas',
 				'Solo las secciones que necesitas',
@@ -378,7 +375,7 @@ export const CIERRE = {
 	titulo: 'Tu próxima gran venta empieza en el primer contacto. Haz que sea inolvidable.',
 	subtitulo:
 		'Únete a médicos, agentes inmobiliarios, abogados y profesionales de todos los rubros que ya evolucionaron su marca personal con ME.',
-	ctaPrimario: 'Solicitar mi ME por WhatsApp',
+	ctaPrimario: CTA_SOLICITAR,
 	ctaSecundario: 'Ver perfiles de ejemplo'
 };
 

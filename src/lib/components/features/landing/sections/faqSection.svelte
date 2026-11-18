@@ -3,7 +3,7 @@
 	import { LandingSection, SectionHeader } from '../ui/index.ts';
 	import { FAQ, LANDING_LINKS } from '../landing.content.ts';
 
-	const crearExterno = LANDING_LINKS.crearMe.startsWith('http');
+	const consultaExterno = LANDING_LINKS.consulta.startsWith('http');
 </script>
 
 <LandingSection id="preguntas" labelledby="preguntas-titulo">
@@ -14,9 +14,9 @@
 				¿Tienes otra duda?
 				<!-- eslint-disable svelte/no-navigation-without-resolve -- WhatsApp o ancla: no es una ruta de la app -->
 				<a
-					href={LANDING_LINKS.crearMe}
-					target={crearExterno ? '_blank' : undefined}
-					rel={crearExterno ? 'noopener noreferrer' : undefined}
+					href={LANDING_LINKS.consulta}
+					target={consultaExterno ? '_blank' : undefined}
+					rel={consultaExterno ? 'noopener noreferrer' : undefined}
 					class="font-semibold text-primary-900 underline decoration-secondary decoration-2 underline-offset-4 hover:decoration-primary-900"
 				>
 					Escríbenos por WhatsApp

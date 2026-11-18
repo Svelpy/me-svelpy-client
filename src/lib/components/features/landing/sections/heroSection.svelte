@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { CheckIcon } from '#lib/icons/outline/index.ts';
+	import { CheckIcon, WhatsappIcon } from '#lib/icons/outline/index.ts';
 	import ProfileShowcase from '../demos/profileShowcase.svelte';
 	import { LandingButton } from '../ui/index.ts';
 	import { HERO, LANDING_LINKS } from '../landing.content.ts';
 
-	// El titular tiene dos mitades: lo que hoy pasa (te guardan) y lo que ME promete (te encuentran).
+	// El titular se parte tras los dos puntos: lo que hoy pasa (te guardan) y lo que ME promete.
 	const [antes, despues] = HERO.titulo.split(': ');
 	const crearExterno = LANDING_LINKS.crearMe.startsWith('http');
 </script>
@@ -18,18 +18,11 @@
 		class="mx-auto grid max-w-6xl grid-cols-1 items-center gap-16 px-4 sm:px-6 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,1fr)] lg:gap-8 lg:px-8"
 	>
 		<div>
-			<p
-				class="inline-flex max-w-full items-center gap-2.5 rounded-2xl border border-white/15 py-1.5 pr-4 pl-2.5 font-mono text-xs text-primary-300"
-			>
-				<span class="h-3.5 w-1.5 shrink-0 rounded-full bg-secondary" aria-hidden="true"></span>
-				<span>{HERO.badge}</span>
-			</p>
-
 			<h1
 				id="hero-titulo"
-				class="mt-7 font-display text-[2.6rem] leading-[0.98] font-bold tracking-[-0.04em] text-balance sm:text-6xl lg:text-[4.25rem] lg:text-wrap"
+				class="font-display text-[2.6rem] leading-[0.98] font-bold tracking-[-0.04em] text-balance sm:text-6xl lg:text-[4.25rem] lg:text-wrap"
 			>
-				<span class="text-primary-400">{antes}:</span>
+				<span class="block">{antes}:</span>
 				<span class="block">{despues}</span>
 			</h1>
 
@@ -39,6 +32,7 @@
 
 			<div class="mt-10 flex flex-col gap-3 sm:flex-row">
 				<LandingButton href={LANDING_LINKS.crearMe} external={crearExterno} tone="dark" size="lg">
+					<WhatsappIcon class="size-5" />
 					{HERO.ctaPrimario}
 				</LandingButton>
 				<LandingButton
