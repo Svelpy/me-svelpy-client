@@ -4,9 +4,10 @@
 -->
 <script lang="ts">
 	import { PUBLIC_SITE_URL } from '$app/env/public';
+	import { siteOrigin } from '#lib/utils/siteUrl.ts';
 	import { FAQ, LANDING_SEO, LOGOS } from './landing.content.ts';
 
-	const base = (PUBLIC_SITE_URL ?? '').replace(/\/+$/, '');
+	const base = siteOrigin(PUBLIC_SITE_URL);
 	const url = `${base}/`;
 	const ogImagen = `${base}${LANDING_SEO.ogImagen}`;
 

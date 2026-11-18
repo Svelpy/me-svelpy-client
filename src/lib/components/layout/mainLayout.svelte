@@ -4,7 +4,8 @@
 	import type { Snippet } from 'svelte';
 
 	import { PUBLIC_SITE_URL } from '$app/env/public';
-	const APP_URL = PUBLIC_SITE_URL;
+	import { siteOrigin } from '#lib/utils/siteUrl.ts';
+	const APP_URL = siteOrigin(PUBLIC_SITE_URL);
 
 	// ── Props
 	interface Props {
