@@ -197,9 +197,15 @@ const PROFILES = [
 				t: 'sonrisa',
 				title: 'Diseño de sonrisa',
 				meta: 'Evaluación + plan digital',
-				price: 'Desde USD 450'
+				price: 'Desde Bs 3.100'
 			},
-			{ t: 'diente', title: 'Blanqueamiento LED', meta: '1 sesión · 60 minutos', price: 'USD 120' }
+			{
+				t: 'diente',
+				title: 'Blanqueamiento LED',
+				meta: '1 sesión · 60 minutos',
+				price: 'Bs 850',
+				old: 'Bs 1.000'
+			}
 		],
 		branch: {
 			name: 'Consultorio Centro',
@@ -344,6 +350,7 @@ function profileHtml(p) {
 	.it span{font-size:12px;color:#57534e;margin-top:3px}
 	.it .row{margin-top:auto;display:flex;align-items:center;justify-content:space-between}
 	.it .pr{font-family:'Grotesk';font-weight:700;font-size:14px;color:${c.main}}
+	.it .pr s{font-family:'Jakarta';font-weight:500;font-size:11.5px;color:#78716c;margin-left:4px}
 	.it .wa{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#15803d;background:#dcfce7;padding:4px 8px;border-radius:999px}
 	.branch{margin:0 16px;border-radius:18px;overflow:hidden;background:#fff;border:1px solid rgba(0,0,0,.07)}
 	.branch .bd{padding:12px 14px}
@@ -365,7 +372,7 @@ function profileHtml(p) {
 			(
 				it
 			) => `<div class="item"><div class="th">${thumb[it.t](c)}</div><div class="it"><b>${it.title}</b><span>${it.meta}</span>
-		<div class="row"><span class="pr">${it.price}</span><span class="wa">${icon(I.wa, 13)}Consultar</span></div></div></div>`
+		<div class="row"><span class="pr">${it.price}${it.old ? ` <s>${it.old}</s>` : ''}</span><span class="wa">${icon(I.wa, 13)}Consultar</span></div></div></div>`
 		)
 		.join('')}
 	<h2>Sucursal y horario</h2>

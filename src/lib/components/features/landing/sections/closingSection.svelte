@@ -7,7 +7,7 @@
 </script>
 
 <section
-	id="planes"
+	id="contacto"
 	aria-labelledby="cierre-titulo"
 	class="relative overflow-hidden bg-primary-950 py-24 text-white sm:py-32"
 >
@@ -17,7 +17,7 @@
 		alt=""
 		width="786"
 		height="458"
-		class="pointer-events-none absolute top-1/2 -right-60 hidden h-[380px] w-auto -translate-y-1/2 min-[1400px]:block"
+		class="pointer-events-none absolute top-1/2 -right-60 hidden h-95 w-auto -translate-y-1/2 min-[1400px]:block"
 	/>
 
 	<div class="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -38,13 +38,7 @@
 				<WhatsappIcon class="size-5" />
 				{CIERRE.ctaPrimario}
 			</LandingButton>
-			<LandingButton
-				href={LANDING_LINKS.planCorporativo}
-				external={externo(LANDING_LINKS.planCorporativo)}
-				variant="secondary"
-				tone="dark"
-				size="lg"
-			>
+			<LandingButton href={LANDING_LINKS.perfilesEjemplo} variant="secondary" tone="dark" size="lg">
 				{CIERRE.ctaSecundario}
 			</LandingButton>
 		</div>

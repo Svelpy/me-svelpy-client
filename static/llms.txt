@@ -5,21 +5,28 @@
 ## Qué incluye cada perfil
 
 - Botón «Guardar contacto» (.vcf) con foto, nombre, cargo, empresa, teléfono, correo y dirección.
-- Panel autoadministrable en tiempo real: colores de marca, foto, portada, biografía y descripción.
-- Catálogo de destacados: propiedades, tratamientos, servicios o productos con foto, precio y consulta directa por WhatsApp.
+- Panel autoadministrable en tiempo real: foto, portada, logo, biografía y descripción.
+- Temas de color predefinidos (claro, oscuro, elegante, salud y corporativo) como punto de partida; después se edita cada color por separado.
+- Vitrina: propiedades, tratamientos, servicios o productos con fotos, categorías, precio, precio anterior (ofertas), ítems destacados y consulta directa por WhatsApp.
 - Varias sucursales con dirección, horarios por día y pin de Google Maps.
 - Enlace corto y código QR dinámico: si cambian los datos, el mismo QR muestra la información nueva.
-- Datos estructurados Schema.org (JSON-LD) según el rubro: RealEstateAgent, Physician, Dentist, LegalService o LocalBusiness, con GeoCoordinates y hasOfferCatalog.
+- QR de pago del banco del profesional para cobrar consultas, reservas o anticipos.
+- Formación y certificaciones (opcionales) con entidad emisora, código y enlace de verificación.
+- Más de 20 redes sociales, incluidas Calendly y Doctoralia para agendar.
+- Preguntas frecuentes propias de cada profesional.
+- Datos estructurados Schema.org (JSON-LD) según el rubro que indica cada profesional, por ejemplo: RealEstateAgent, Physician, Dentist, LegalService o LocalBusiness, con GeoCoordinates y hasOfferCatalog.
 
 ## Para quién es
 
 - Agentes inmobiliarios: propiedades destacadas del mes y WhatsApp directo por propiedad.
 - Médicos, odontólogos y medicina estética: tratamientos, consultorios en el mapa, horarios y reserva de turnos.
 - Abogados, ingenieros y consultores: áreas de práctica, portafolio de obras y diseño sobrio.
-- Empresas y fuerzas de ventas: perfiles estandarizados para todo el equipo; un perfil se reasigna sin cambiar el QR.
+- Cualquier otro profesional o negocio: ejecutivos, arquitectos, contadores, fotógrafos, coaches y más. Cada perfil muestra solo las secciones que necesita.
 
 ## Preguntas frecuentes
 
 - ¿Hace falta instalar una aplicación? No. El perfil se abre en el navegador de cualquier celular o computadora.
 - ¿Puedo editar mis datos yo mismo? Sí, desde el panel, cuantas veces quieras y en tiempo real.
-- ¿Hay planes para equipos? Sí, planes corporativos con identidad visual uniforme.
+- ¿Mis clientes pueden pagarme o agendar desde el perfil? Sí, con el QR de pago y enlaces a WhatsApp, Calendly o Doctoralia.
+- ¿Puedo mostrar mis estudios y certificaciones? Sí, son secciones opcionales, con el enlace de verificación de cada credencial.
+- ¿Sirve para cualquier profesión? Sí, cada profesional indica su rubro y elige qué secciones mostrar.

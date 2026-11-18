@@ -37,7 +37,7 @@ test.describe('Landing ME by Svelpy', () => {
 		const tipos = jsonLd['@graph'].map((n: { '@type': string }) => n['@type']);
 		expect(tipos).toEqual(['Organization', 'WebSite', 'Service', 'FAQPage']);
 		const faq = jsonLd['@graph'].find((n: { '@type': string }) => n['@type'] === 'FAQPage');
-		expect(faq.mainEntity).toHaveLength(4);
+		expect(faq.mainEntity).toHaveLength(6);
 
 		const og = await page.request.get('/images/landing/og-me-by-svelpy.png');
 		expect(og.ok()).toBe(true);
@@ -74,8 +74,13 @@ test.describe('Landing ME by Svelpy', () => {
 			/text=Hola%2C%20quiero%20crear%20mi%20ME\.$/
 		);
 		await expect(
-			page.getByRole('link', { name: 'Cotizar Plan Corporativo para mi equipo' })
-		).toHaveAttribute('href', /^https:\/\/wa\.me\/59176727537\?text=.*Plan%20Corporativo/);
+			page.getByRole('link', { name: 'Ver perfiles de ejemplo', exact: true })
+		).toHaveAttribute('href', '#sectores');
+	});
+
+	test('no ofrece plan corporativo', async ({ page }) => {
+		await expect(page.getByText(/plan corporativo/i)).toHaveCount(0);
+		await expect(page.getByRole('tab', { name: 'Empresas y equipos' })).toHaveCount(0);
 	});
 
 	test('el selector del hero cambia el perfil del teléfono y se puede pausar', async ({ page }) => {
@@ -124,17 +129,30 @@ test.describe('Landing ME by Svelpy', () => {
 		).toBeVisible();
 
 		await page.keyboard.press('ArrowRight');
-		await expect(tabs.getByRole('tab', { name: 'Empresas y equipos' })).toBeFocused();
+		await expect(tabs.getByRole('tab', { name: 'Cualquier profesión' })).toBeFocused();
 		await expect(
-			page.getByRole('heading', { name: 'Unifica la imagen de toda tu fuerza de ventas.' })
+			page.getByRole('heading', {
+				name: 'Sea cual sea tu rubro, tu ME se adapta a lo que haces.'
+			})
 		).toBeVisible();
+		await expect(
+			page.getByRole('region', { name: 'Perfil de ejemplo de Andrés Quiroga' })
+		).toBeVisible();
+
+		// Desde la última pestaña, la flecha derecha vuelve a la primera.
+		await page.keyboard.press('ArrowRight');
+		await expect(tabs.getByRole('tab', { name: 'Agentes inmobiliarios' })).toBeFocused();
 	});
 
-	test('la demo de paleta permite elegir un color', async ({ page }) => {
-		const verde = page.getByRole('radio', { name: 'Verde clínica' });
-		await page.locator('label').filter({ has: verde }).click();
-		await expect(verde).toBeChecked();
-		await expect(page.getByRole('group', { name: 'Prueba un color: Verde clínica' })).toBeVisible();
+	test('la demo de temas muestra los 5 presets y aplica el elegido', async ({ page }) => {
+		const temas = page.getByRole('group', { name: /^Tema inicial:/ });
+		for (const nombre of ['Claro', 'Oscuro', 'Elegante', 'Salud', 'Corporativo']) {
+			await expect(temas.getByRole('radio', { name: nombre })).toHaveCount(1);
+		}
+		const oscuro = page.getByRole('radio', { name: 'Oscuro' });
+		await page.locator('label').filter({ has: oscuro }).click();
+		await expect(oscuro).toBeChecked();
+		await expect(page.getByTestId('palette-preview')).toHaveAttribute('data-preset', 'oscuro');
 	});
 
 	test('las preguntas frecuentes se abren de a una', async ({ page }) => {
@@ -167,8 +185,8 @@ test.describe('Landing en móvil', () => {
 
 		const menu = page.locator('#menu-movil');
 		await expect(menu.getByRole('link', { name: 'Iniciar sesión' })).toBeVisible();
-		await menu.getByRole('link', { name: 'Planes' }).click();
-		await expect(page).toHaveURL(/#planes$/);
+		await menu.getByRole('link', { name: 'Contacto' }).click();
+		await expect(page).toHaveURL(/#contacto$/);
 		await expect(menu).toBeHidden();
 
 		await page.getByRole('button', { name: 'Abrir menú' }).click();

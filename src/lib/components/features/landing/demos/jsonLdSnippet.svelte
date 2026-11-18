@@ -19,7 +19,7 @@
     "@type": "OfferCatalog",
     "itemListElement": [
       { "@type": "Offer", "name": "Diseño de sonrisa" },
-      { "@type": "Offer", "name": "Blanqueamiento LED", "price": "120" }
+      { "@type": "Offer", "name": "Blanqueamiento LED", "price": "850", "priceCurrency": "BOB" }
     ]
   }
 }`;

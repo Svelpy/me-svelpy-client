@@ -1,9 +1,20 @@
 <script lang="ts">
 	import qrMe from '#lib/assets/landing/qr-me-svelpy.svg';
-	import { DownloadIcon, MapPinIcon, WhatsappIcon } from '#lib/icons/outline/index.ts';
+	import { TEMAS_TARJETA } from '#lib/config/temasTarjeta.config.ts';
+	import {
+		CalendarIcon,
+		ChevronDownIcon,
+		DownloadIcon,
+		InstagramIcon,
+		LinkedinIcon,
+		MapPinIcon,
+		ShieldIcon,
+		TikTokIcon,
+		WhatsappIcon
+	} from '#lib/icons/outline/index.ts';
 	import PaletteDemo from '../demos/paletteDemo.svelte';
 	import { LandingSection, SectionHeader } from '../ui/index.ts';
-	import { COLORES_DEMO, FUNCIONES, ME_DOMINIO } from '../landing.content.ts';
+	import { FUNCIONES, ME_DOMINIO } from '../landing.content.ts';
 
 	const celda = 'flex flex-col rounded-[1.75rem] border border-primary-200 bg-white p-6 sm:p-7';
 	const tituloCelda = 'font-display text-xl font-bold tracking-[-0.01em] text-primary-900';
@@ -19,17 +30,30 @@
 		{ dia: 'Sábado', horas: '09:00 – 13:00' },
 		{ dia: 'Domingo', horas: 'Cerrado' }
 	];
+
+	const credenciales = [
+		{ titulo: 'Especialidad en Estética Dental', detalle: 'Facultad de Odontología, 2019' },
+		{ titulo: 'Certificación en Ortodoncia Invisible', detalle: 'Código ORT-2024-118' }
+	];
+
+	const redes = [
+		{ nombre: 'Instagram', icono: InstagramIcon },
+		{ nombre: 'TikTok', icono: TikTokIcon },
+		{ nombre: 'LinkedIn', icono: LinkedinIcon },
+		{ nombre: 'Calendly', icono: CalendarIcon },
+		{ nombre: 'Doctoralia', icono: CalendarIcon }
+	];
 </script>
 
 <LandingSection id="beneficios" labelledby="beneficios-titulo" tone="mist">
 	<SectionHeader id="beneficios-titulo" title={FUNCIONES.titulo} subtitle={FUNCIONES.subtitulo} />
 
-	<div class="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+	<div class="mt-14 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-6">
 		<!-- Paleta: interactiva -->
 		<article class="{celda} md:row-span-2 lg:col-span-3">
 			<h3 class={tituloCelda}>{FUNCIONES.paleta.titulo}</h3>
 			<p class={textoCelda}>{FUNCIONES.paleta.texto}</p>
-			<PaletteDemo colores={COLORES_DEMO} class="mt-auto" />
+			<PaletteDemo temas={TEMAS_TARJETA} nota={FUNCIONES.paleta.nota} class="mt-auto" />
 		</article>
 
 		<!-- Catálogo -->
@@ -46,9 +70,26 @@
 					<circle cx="100" cy="76" r="14" fill="#16A34A" />
 				</svg>
 				<div class="min-w-0 flex-1">
-					<p class="truncate text-sm font-semibold text-primary-900">Casa en condominio cerrado</p>
+					<p class="flex flex-wrap items-center gap-1.5">
+						<span
+							class="rounded-full bg-primary-100 px-2 py-0.5 text-[11px] font-semibold text-primary-700"
+						>
+							Casas
+						</span>
+						<span
+							class="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-bold text-primary-950"
+						>
+							Destacado
+						</span>
+					</p>
+					<p class="mt-1 truncate text-sm font-semibold text-primary-900">
+						Casa en condominio cerrado
+					</p>
 					<p class="text-xs text-primary-600">3 dorm., 220 m²</p>
-					<p class="mt-1 font-display font-bold text-primary-900">USD 185.000</p>
+					<p class="mt-1 flex items-baseline gap-2">
+						<span class="font-display font-bold text-primary-900">USD 185.000</span>
+						<span class="text-xs text-primary-500 line-through">USD 199.000</span>
+					</p>
 				</div>
 				<span
 					class="hidden items-center gap-1 rounded-full bg-[#dcfce7] px-3 py-1.5 text-xs font-bold text-[#166534] sm:inline-flex"
@@ -128,7 +169,7 @@
 		</article>
 
 		<!-- QR + enlace -->
-		<article class="{celda} md:col-span-2 lg:col-span-2">
+		<article class="{celda} lg:col-span-2">
 			<h3 class={tituloCelda}>{FUNCIONES.qr.titulo}</h3>
 			<p class={textoCelda}>{FUNCIONES.qr.texto}</p>
 			<div class="mt-auto flex items-center gap-4">
@@ -144,7 +185,99 @@
 					/>
 				</span>
 				<p class="min-w-0 font-mono text-sm text-primary-600">
-					{ME_DOMINIO}/<wbr /><span class="text-primary-900">tu-nombre</span>
+					{ME_DOMINIO}/<wbr /><span class="whitespace-nowrap text-primary-900">tu-nombre</span>
+				</p>
+			</div>
+		</article>
+
+		<!-- QR de pago -->
+		<article class="{celda} lg:col-span-3">
+			<h3 class={tituloCelda}>{FUNCIONES.qrPago.titulo}</h3>
+			<p class={textoCelda}>{FUNCIONES.qrPago.texto}</p>
+			<div class="mt-auto flex items-center gap-4 rounded-2xl bg-primary-50 p-3" aria-hidden="true">
+				<span
+					class="grid size-20 shrink-0 place-items-center rounded-xl bg-white p-2 ring-1 ring-primary-200"
+				>
+					<img src={qrMe} alt="" class="size-full opacity-80" width="64" height="64" />
+				</span>
+				<span class="min-w-0">
+					<span class="block text-xs font-semibold text-primary-600">Pagar con QR</span>
+					<span class="block truncate text-sm font-semibold text-primary-900">
+						Blanqueamiento LED
+					</span>
+					<span class="block font-display text-lg font-bold text-primary-900">Bs 850</span>
+					<span class="block text-xs text-primary-600">Escanéalo con la app de tu banco</span>
+				</span>
+			</div>
+		</article>
+
+		<!-- Formación y certificaciones -->
+		<article class="{celda} lg:col-span-3">
+			<h3 class={tituloCelda}>{FUNCIONES.credenciales.titulo}</h3>
+			<p class={textoCelda}>{FUNCIONES.credenciales.texto}</p>
+			<ul class="mt-auto space-y-2" aria-hidden="true">
+				{#each credenciales as credencial, i (credencial.titulo)}
+					<li class="flex items-center gap-3 rounded-2xl bg-primary-50 p-3">
+						<span
+							class="grid size-9 shrink-0 place-items-center rounded-full bg-primary-900 text-white"
+						>
+							<ShieldIcon class="size-4" />
+						</span>
+						<span class="min-w-0">
+							<span class="block truncate text-sm font-semibold text-primary-900">
+								{credencial.titulo}
+							</span>
+							<span class="block truncate text-xs text-primary-600">{credencial.detalle}</span>
+						</span>
+						{#if i === 1}
+							<span class="ml-auto shrink-0 text-xs font-semibold text-primary-700 underline">
+								Verificar
+							</span>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		</article>
+
+		<!-- Redes y agenda -->
+		<article class="{celda} lg:col-span-3">
+			<h3 class={tituloCelda}>{FUNCIONES.redes.titulo}</h3>
+			<p class={textoCelda}>{FUNCIONES.redes.texto}</p>
+			<ul class="mt-auto flex flex-wrap gap-2" aria-hidden="true">
+				{#each redes as red (red.nombre)}
+					{@const Icono = red.icono}
+					<li
+						class="flex h-10 items-center gap-2 rounded-full bg-primary-50 pr-4 pl-3 text-sm font-semibold text-primary-900"
+					>
+						<Icono class="size-4 text-primary-700" />
+						{red.nombre}
+					</li>
+				{/each}
+			</ul>
+		</article>
+
+		<!-- Preguntas frecuentes propias -->
+		<article class="{celda} md:col-span-2 lg:col-span-3">
+			<h3 class={tituloCelda}>{FUNCIONES.faq.titulo}</h3>
+			<p class={textoCelda}>{FUNCIONES.faq.texto}</p>
+			<div
+				class="mt-auto divide-y divide-primary-200 rounded-2xl bg-primary-50 px-4"
+				aria-hidden="true"
+			>
+				<div class="py-3">
+					<p class="flex items-center justify-between gap-3 text-sm font-semibold text-primary-900">
+						¿Aceptan pago con QR?
+						<ChevronDownIcon class="size-4 shrink-0 rotate-180 text-primary-600" />
+					</p>
+					<p class="mt-1 text-xs leading-relaxed text-primary-600">
+						Sí, escanea el QR de mi perfil y envíame el comprobante por WhatsApp.
+					</p>
+				</div>
+				<p
+					class="flex items-center justify-between gap-3 py-3 text-sm font-semibold text-primary-900"
+				>
+					¿Atienden fines de semana?
+					<ChevronDownIcon class="size-4 shrink-0 text-primary-600" />
 				</p>
 			</div>
 		</article>

@@ -21,7 +21,7 @@ export const ME_DOMINIO = 'me.svelpy.com';
 export const WHATSAPP_VENTAS = '59176727537';
 
 function whatsapp(mensaje: string): string {
-	if (!WHATSAPP_VENTAS) return '#planes';
+	if (!WHATSAPP_VENTAS) return '#contacto';
 	return `https://wa.me/${WHATSAPP_VENTAS}?text=${encodeURIComponent(mensaje)}`;
 }
 
@@ -29,7 +29,6 @@ export const LANDING_LINKS = {
 	// TODO: usar resolve('/auth/sign-in') cuando exista la ruta.
 	iniciarSesion: '/auth/sign-in',
 	crearMe: whatsapp('Hola, quiero crear mi ME.'),
-	planCorporativo: whatsapp('Hola, quiero cotizar el Plan Corporativo de ME para mi equipo.'),
 	perfilesEjemplo: '#sectores',
 	svelpy: 'https://svelpy.com'
 } as const;
@@ -54,7 +53,7 @@ export const NAV_LINKS: LandingNavLink[] = [
 	{ label: 'Beneficios', href: '#beneficios' },
 	{ label: 'Sectores', href: '#sectores' },
 	{ label: 'SEO + GEO', href: '#seo-geo' },
-	{ label: 'Planes', href: '#planes' }
+	{ label: 'Contacto', href: '#contacto' }
 ];
 
 // ── Perfiles de ejemplo (simulados: reemplazar por capturas de clientes reales)
@@ -164,16 +163,17 @@ export const PROBLEMA = {
 export const FUNCIONES = {
 	titulo: 'El poder de una página web. La agilidad de una tarjeta digital.',
 	subtitulo:
-		'No dependas de programadores ni diseñadores cada vez que quieras actualizar tu información. Desde tu propio panel de control administras todo en tiempo real.',
+		'No dependas de programadores ni diseñadores cada vez que quieras actualizar tu información. Desde tu propio panel administras todo en tiempo real y muestras solo las secciones que te sirven.',
 	paleta: {
 		titulo: 'Paleta de colores a medida',
 		texto:
-			'Adapta el diseño a los colores exactos de tu marca personal, tu clínica o tu franquicia inmobiliaria en un clic.'
+			'Empieza con un tema listo y luego ajusta cada color a tu marca: fondo, botones, precios, íconos y botón flotante.',
+		nota: 'Este es solo el punto de partida: después puedes cambiar cada color por separado.'
 	},
 	catalogo: {
 		titulo: 'Catálogo y destacados',
 		texto:
-			'Publica tus viviendas estrella, servicios principales o promociones con fotos, precios y botón de consulta directo a tu WhatsApp.'
+			'Publica tus viviendas estrella, servicios o promociones con fotos, categorías, precio de oferta y botón de consulta directo a tu WhatsApp.'
 	},
 	sucursales: {
 		titulo: 'Múltiples sucursales y mapas',
@@ -194,24 +194,28 @@ export const FUNCIONES = {
 		titulo: 'Código QR y enlace corto',
 		texto:
 			'Un link limpio y un código QR con el isotipo ME, listo para tu celular, firma de correo o tarjeta física.'
+	},
+	qrPago: {
+		titulo: 'QR de pago',
+		texto:
+			'Sube el QR de cobro de tu banco y recibe pagos de consultas, reservas o anticipos desde tu propio perfil.'
+	},
+	credenciales: {
+		titulo: 'Formación y certificaciones',
+		texto:
+			'Si quieres, agrega tus estudios y certificaciones con su código y enlace de verificación. Es opcional: actívalo solo si suma a tu perfil.'
+	},
+	redes: {
+		titulo: 'Redes y agenda en línea',
+		texto:
+			'Enlaza Instagram, TikTok, LinkedIn y más de 20 redes, incluidas Calendly y Doctoralia para que te agenden en dos toques.'
+	},
+	faq: {
+		titulo: 'Tus propias preguntas frecuentes',
+		texto:
+			'Responde por adelantado lo que más te consultan: formas de pago, zonas de atención o cómo prepararse para una cita.'
 	}
 };
-
-export interface ColorMarca {
-	nombre: string;
-	fondo: string;
-	acento: string;
-}
-
-/** Paletas de ejemplo para la demo interactiva de la sección de funciones. */
-export const COLORES_DEMO: ColorMarca[] = [
-	{ nombre: 'Azul inmobiliario', fondo: '#1E3A8A', acento: '#F59E0B' },
-	{ nombre: 'Verde clínica', fondo: '#0F766E', acento: '#F472B6' },
-	{ nombre: 'Verde estudio jurídico', fondo: '#163A2E', acento: '#C9A86A' },
-	{ nombre: 'Carbón corporativo', fondo: '#1F2937', acento: '#FACC15' },
-	{ nombre: 'Rojo franquicia', fondo: '#B91C1C', acento: '#FDE68A' },
-	{ nombre: 'Ciruela ME', fondo: '#2A182D', acento: '#FF4724' }
-];
 
 // ── SEO + GEO
 
@@ -228,7 +232,7 @@ export const SEO_GEO = {
 	geo: {
 		titulo: 'Optimización GEO (ChatGPT, Gemini, Perplexity)',
 		texto:
-			'Estructuramos tu especialidad, zona de cobertura, sucursales y catálogo en el lenguaje exacto que leen las inteligencias artificiales para recomendarte cuando un usuario pregunte por el mejor profesional de tu sector.'
+			'Indicas tu rubro y estructuramos tu especialidad, zona de cobertura, sucursales y catálogo en el lenguaje exacto que leen las inteligencias artificiales para recomendarte cuando un usuario pregunte por el mejor profesional de tu sector.'
 	}
 };
 
@@ -271,7 +275,7 @@ export const SECTORES = {
 			destaca: [
 				'Especialidades y tratamientos con precio',
 				'Varios consultorios en Google Maps',
-				'Horarios y botón para agendar cita'
+				'Horarios y reserva por WhatsApp, Calendly o Doctoralia'
 			],
 			perfil: PERFILES.camila
 		},
@@ -285,21 +289,21 @@ export const SECTORES = {
 			destaca: [
 				'Diseño sobrio y ejecutivo',
 				'Áreas de práctica o dossier de obras',
-				'Descarga inmediata del contacto corporativo'
+				'Formación y certificaciones con enlace de verificación'
 			],
 			perfil: PERFILES.mariana
 		},
 		{
-			id: 'empresas',
-			tab: 'Empresas y equipos',
-			para: 'Para empresas y fuerzas de ventas B2B.',
-			titular: 'Unifica la imagen de toda tu fuerza de ventas.',
+			id: 'otros',
+			tab: 'Cualquier profesión',
+			para: 'Para ejecutivos, arquitectos, contadores, fotógrafos, coaches y cualquier profesional o negocio.',
+			titular: 'Sea cual sea tu rubro, tu ME se adapta a lo que haces.',
 			descripcion:
-				'Equipa a tus 10, 20 o 50 ejecutivos con perfiles oficiales bajo el control de tu empresa. Si un vendedor cambia de puesto, actualizas sus datos desde el panel central en segundos sin reimprimir una sola tarjeta.',
+				'Indicas tu rubro, eliges qué secciones mostrar y cargas tus servicios o productos. Tu perfil queda listo para compartir en un toque y para que Google y la IA te encuentren.',
 			destaca: [
-				'Perfiles estandarizados para todo el equipo',
-				'Reasigna un perfil en 10 segundos sin cambiar el QR',
-				'Identidad visual uniforme'
+				'Tu rubro, para que Google y la IA sepan a qué te dedicas',
+				'Solo las secciones que necesitas',
+				'Vitrina con tus servicios o productos'
 			],
 			perfil: PERFILES.andres
 		}
@@ -313,7 +317,7 @@ export const PASOS = {
 	items: [
 		{
 			titulo: 'Elige tu enlace y configura tu estilo',
-			texto: `Asegura tu URL personalizada (${ME_DOMINIO}/tu-nombre) y selecciona los colores de tu marca.`
+			texto: `Asegura tu URL personalizada (${ME_DOMINIO}/tu-nombre) elige un tema y ajusta los colores de tu marca.`
 		},
 		{
 			titulo: 'Carga tu catálogo y ubicaciones',
@@ -352,10 +356,19 @@ export const FAQ: PreguntaFrecuente[] = [
 			'Solo entras a tu panel, actualizas el dato en 5 segundos y tu mismo enlace y tu mismo código QR mostrarán la información nueva, sin gastar un centavo en reimpresiones.'
 	},
 	{
-		pregunta:
-			'¿Tienen planes para oficinas inmobiliarias, clínicas o empresas con varios vendedores?',
+		pregunta: '¿Mis clientes pueden pagarme o agendar desde mi perfil?',
 		respuesta:
-			'Sí. Contamos con planes corporativos que permiten gestionar las tarjetas digitales de todo tu equipo comercial o médico manteniendo una identidad visual uniforme.'
+			'Sí. Puedes mostrar el QR de cobro de tu banco para recibir pagos y enlazar tu WhatsApp, Calendly o Doctoralia para que te agenden en dos toques.'
+	},
+	{
+		pregunta: '¿Puedo mostrar mis estudios y certificaciones?',
+		respuesta:
+			'Sí, si lo deseas. Son secciones opcionales: agrega tu formación y tus certificaciones con la entidad emisora, el código y el enlace de verificación de cada credencial, o déjalas ocultas.'
+	},
+	{
+		pregunta: '¿ME sirve si mi profesión no aparece en la página?',
+		respuesta:
+			'Sí. ME funciona para cualquier profesional o negocio: indicas tu rubro, eliges qué secciones mostrar y tu perfil se adapta a lo que haces.'
 	}
 ];
 
@@ -364,9 +377,9 @@ export const FAQ: PreguntaFrecuente[] = [
 export const CIERRE = {
 	titulo: 'Tu próxima gran venta empieza en el primer contacto. Haz que sea inolvidable.',
 	subtitulo:
-		'Únete a los profesionales, médicos y agentes inmobiliarios que ya evolucionaron su marca personal con ME.',
+		'Únete a médicos, agentes inmobiliarios, abogados y profesionales de todos los rubros que ya evolucionaron su marca personal con ME.',
 	ctaPrimario: 'Solicitar mi ME por WhatsApp',
-	ctaSecundario: 'Cotizar Plan Corporativo para mi equipo'
+	ctaSecundario: 'Ver perfiles de ejemplo'
 };
 
 // ── Metadatos
@@ -386,6 +399,7 @@ export const LANDING_SEO = {
 		'abogados',
 		'SEO',
 		'GEO',
+		'profesionales independientes',
 		'ME'
 	],
 	ogImagen: '/images/landing/og-me-by-svelpy.png',
