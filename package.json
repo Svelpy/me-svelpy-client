@@ -21,7 +21,8 @@
 		"test:e2e": "playwright install && playwright test",
 		"landing:imagenes": "node scripts/landing/generar-imagenes.mjs",
 		"deploy": "pnpm build && wrangler deploy",
-		"cf-typegen": "wrangler types"
+		"cf-typegen": "wrangler types",
+		"landing:iconos": "node scripts/landing/generar-iconos.mjs"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",

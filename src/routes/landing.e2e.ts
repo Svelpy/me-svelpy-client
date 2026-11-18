@@ -43,6 +43,24 @@ test.describe('Landing ME by Svelpy', () => {
 		expect(og.ok()).toBe(true);
 	});
 
+	test('los íconos y la imagen Open Graph existen como archivos reales', async ({
+		page,
+		request
+	}) => {
+		const rutas = [
+			await page.locator('link[rel="icon"][sizes="48x48"]').getAttribute('href'),
+			await page.locator('link[rel="icon"][sizes="192x192"]').getAttribute('href'),
+			await page.locator('link[rel="apple-touch-icon"]').getAttribute('href'),
+			'/images/landing/og-me-by-svelpy.png'
+		];
+		for (const ruta of rutas) {
+			expect(ruta).toBeTruthy();
+			const respuesta = await request.get(ruta!);
+			expect(respuesta.status(), ruta!).toBe(200);
+			expect(respuesta.headers()['content-type'], ruta!).toMatch(/^image\//);
+		}
+	});
+
 	test('muestra el titular y las llamadas a la acción del hero', async ({ page }) => {
 		await expect(
 			page.getByRole('heading', {
