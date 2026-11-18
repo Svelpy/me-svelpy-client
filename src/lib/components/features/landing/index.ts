@@ -1,0 +1,12 @@
+export { default as LandingSeo } from './landingSeo.svelte';
+export { default as LandingNavbar } from './sections/landingNavbar.svelte';
+export { default as HeroSection } from './sections/heroSection.svelte';
+export { default as ProblemSection } from './sections/problemSection.svelte';
+export { default as FeaturesSection } from './sections/featuresSection.svelte';
+export { default as SeoGeoSection } from './sections/seoGeoSection.svelte';
+export { default as SectorsSection } from './sections/sectorsSection.svelte';
+export { default as HowItWorksSection } from './sections/howItWorksSection.svelte';
+export { default as FaqSection } from './sections/faqSection.svelte';
+export { default as ClosingSection } from './sections/closingSection.svelte';
+export { default as LandingFooter } from './sections/landingFooter.svelte';
+export * from './ui/index.ts';

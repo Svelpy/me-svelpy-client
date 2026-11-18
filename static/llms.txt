@@ -1,0 +1,25 @@
+# ME
+
+> ME es una mini-web de marca personal y vitrina comercial 100% autoadministrable para profesionales y equipos comerciales. Cada perfil vive en me.svelpy.com/<nombre>, guarda el contacto en el teléfono del cliente con un toque (archivo .vcf) y está optimizado para buscadores (SEO) y asistentes de IA (GEO). Es un producto de Svelpy (https://svelpy.com).
+
+## Qué incluye cada perfil
+
+- Botón «Guardar contacto» (.vcf) con foto, nombre, cargo, empresa, teléfono, correo y dirección.
+- Panel autoadministrable en tiempo real: colores de marca, foto, portada, biografía y descripción.
+- Catálogo de destacados: propiedades, tratamientos, servicios o productos con foto, precio y consulta directa por WhatsApp.
+- Varias sucursales con dirección, horarios por día y pin de Google Maps.
+- Enlace corto y código QR dinámico: si cambian los datos, el mismo QR muestra la información nueva.
+- Datos estructurados Schema.org (JSON-LD) según el rubro: RealEstateAgent, Physician, Dentist, LegalService o LocalBusiness, con GeoCoordinates y hasOfferCatalog.
+
+## Para quién es
+
+- Agentes inmobiliarios: propiedades destacadas del mes y WhatsApp directo por propiedad.
+- Médicos, odontólogos y medicina estética: tratamientos, consultorios en el mapa, horarios y reserva de turnos.
+- Abogados, ingenieros y consultores: áreas de práctica, portafolio de obras y diseño sobrio.
+- Empresas y fuerzas de ventas: perfiles estandarizados para todo el equipo; un perfil se reasigna sin cambiar el QR.
+
+## Preguntas frecuentes
+
+- ¿Hace falta instalar una aplicación? No. El perfil se abre en el navegador de cualquier celular o computadora.
+- ¿Puedo editar mis datos yo mismo? Sí, desde el panel, cuantas veces quieras y en tiempo real.
+- ¿Hay planes para equipos? Sí, planes corporativos con identidad visual uniforme.

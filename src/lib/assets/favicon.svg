@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="120 120 840 840">
+	<style>
+		.p { fill: #2a182d; }
+		.o { fill: #ff4724; }
+		@media (prefers-color-scheme: dark) { .p { fill: #ffffff; } }
+	</style>
+	<rect class="p" x="147.52" y="311.27" width="83.18" height="457.46" rx="41.59" />
+	<rect class="p" x="428.23" y="311.27" width="83.18" height="457.46" rx="41.59" />
+	<rect class="o" x="287.88" y="401.38" width="83.18" height="180.21" rx="41.59" />
+	<rect class="p" x="568.59" y="311.27" width="363.89" height="83.18" rx="41.59" />
+	<rect class="o" x="568.59" y="498.41" width="363.89" height="83.18" rx="41.59" />
+	<rect class="p" x="568.59" y="685.55" width="363.89" height="83.18" rx="41.59" />
+</svg>
