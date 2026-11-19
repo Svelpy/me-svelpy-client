@@ -115,15 +115,15 @@
 	};
 
 	const colorStyles: Record<TextColor, string> = {
-		primary: 'text-light-black',
-		secondary: 'text-light-two_d',
-		muted: 'text-light-four',
-		accent: 'text-light-three',
-		success: 'text-light-success',
-		warning: 'text-light-warning',
-		error: 'text-light-error',
-		white: 'text-light-one',
-		black: 'text-black'
+		primary: 'text-light-two dark:text-dark-two',
+		secondary: 'text-light-two_d dark:text-dark-two_d',
+		muted: 'text-light-four_d dark:text-dark-four_d',
+		accent: 'text-light-accent_d dark:text-dark-accent',
+		success: 'text-light-success dark:text-dark-success',
+		warning: 'text-light-warning dark:text-dark-warning',
+		error: 'text-light-error dark:text-dark-error',
+		white: 'text-white',
+		black: 'text-light-black'
 	};
 
 	const computedClasses = $derived(

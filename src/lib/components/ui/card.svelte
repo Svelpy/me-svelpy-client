@@ -29,14 +29,14 @@
 	}: CardProps = $props();
 
 	// Clases base estáticas
-	const baseClasses = 'rounded-lg transition-all duration-200 ease-in-out';
+	const baseClasses = 'rounded-2xl transition-colors duration-150';
 
 	// Diccionarios de estilos (estos pueden ser const porque no cambian)
 	const variantStyles = {
-		default: 'bg-white border border-gray-200 shadow-sm dark:bg-gray-900 dark:border-gray-800',
-		bordered: 'bg-white border-2 border-gray-300 dark:bg-gray-900 dark:border-gray-700',
-		elevated: 'bg-white shadow-lg border-0 dark:bg-gray-900',
-		ghost: 'bg-transparent border-0 shadow-none'
+		default: 'border border-light-four/40 bg-light-one dark:border-dark-one_d dark:bg-dark-one',
+		bordered: 'border border-light-four bg-light-one dark:border-dark-four dark:bg-dark-one',
+		elevated: 'bg-light-one shadow-lg dark:bg-dark-one_d',
+		ghost: 'border-0 bg-transparent shadow-none'
 	};
 
 	const sizeStyles = {
@@ -56,7 +56,7 @@
 
 	const interactiveClasses = $derived(
 		interactive && !disabled
-			? 'hover:shadow-md hover:scale-[1.02] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900'
+			? 'cursor-pointer hover:bg-light-one_d focus-visible:outline-2 focus-visible:outline-light-three dark:hover:bg-dark-one_d dark:focus-visible:outline-dark-three'
 			: ''
 	);
 
@@ -88,8 +88,11 @@
 
 <div
 	class={cardClasses}
-	role={interactive ? 'button' : undefined}
-	tabindex={interactive && !disabled ? 0 : -1}
+	{...interactive && {
+		role: 'button',
+		tabindex: disabled ? -1 : 0,
+		'aria-disabled': disabled || undefined
+	}}
 	onclick={handleClick}
 	onkeydown={(e) => {
 		if (interactive && !disabled && (e.key === 'Enter' || e.key === ' ')) {
@@ -100,7 +103,7 @@
 	{...restProps}
 >
 	{#if header}
-		<div class="card-header mb-4 border-b border-gray-200 pb-4 dark:border-gray-700">
+		<div class="card-header mb-4 border-b border-light-four/40 pb-4 dark:border-dark-one_d">
 			{@render header()}
 		</div>
 	{/if}
@@ -110,7 +113,7 @@
 	</div>
 
 	{#if footer}
-		<div class="card-footer mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
+		<div class="card-footer mt-4 border-t border-light-four/40 pt-4 dark:border-dark-one_d">
 			{@render footer()}
 		</div>
 	{/if}

@@ -1,71 +1,15 @@
 import { resolveStaticRoute } from '#lib/utils/resolveRoute.ts';
-import {
-	ArrowsLeftRightIcon,
-	BriefcaseIcon,
-	FileDescriptionIcon,
-	GiftIcon,
-	HomeDotIcon,
-	SearchIcon,
-	SettingsIcon,
-	ShieldIcon,
-	ShoppingCartIcon,
-	SparklesIcon,
-	TagIcon,
-	TicketIcon,
-	TredingUpIcon,
-	UserIcon,
-	UsersIcon
-} from '#lib/icons/outline/index.ts';
-import type { ClientNavItem, NavItem, NavSection } from '#lib/interfaces/index.ts';
+import { HomeDotIcon, IdIcon, UserIcon, UsersIcon } from '#lib/icons/outline/index.ts';
+import type { NavItem, NavSection } from '#lib/interfaces/index.ts';
+import { Role } from './permissions.config';
 
 /** El href se resuelve desde la ruta: una sola fuente para el link y para el control de acceso */
 function navItem(item: Omit<NavItem, 'href'>): NavItem {
 	return { ...item, href: resolveStaticRoute(item.route) };
 }
 
-function clientNavItem(item: Omit<ClientNavItem, 'href'>): ClientNavItem {
-	return { ...item, href: resolveStaticRoute(item.route) };
-}
-
 /**
- * Navegación del área de clientes (/app): pestañas inferiores en móvil y barra superior en escritorio.
- * Las pestañas solo se muestran en estas páginas raíz; en las de detalle se ocultan (patrón de pila nativo).
- * El perfil no es pestaña: se abre desde el menú del avatar en la cabecera.
- */
-export const CLIENT_NAVIGATION: ClientNavItem[] = [
-	clientNavItem({
-		id: 'inicio',
-		label: 'Inicio',
-		shortLabel: 'Inicio',
-		route: '/app',
-		icon: HomeDotIcon,
-		exact: true
-	}),
-	clientNavItem({
-		id: 'explorar',
-		label: 'Explorar',
-		shortLabel: 'Explorar',
-		route: '/app/categorias',
-		icon: SearchIcon
-	}),
-	clientNavItem({
-		id: 'mis-canjes',
-		label: 'Mis canjes',
-		shortLabel: 'Canjes',
-		route: '/app/mis-canjes',
-		icon: GiftIcon
-	}),
-	clientNavItem({
-		id: 'mis-movimientos',
-		label: 'Mis movimientos',
-		shortLabel: 'Movimientos',
-		route: '/app/mis-movimientos',
-		icon: SparklesIcon
-	})
-];
-
-/**
- * Menú del panel de gestión (/panel), única fuente de verdad para el sidebar y el título del header.
+ * Menú del panel (/panel), única fuente de verdad para la navegación y el título de cada página.
  * Cada usuario ve solo los items que su rol puede abrir según `ROLE_ACCESS` (filterNavigation).
  */
 export const PANEL_NAVIGATION: NavSection[] = [
@@ -73,83 +17,31 @@ export const PANEL_NAVIGATION: NavSection[] = [
 		id: 'general',
 		label: 'General',
 		items: [
-			navItem({ id: 'inicio', label: 'Inicio', route: '/panel', icon: HomeDotIcon, exact: true })
+			navItem({ id: 'inicio', label: 'Inicio', route: '/panel', icon: HomeDotIcon, exact: true }),
+			navItem({ id: 'tarjetas', label: 'Tarjetas', route: '/panel/tarjetas', icon: IdIcon }),
+			navItem({ id: 'usuarios', label: 'Usuarios', route: '/panel/usuarios', icon: UsersIcon })
 		]
 	},
 	{
-		id: 'puntos',
-		label: 'Puntos',
+		id: 'mi-tarjeta',
+		label: 'Mi tarjeta',
 		items: [
-			navItem({
-				id: 'registrar-compra',
-				label: 'Registrar compra',
-				route: '/panel/registrar-compra',
-				icon: ShoppingCartIcon
-			}),
-			navItem({ id: 'canjes', label: 'Canjes', route: '/panel/canjes', icon: GiftIcon }),
-			navItem({
-				id: 'operaciones',
-				label: 'Operaciones',
-				route: '/panel/operaciones',
-				icon: ArrowsLeftRightIcon
-			}),
-			navItem({
-				id: 'movimientos',
-				label: 'Movimientos',
-				route: '/panel/movimientos',
-				icon: TredingUpIcon
-			}),
-			navItem({
-				id: 'configuracion-puntos',
-				label: 'Configuración de puntos',
-				route: '/panel/configuracion-puntos',
-				icon: SettingsIcon
-			})
-		]
-	},
-	{
-		id: 'catalogo',
-		label: 'Catálogo',
-		items: [
-			navItem({ id: 'vales', label: 'Vales', route: '/panel/vales', icon: TicketIcon }),
-			navItem({ id: 'categorias', label: 'Categorías', route: '/panel/categorias', icon: TagIcon })
-		]
-	},
-	{
-		id: 'gestion',
-		label: 'Gestión',
-		items: [
-			navItem({ id: 'clientes', label: 'Clientes', route: '/panel/clientes', icon: UsersIcon }),
-			// navItem({
-			// 	id: 'mis-sucursales',
-			// 	label: 'Mis sucursales',
-			// 	route: '/panel/mis-sucursales',
-			// 	icon: BuildindStoreIcon
-			// }),
-			navItem({ id: 'negocios', label: 'Negocios', route: '/panel/negocios', icon: BriefcaseIcon }),
-			navItem({
-				id: 'administradores',
-				label: 'Administradores',
-				route: '/panel/administradores',
-				icon: ShieldIcon
-			})
-		]
-	},
-	{
-		id: 'analisis',
-		label: 'Análisis',
-		items: [
-			navItem({
-				id: 'reportes',
-				label: 'Reportes',
-				route: '/panel/reportes',
-				icon: FileDescriptionIcon
-			})
+			navItem({ id: 'mi-tarjeta', label: 'Mi tarjeta', route: '/panel/mi-tarjeta', icon: IdIcon })
 		]
 	},
 	{
 		id: 'cuenta',
 		label: 'Cuenta',
-		items: [navItem({ id: 'perfil', label: 'Mi perfil', route: '/panel/perfil', icon: UserIcon })]
+		items: [navItem({ id: 'cuenta', label: 'Mi cuenta', route: '/panel/cuenta', icon: UserIcon })]
 	}
 ];
+
+/**
+ * Carcasa del panel por rol. El superadmin recorre varias áreas: menú lateral. El owner gestiona
+ * una sola cosa (su tarjeta): barra superior, para que el editor y su vista previa ocupen el ancho.
+ * `Record<Role, ...>` obliga a decidirlo para cualquier rol nuevo.
+ */
+export const PANEL_DISENO: Record<Role, 'lateral' | 'superior'> = {
+	[Role.SUPERADMIN]: 'lateral',
+	[Role.OWNER]: 'superior'
+};

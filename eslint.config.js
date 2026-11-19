@@ -36,6 +36,18 @@ export default defineConfig(
 	{
 		// Override or add rule settings here, such as:
 		// 'svelte/button-has-type': 'error'
-		rules: {}
+		rules: {
+			// `_` marca lo que se ignora a propósito: `{#each Array(3) as _}` o quitar campos con
+			// `const { password_hash: _hash, ...usuario } = fila`
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_',
+					caughtErrorsIgnorePattern: '^_',
+					ignoreRestSiblings: true
+				}
+			]
+		}
 	}
 );

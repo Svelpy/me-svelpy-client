@@ -1,40 +1,87 @@
 <script lang="ts">
-	import { slide } from 'svelte/transition';
-	import { cubicOut } from 'svelte/easing';
 	import type { HTMLTextareaAttributes } from 'svelte/elements';
+	import { cn } from '#lib/utils/cn.ts';
 
 	interface Props extends Omit<HTMLTextareaAttributes, 'children'> {
 		label?: string;
+		hint?: string;
 		error?: string;
+		/** Con `maxlength`, muestra "120/1500" junto a la etiqueta */
+		contador?: boolean;
+		value?: string | null;
 		class?: string;
-		value?: string | number | null | undefined;
 	}
 
-	let { class: className, label, error, value = $bindable(), ...restProps }: Props = $props();
+	let {
+		label,
+		hint,
+		error,
+		contador = false,
+		value = $bindable(),
+		class: className,
+		id: idPropio,
+		rows = 4,
+		...restProps
+	}: Props = $props();
+
+	const idAuto = $props.id();
+	const id = $derived(idPropio ?? idAuto);
+	const describedBy = $derived(
+		[hint && !error ? `${id}-hint` : null, error ? `${id}-error` : null]
+			.filter(Boolean)
+			.join(' ') || undefined
+	);
+	const largo = $derived((value ?? '').length);
 </script>
 
 <div class={className}>
-	<label
-		for={restProps.id}
-		class="mb-1 grid grid-cols-[auto,_1fr] items-center gap-0.5 text-sm leading-6 font-medium text-light-black sm:text-base"
-	>
-		<span class="truncate"
-			>{label} <span class="text-red-500">{restProps.required && '*'} </span></span
+	{#if label}
+		<label
+			for={id}
+			class="mb-1.5 flex items-baseline justify-between gap-3 text-sm font-medium text-light-two dark:text-dark-two"
 		>
-	</label>
-	<div class="relative">
-		<textarea
-			{...restProps}
-			bind:value
-			class="placeholder:text-light-five block w-full rounded-xl border bg-light-one px-4 py-2 text-sm {error
-				? 'border-light-error focus:ring-light-error'
-				: 'border-light-four'} text-light-black ring-light-two transition-all placeholder:text-xs hover:ring-1 hover:ring-light-two_d focus:ring-2 focus:ring-light-three sm:text-base sm:leading-6 placeholder:sm:text-sm"
-		></textarea>
-
-		{#if error}
-			<p transition:slide={{ duration: 300, easing: cubicOut }} class="mt-1 text-sm text-red-500">
-				{error}
-			</p>
-		{/if}
-	</div>
+			<span>
+				{label}
+				{#if restProps.required}<span
+						class="text-light-accent_d dark:text-dark-accent"
+						aria-hidden="true"
+					>
+						*
+					</span>{/if}
+			</span>
+			{#if contador && restProps.maxlength}
+				<span
+					class={[
+						'text-xs font-normal tabular-nums',
+						largo > Number(restProps.maxlength)
+							? 'text-light-error dark:text-dark-error'
+							: 'text-light-four_d dark:text-dark-four_d'
+					]}
+					aria-hidden="true"
+				>
+					{largo}/{restProps.maxlength}
+				</span>
+			{/if}
+		</label>
+	{/if}
+	<textarea
+		{...restProps}
+		{id}
+		{rows}
+		bind:value
+		aria-invalid={error ? true : undefined}
+		aria-describedby={describedBy}
+		class={cn(
+			'block w-full resize-y rounded-xl border border-light-four bg-light-one px-3.5 py-2.5 text-[0.9375rem] leading-relaxed text-light-two transition-[border-color,box-shadow] outline-none placeholder:text-light-four_d hover:border-light-four_d focus:border-light-three focus:ring-2 focus:ring-light-three/15 disabled:cursor-not-allowed disabled:opacity-70 dark:border-dark-four dark:bg-dark-one dark:text-dark-two dark:placeholder:text-dark-four_d dark:hover:border-dark-four_d dark:focus:border-dark-three dark:focus:ring-dark-three/25',
+			error &&
+				'border-light-error focus:border-light-error focus:ring-light-error/20 dark:border-dark-error'
+		)}></textarea>
+	{#if hint && !error}
+		<p id="{id}-hint" class="mt-1.5 text-xs text-light-two_d dark:text-dark-two_d">{hint}</p>
+	{/if}
+	{#if error}
+		<p id="{id}-error" class="mt-1.5 text-xs font-medium text-light-error dark:text-dark-error">
+			{error}
+		</p>
+	{/if}
 </div>

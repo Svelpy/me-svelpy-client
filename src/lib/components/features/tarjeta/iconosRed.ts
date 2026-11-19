@@ -1,0 +1,56 @@
+import type { Component } from 'svelte';
+import {
+	BrandBehanceIcon,
+	BrandBlueskyIcon,
+	BrandDiscordIcon,
+	BrandDribbbleIcon,
+	BrandGithubIcon,
+	BrandGitlabIcon,
+	BrandMediumIcon,
+	BrandPinterestIcon,
+	BrandSoundcloudIcon,
+	BrandSpotifyIcon,
+	BrandTelegramIcon,
+	BrandThreadsIcon,
+	BrandTwitchIcon,
+	BrandVimeoIcon,
+	BrandXIcon,
+	BrandYoutubeIcon,
+	CalendarEventIcon,
+	FacebookIcon,
+	InstagramIcon,
+	LinkIcon,
+	LinkedinIcon,
+	NewsIcon,
+	StethoscopeIcon,
+	TikTokIcon
+} from '#lib/icons/outline/index.ts';
+import type { RedSocial } from '#lib/interfaces/index.ts';
+
+/** Ícono de cada red (`red_social`); las que no tienen marca usan un ícono genérico */
+export const ICONOS_RED: Record<RedSocial, Component<{ class?: string }>> = {
+	facebook: FacebookIcon,
+	instagram: InstagramIcon,
+	tiktok: TikTokIcon,
+	x: BrandXIcon,
+	threads: BrandThreadsIcon,
+	bluesky: BrandBlueskyIcon,
+	pinterest: BrandPinterestIcon,
+	linkedin: LinkedinIcon,
+	youtube: BrandYoutubeIcon,
+	twitch: BrandTwitchIcon,
+	vimeo: BrandVimeoIcon,
+	spotify: BrandSpotifyIcon,
+	soundcloud: BrandSoundcloudIcon,
+	medium: BrandMediumIcon,
+	substack: NewsIcon,
+	github: BrandGithubIcon,
+	gitlab: BrandGitlabIcon,
+	behance: BrandBehanceIcon,
+	dribbble: BrandDribbbleIcon,
+	telegram: BrandTelegramIcon,
+	discord: BrandDiscordIcon,
+	calendly: CalendarEventIcon,
+	doctoralia: StethoscopeIcon,
+	otro: LinkIcon
+};

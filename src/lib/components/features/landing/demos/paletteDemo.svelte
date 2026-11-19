@@ -10,7 +10,8 @@
 	import { cn } from '#lib/utils/cn.ts';
 
 	interface Props {
-		temas: Record<TemaPreset, TemaTarjeta>;
+		/** Los temas que se ofrecen, en el orden en que se muestran */
+		temas: Partial<Record<TemaPreset, TemaTarjeta>>;
 		/** Texto bajo el selector. */
 		nota?: string;
 		class?: string;
@@ -18,9 +19,10 @@
 
 	let { temas, nota, class: className = '' }: Props = $props();
 
-	const presets = $derived(Object.keys(temas) as TemaPreset[]);
+	const presets = $derived(Object.entries(temas) as [TemaPreset, TemaTarjeta][]);
 	let seleccion = $state<TemaPreset>(untrack(() => Object.keys(temas)[0] as TemaPreset));
-	const tema = $derived(temas[seleccion]);
+	// `seleccion` siempre es una de las claves de `temas`
+	const tema = $derived(temas[seleccion]!);
 	const c = $derived(tema.colores);
 
 	const formas: Record<IconoForma, string> = {
@@ -137,8 +139,8 @@
 			Tema inicial: <span class="font-normal text-primary-600">{tema.nombre}</span>
 		</legend>
 		<div class="flex flex-wrap gap-2">
-			{#each presets as preset (preset)}
-				{@const t = temas[preset].colores}
+			{#each presets as [preset, opcion] (preset)}
+				{@const t = opcion.colores}
 				<label class="relative cursor-pointer">
 					<input
 						type="radio"
@@ -158,7 +160,7 @@
 							<span class="h-full w-1/3" style:background={t.color_primario}></span>
 							<span class="h-full w-1/3" style:background={t.color_destacado}></span>
 						</span>
-						{temas[preset].nombre}
+						{opcion.nombre}
 					</span>
 				</label>
 			{/each}

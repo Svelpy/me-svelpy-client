@@ -1,64 +1,69 @@
 <script lang="ts">
-	//modalConfirm.svelte
-	import { XIcon } from '#lib/icons/outline/index.ts';
-	import { AlertTriangleIcon } from '#lib/icons/solid/index.ts';
-	import BlurOverlay from './blurOverlay.svelte';
 	import Button from './button.svelte';
-	import Heading from './heading.svelte';
 
 	interface Props {
 		isOpen: boolean;
+		/** Pregunta concreta: "¿Eliminar el contacto 'Consultorio'?" */
+		title?: string;
+		/** Qué pasa si se confirma */
 		message: string;
+		/** El verbo de la acción: "Eliminar", "Desactivar" */
+		confirmLabel?: string;
+		cancelLabel?: string;
+		variant?: 'danger' | 'primary';
+		loading?: boolean;
 		onConfirm: () => void;
 		onCancel: () => void;
-		loading?: boolean;
 	}
 
-	let { isOpen, message, onConfirm, onCancel, loading = false }: Props = $props();
+	let {
+		isOpen,
+		title = '¿Confirmas esta acción?',
+		message,
+		confirmLabel = 'Confirmar',
+		cancelLabel = 'Cancelar',
+		variant = 'danger',
+		loading = false,
+		onConfirm,
+		onCancel
+	}: Props = $props();
+
+	const id = $props.id();
+	let dialog = $state<HTMLDialogElement>();
+
+	// <dialog> nativo: foco atrapado y Escape; el foco inicial queda en "Cancelar" (lo seguro)
+	$effect(() => {
+		if (!dialog) return;
+		if (isOpen && !dialog.open) dialog.showModal();
+		else if (!isOpen && dialog.open) dialog.close();
+	});
 </script>
 
-{#if isOpen}
-	<div
-		class="relative z-50"
-		role="presentation"
-		onclick={onCancel}
-		onkeydown={(event) => {
-			if (event.key === 'Escape') onCancel();
-		}}
-	>
-		<BlurOverlay class="overflow-y-auto rounded-md">
-			<div
-				class="relative mt-auto transform overflow-hidden rounded-lg bg-light-one px-4 pt-5 text-left shadow-xl transition-all sm:w-full sm:max-w-lg sm:p-6"
-				onclick={(e) => e.stopPropagation()}
-				role="presentation"
+<dialog
+	bind:this={dialog}
+	role="alertdialog"
+	aria-labelledby="{id}-titulo"
+	aria-describedby="{id}-mensaje"
+	oncancel={(event) => {
+		event.preventDefault();
+		if (!loading) onCancel();
+	}}
+	class="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border-0 bg-light-one p-0 text-light-two shadow-2xl backdrop:bg-light-black/50 backdrop:backdrop-blur-sm dark:bg-dark-one dark:text-dark-two dark:backdrop:bg-dark-black/60"
+>
+	<div class="p-6">
+		<h2 id="{id}-titulo" class="font-display text-lg leading-snug font-semibold">{title}</h2>
+		<p id="{id}-mensaje" class="mt-2 text-sm leading-relaxed text-light-two_d dark:text-dark-two_d">
+			{message}
+		</p>
+		<div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+			<Button variant="secondary" onclick={onCancel} disabled={loading}>{cancelLabel}</Button>
+			<Button
+				variant={variant === 'danger' ? 'destructive' : 'primary'}
+				{loading}
+				onclick={onConfirm}
 			>
-				<div class="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
-					<Button type="button" variant="ghost" onclick={() => onCancel()} aria-label="Cerrar">
-						{#snippet leftIcon()}
-							<XIcon class="size-6" />
-						{/snippet}
-					</Button>
-				</div>
-				<div class="sm:flex sm:items-start">
-					<div
-						class="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-light-one text-light-three sm:mx-0 sm:size-10 dark:bg-dark-one dark:text-dark-three"
-					>
-						<AlertTriangleIcon class="size-10" />
-					</div>
-					<div class="mt-3 text-center sm:mt-0 sm:ml-4">
-						<Heading level="h3">Confirmar acción</Heading>
-						<div class="mt-2">
-							<p class="mt-4 text-center">{message}</p>
-						</div>
-					</div>
-				</div>
-				<div class="mt-5 flex flex-col justify-end gap-4 sm:mt-4 sm:flex-row">
-					<Button type="button" onclick={() => onConfirm()} {loading} variant="primary"
-						>Confirmar</Button
-					>
-					<Button type="button" onclick={() => onCancel()} variant="secondary">Cancelar</Button>
-				</div>
-			</div>
-		</BlurOverlay>
+				{confirmLabel}
+			</Button>
+		</div>
 	</div>
-{/if}
+</dialog>

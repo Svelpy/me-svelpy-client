@@ -20,13 +20,17 @@ export function validateSchema<T>(schema: ZodType<T>, data: unknown): Validation
 	};
 }
 
+/**
+ * Primer mensaje por campo. Los campos anidados usan la ruta con puntos
+ * (horarios.2.hora_fin), igual que los details de la API.
+ */
 function formatZodErrors(error: ZodError): Record<string, string> {
 	const formatted: Record<string, string> = {};
 
 	for (const issue of error.issues) {
-		const field = issue.path[0];
-		if (field && !((field as string) in formatted)) {
-			formatted[field as string] = issue.message;
+		const field = issue.path.map(String).join('.');
+		if (field && !(field in formatted)) {
+			formatted[field] = issue.message;
 		}
 	}
 

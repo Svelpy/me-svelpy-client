@@ -44,11 +44,15 @@
 
 <div class={cn('relative h-full w-full overflow-hidden', containerClass)}>
 	{#if status === 'loading'}
-		<div class="bg-muted h-full w-full animate-pulse"></div>
+		<div
+			class="h-full w-full animate-pulse bg-light-one_d motion-reduce:animate-none dark:bg-dark-one_d"
+		></div>
 	{/if}
 
 	{#if status === 'error'}
-		<div class="bg-muted text-muted-foreground flex h-full w-full items-center justify-center">
+		<div
+			class="flex h-full w-full items-center justify-center bg-light-one_d text-light-four_d dark:bg-dark-one_d dark:text-dark-four_d"
+		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				width="24"

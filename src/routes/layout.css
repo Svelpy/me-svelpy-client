@@ -2,6 +2,9 @@
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 
+/* Modo oscuro por clase: `.dark` en <html> (lo aplican app.html antes del primer pintado y stores/temaUi.ts) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
 	--breakpoint-*: initial;
 	--breakpoint-sm: 640px;
@@ -16,9 +19,11 @@
 	--font-sans:
 		'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif; /* texto (regular) */
 	--font-mono:
-		'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; /* código, etiquetas */
+		'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; /* slugs, URLs y hex */
 
-	/* Primario — ciruela #2A182D */
+	/* Landing ------------------------------------------------------------------ */
+
+	/* Primario: ciruela #2A182D */
 	--color-primary-950: #1c0f1e; /* fondo de hero y footer */
 	--color-primary-900: #2a182d; /* PRIMARIO: titulares, bloques oscuros, botones oscuros */
 	--color-primary-800: #3b2540; /* superficies elevadas sobre oscuro */
@@ -31,7 +36,7 @@
 	--color-primary-100: #f2eef3; /* separadores */
 	--color-primary-50: #f9f7f9; /* fondos alternos */
 
-	/* Secundario — naranja #FF4724 */
+	/* Secundario: naranja #FF4724 */
 	--color-secondary: #ff4724; /* SECUNDARIO: CTAs, acentos, texto grande */
 	--color-secondary-600: #d9381a; /* texto naranja pequeño sobre blanco (AA) */
 	--color-secondary-400: #ff6b4d; /* hover */
@@ -40,6 +45,40 @@
 
 	/* Neutro */
 	--color-neutral: #ffffff;
+
+	/* Panel (superadmin y owner), login y errores -------------------------------
+	   Los componentes de ui/ usan estos nombres. Valores derivados de la marca: tinta ciruela y papel,
+	   con el naranja reservado al indicador activo y a la acción principal de cada pantalla.
+	   Cada token claro tiene su par oscuro con el mismo sufijo. Contrastes medidos sobre `one`. */
+	--color-light-one: #ffffff; /* papel: fondo y superficies */
+	--color-light-one_d: #f5f1f5; /* niebla: rellenos sutiles, hover, lienzo del espejo */
+	--color-light-two: #2a182d; /* tinta: texto principal (16.6:1) */
+	--color-light-two_d: #66506b; /* texto secundario (7.2:1) */
+	--color-light-three: #2a182d; /* marca: sidebar, botón primario, selección */
+	--color-light-three_d: #1c0f1e;
+	--color-light-four: #9e8ba2; /* bordes de controles (3.1:1); divisores al 40 % */
+	--color-light-four_d: #7a667e; /* texto atenuado y placeholders (5.2:1) */
+	--color-light-accent: #ff4724; /* naranja: indicador activo y acción principal (texto encima: ciruela) */
+	--color-light-accent_d: #d9381a; /* naranja como texto (4.6:1) */
+	--color-light-error: #d92d3a;
+	--color-light-success: #16a34a;
+	--color-light-warning: #f59e0b;
+	--color-light-black: #1c0f1e; /* velos de diálogos */
+
+	--color-dark-one: #160c18; /* noche ciruela */
+	--color-dark-one_d: #261829;
+	--color-dark-two: #f7f2f7; /* (17.3:1) */
+	--color-dark-two_d: #cdbfd0; /* (10.9:1) */
+	--color-dark-three: #e2c8e7; /* orquídea: foco y selección */
+	--color-dark-three_d: #f0e1f2;
+	--color-dark-four: #8a788e; /* bordes y texto atenuado (4.7:1) */
+	--color-dark-four_d: #a898ac; /* (7.1:1) */
+	--color-dark-accent: #ff6b4d;
+	--color-dark-accent_d: #ff8a70;
+	--color-dark-error: #fa3842;
+	--color-dark-success: #22c55e;
+	--color-dark-warning: #f59e0b;
+	--color-dark-black: #000000;
 
 	--animate-float: float 6s ease-in-out infinite;
 	--animate-blink: blink 1.1s steps(2, start) infinite;
@@ -73,12 +112,47 @@
 	}
 }
 
+/* Tarjeta pública: paleta y fuentes de cada profesional -------------------------
+   `tarjetaVista` define las variables --t-* con los colores de `tarjeta_theme` y el par de
+   `tipografiasTarjeta.config.ts`; estas utilidades (bg-t-fondo, text-t-titulo, font-t-titulos…)
+   las leen, así los componentes de features/tarjeta no dependen de la paleta del panel. */
+@theme inline {
+	--color-t-fondo: var(--t-fondo);
+	--color-t-superficie: var(--t-superficie);
+	--color-t-borde: var(--t-borde);
+	--color-t-titulo: var(--t-titulo);
+	--color-t-texto: var(--t-texto);
+	--color-t-texto-sec: var(--t-texto-sec);
+	--color-t-primario: var(--t-primario);
+	--color-t-sobre-primario: var(--t-sobre-primario);
+	--color-t-secundario: var(--t-secundario);
+	--color-t-sobre-secundario: var(--t-sobre-secundario);
+	--color-t-overlay: var(--t-overlay);
+	--color-t-precio: var(--t-precio);
+	--color-t-destacado: var(--t-destacado);
+	--color-t-sobre-destacado: var(--t-sobre-destacado);
+	--color-t-icono: var(--t-icono);
+	--color-t-fondo-icono: var(--t-fondo-icono);
+	--color-t-icono-social: var(--t-icono-social);
+	--color-t-fondo-icono-social: var(--t-fondo-icono-social);
+	--color-t-fab: var(--t-fab);
+	--color-t-fab-icono: var(--t-fab-icono);
+	--font-t-titulos: var(--t-fuente-titulos);
+	--font-t-texto: var(--t-fuente-texto);
+}
+
 @layer base {
 	html {
 		scroll-behavior: smooth;
 		scroll-padding-top: 5rem;
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		html {
+			scroll-behavior: auto;
+		}
 	}
 
 	html {
@@ -91,6 +165,24 @@
 		--scrollbar-track: var(--color-primary-950);
 		--scrollbar-thumb: var(--color-primary-700);
 		--scrollbar-thumb-hover: var(--color-primary-600);
+	}
+
+	/* Áreas de la app (panel, login, errores): esquema de color y scrollbar según el modo elegido.
+	   La landing no tiene `data-area`, así que conserva lo de arriba. */
+	html:has([data-area='app']) {
+		color-scheme: light;
+		background-color: var(--color-light-one);
+		--scrollbar-track: var(--color-light-one_d);
+		--scrollbar-thumb: var(--color-light-four);
+		--scrollbar-thumb-hover: var(--color-light-four_d);
+	}
+
+	html.dark:has([data-area='app']) {
+		color-scheme: dark;
+		background-color: var(--color-dark-one);
+		--scrollbar-track: var(--color-dark-one);
+		--scrollbar-thumb: var(--color-dark-one_d);
+		--scrollbar-thumb-hover: var(--color-dark-four);
 	}
 
 	/* Chromium / Safari: permite el thumb redondeado y separado del borde */

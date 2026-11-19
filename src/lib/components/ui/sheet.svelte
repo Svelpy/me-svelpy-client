@@ -14,6 +14,8 @@
 		children: Snippet;
 		/** Acciones fijas al pie (no se desplazan con el contenido) */
 		footer?: Snippet;
+		/** Ancho en escritorio: md (formularios cortos), lg y xl (formularios con varias columnas) */
+		size?: 'md' | 'lg' | 'xl';
 	}
 
 	let {
@@ -24,8 +26,11 @@
 		dismissible = true,
 		hideTitle = false,
 		children,
-		footer
+		footer,
+		size = 'md'
 	}: Props = $props();
+
+	const anchos = { md: 'md:max-w-lg', lg: 'md:max-w-2xl', xl: 'md:max-w-3xl' } as const;
 
 	const id = $props.id();
 	let dialog = $state<HTMLDialogElement>();
@@ -69,7 +74,10 @@
 	aria-describedby={description ? `${id}-description` : undefined}
 	oncancel={handleCancel}
 	onclick={handleBackdropClick}
-	class="m-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-hidden rounded-t-3xl border-0 bg-light-one p-0 text-light-two shadow-2xl transition-[translate,opacity] duration-300 ease-out backdrop:bg-light-black/50 backdrop:backdrop-blur-sm motion-reduce:transition-none md:m-auto md:max-h-[85dvh] md:max-w-lg md:rounded-3xl dark:bg-dark-one dark:text-dark-two dark:backdrop:bg-dark-black/50 starting:translate-y-full md:starting:translate-y-4 md:starting:opacity-0"
+	class={[
+		'm-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-hidden rounded-t-3xl border-0 bg-light-one p-0 text-light-two shadow-2xl transition-[translate,opacity] duration-300 ease-out backdrop:bg-light-black/50 backdrop:backdrop-blur-sm motion-reduce:transition-none md:m-auto md:max-h-[85dvh] md:rounded-3xl dark:bg-dark-one dark:text-dark-two dark:backdrop:bg-dark-black/60 starting:translate-y-full md:starting:translate-y-4 md:starting:opacity-0',
+		anchos[size]
+	]}
 >
 	<div class="flex max-h-[inherit] flex-col">
 		<!-- Asa: indica que es una hoja (solo móvil) -->
@@ -84,7 +92,7 @@
 					id="{id}-title"
 					class={hideTitle
 						? 'sr-only'
-						: 'text-lg font-bold text-light-two md:text-xl dark:text-dark-two'}
+						: 'font-display text-lg font-semibold text-light-two md:text-xl dark:text-dark-two'}
 				>
 					{title}
 				</h2>

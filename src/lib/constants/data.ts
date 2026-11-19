@@ -1,8 +1,12 @@
 import type { Role } from '#lib/config/permissions.config.ts';
-import type { CanjeStatus } from '#lib/interfaces/canje.interface.ts';
-import type { MovimientoTipo } from '#lib/interfaces/movimiento.interface.ts';
-import type { NegocioTipo } from '#lib/interfaces/negocio.interface.ts';
-import type { NivelCliente } from '#lib/interfaces/resumen.interface.ts';
+import type {
+	ContactoTipo,
+	DiaSemana,
+	FabPosicion,
+	IconoForma,
+	NombreEmpresaPosicion,
+	RedSocial
+} from '#lib/interfaces/index.ts';
 
 export const NO_DATA_LABEL = '—';
 
@@ -14,69 +18,129 @@ export const PAGINATION = {
 	PER_PAGE_OPTIONS: [10, 20, 50, 100]
 } as const;
 
-export const NEGOCIO_TIPO_LABEL: Record<NegocioTipo, string> = {
-	MAIN: 'Principal',
-	SOCIO: 'Socio'
-};
-
-/** Etiquetas de estado de canje (valores que devuelve la API) */
-export const CANJE_STATUS_LABEL: Record<CanjeStatus, string> = {
-	PENDIENTE: 'Pendiente',
-	CANJEADO: 'Canjeado',
-	EXPIRADO: 'Expirado',
-	CANCELADO: 'Cancelado'
-};
-
-/** Etiquetas de tipo de movimiento de puntos (valores que devuelve la API) */
-export const MOVIMIENTO_TIPO_LABEL: Record<MovimientoTipo, string> = {
-	ACUMULA: 'Acumulación',
-	CANJE: 'Canje',
-	AJUSTE: 'Ajuste'
-};
-
 /** Etiquetas de rol de usuario (valores que devuelve la API) */
 export const ROLE_LABEL: Record<Role, string> = {
 	SUPERADMIN: 'Superadministrador',
-	OWNER: 'Propietario',
-	ADMIN: 'Administrador',
-	CAJERO: 'Cajero',
-	SOCIO: 'Socio',
-	CLIENTE: 'Cliente'
+	OWNER: 'Propietario'
 };
 
-/** Etiquetas de rol en plural (p. ej. pestañas de Administradores) */
-export const ROLE_PLURAL_LABEL: Record<Role, string> = {
-	SUPERADMIN: 'Superadministradores',
-	OWNER: 'Propietarios',
-	ADMIN: 'Administradores',
-	CAJERO: 'Cajeros',
-	SOCIO: 'Socios',
-	CLIENTE: 'Clientes'
+export const CONTACTO_TIPO_LABEL: Record<ContactoTipo, string> = {
+	phone: 'Teléfono',
+	email: 'Correo',
+	website: 'Sitio web'
 };
 
-/** Etiquetas de género de usuario (valores que acepta la API) */
-export const USER_GENERO_LABEL: Record<'M' | 'F' | 'O', string> = {
-	M: 'Masculino',
-	F: 'Femenino',
-	O: 'Otro'
+/** Nombre visible de cada red (enum `red_social`), en el orden en que se ofrecen */
+export const RED_SOCIAL_LABEL: Record<RedSocial, string> = {
+	instagram: 'Instagram',
+	facebook: 'Facebook',
+	tiktok: 'TikTok',
+	linkedin: 'LinkedIn',
+	youtube: 'YouTube',
+	x: 'X',
+	threads: 'Threads',
+	bluesky: 'Bluesky',
+	pinterest: 'Pinterest',
+	twitch: 'Twitch',
+	vimeo: 'Vimeo',
+	spotify: 'Spotify',
+	soundcloud: 'SoundCloud',
+	medium: 'Medium',
+	substack: 'Substack',
+	github: 'GitHub',
+	gitlab: 'GitLab',
+	behance: 'Behance',
+	dribbble: 'Dribbble',
+	telegram: 'Telegram',
+	discord: 'Discord',
+	calendly: 'Calendly',
+	doctoralia: 'Doctoralia',
+	otro: 'Otro enlace'
 };
 
-/** Etiquetas de nivel del cliente (valores que devuelve la API). Su insignia es `NivelIcon` */
-export const NIVEL_CLIENTE_LABEL: Record<NivelCliente, string> = {
-	BRONCE: 'Bronce',
-	PLATA: 'Plata',
-	ORO: 'Oro',
-	DIAMANTE: 'Diamante'
+export const REDES_SOCIALES = Object.keys(RED_SOCIAL_LABEL) as RedSocial[];
+
+/** Redes que sirven para agendar: en la tarjeta se muestran como botón "Agendar cita" */
+export const REDES_AGENDA: readonly RedSocial[] = ['calendly', 'doctoralia'];
+
+export const DIA_SEMANA_LABEL: Record<DiaSemana, string> = {
+	1: 'Lunes',
+	2: 'Martes',
+	3: 'Miércoles',
+	4: 'Jueves',
+	5: 'Viernes',
+	6: 'Sábado',
+	7: 'Domingo'
 };
 
-/** Días que tiene el cliente para presentar su código desde que canjea (lo fija el backend) */
-export const CANJE_VIGENCIA_DIAS = 30;
+export const DIA_SEMANA_CORTO: Record<DiaSemana, string> = {
+	1: 'Lun',
+	2: 'Mar',
+	3: 'Mié',
+	4: 'Jue',
+	5: 'Vie',
+	6: 'Sáb',
+	7: 'Dom'
+};
 
-/** Referencia que se guarda en los canjes solicitados desde el área de clientes */
-export const CANJE_REFERENCIA_APP = 'Solicitud desde la aplicación';
+export const DIAS_SEMANA: DiaSemana[] = [1, 2, 3, 4, 5, 6, 7];
 
-/** Edad mínima para registrarse en el programa (Términos y condiciones, punto 2) */
-export const EDAD_MINIMA_REGISTRO = 18;
+export const NOMBRE_EMPRESA_POSICION_LABEL: Record<NombreEmpresaPosicion, string> = {
+	arriba: 'En la portada',
+	abajo: 'Bajo el cargo',
+	izquierda: 'Insignia a la izquierda',
+	derecha: 'Insignia a la derecha',
+	oculto: 'No mostrar'
+};
+
+export const ICONO_FORMA_LABEL: Record<IconoForma, string> = {
+	circulo: 'Círculo',
+	redondeado: 'Redondeado',
+	cuadrado: 'Cuadrado',
+	ninguno: 'Sin fondo'
+};
+
+export const FAB_POSICION_LABEL: Record<FabPosicion, string> = {
+	derecha: 'Derecha',
+	izquierda: 'Izquierda'
+};
+
+/** Monedas de la vitrina (ISO 4217) */
+export const MONEDAS = [
+	{ codigo: 'BOB', nombre: 'Boliviano (Bs)' },
+	{ codigo: 'USD', nombre: 'Dólar estadounidense' },
+	{ codigo: 'PEN', nombre: 'Sol peruano' },
+	{ codigo: 'ARS', nombre: 'Peso argentino' },
+	{ codigo: 'CLP', nombre: 'Peso chileno' },
+	{ codigo: 'COP', nombre: 'Peso colombiano' },
+	{ codigo: 'MXN', nombre: 'Peso mexicano' },
+	{ codigo: 'PYG', nombre: 'Guaraní paraguayo' },
+	{ codigo: 'UYU', nombre: 'Peso uruguayo' },
+	{ codigo: 'BRL', nombre: 'Real brasileño' },
+	{ codigo: 'EUR', nombre: 'Euro' }
+] as const;
+
+export const MONEDA_POR_DEFECTO = 'BOB';
+
+/** Sugerencias para `tarjeta_ubicacion.departamento` (el campo es libre) */
+export const DEPARTAMENTOS_BOLIVIA = [
+	'Santa Cruz',
+	'La Paz',
+	'Cochabamba',
+	'Chuquisaca',
+	'Tarija',
+	'Oruro',
+	'Potosí',
+	'Beni',
+	'Pando'
+] as const;
+
+export const PAIS_POR_DEFECTO = 'Bolivia';
+
+/** Código de país que se antepone a los números locales en los enlaces de WhatsApp */
+export const CODIGO_PAIS_POR_DEFECTO = '591';
+
+export const PREFIJOS_SUGERIDOS = ['Dr.', 'Dra.', 'Lic.', 'Ing.', 'Arq.', 'Abg.', 'MSc.', 'Prof.'];
 
 /** Páginas legales públicas: se enlazan desde la landing, el login, el registro y entre sí */
 export const LEGAL_PAGES = [

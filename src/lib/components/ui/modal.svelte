@@ -1,9 +1,6 @@
 <script lang="ts">
-	import { XIcon } from '#lib/icons/outline/index.ts';
-	import BlurOverlay from './blurOverlay.svelte';
-	import Button from './button.svelte';
-	import Heading from './heading.svelte';
 	import type { Snippet } from 'svelte';
+	import Sheet from './sheet.svelte';
 
 	interface Props {
 		isOpen: boolean;
@@ -11,53 +8,25 @@
 		onClose: () => void;
 		children: Snippet;
 		footer?: Snippet;
-		maxWidth?: string;
+		description?: string;
+		size?: 'md' | 'lg' | 'xl';
+		/** false mientras se guarda: no se cierra con Escape ni el fondo */
+		dismissible?: boolean;
 	}
 
-	let { isOpen, title, onClose, children, footer, maxWidth = 'sm:max-w-2xl' }: Props = $props();
-
-	function handleKeydown(event: KeyboardEvent) {
-		if (event.key === 'Escape') onClose();
-	}
+	let {
+		isOpen,
+		title,
+		onClose,
+		children,
+		footer,
+		description,
+		size = 'lg',
+		dismissible = true
+	}: Props = $props();
 </script>
 
-{#if isOpen}
-	<div
-		class="relative z-50"
-		role="presentation"
-		onclick={(event) => {
-			event.stopPropagation();
-		}}
-		onkeydown={handleKeydown}
-	>
-		<BlurOverlay class="overflow-y-auto rounded-md">
-			<div
-				class="relative my-8 w-full transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all {maxWidth} flex max-h-[90vh] flex-col"
-				onclick={(e) => e.stopPropagation()}
-				role="presentation"
-			>
-				<!-- Header -->
-				<div class="flex items-center justify-between border-b border-light-four px-6 py-4">
-					<Heading level="h4" class="text-light-black">{title}</Heading>
-					<Button type="button" variant="ghost" onclick={onClose} class="p-2!" aria-label="Cerrar">
-						{#snippet leftIcon()}
-							<XIcon class="size-6 text-light-two hover:text-light-black" />
-						{/snippet}
-					</Button>
-				</div>
-
-				<!-- Content -->
-				<div class="flex-1 overflow-y-auto p-6">
-					{@render children()}
-				</div>
-
-				<!-- Footer -->
-				{#if footer}
-					<div class="border-t border-light-four bg-light-one_d px-6 py-4">
-						{@render footer()}
-					</div>
-				{/if}
-			</div>
-		</BlurOverlay>
-	</div>
-{/if}
+<!-- Diálogo de formularios: hoja inferior en móvil y centrado en escritorio (ver Sheet) -->
+<Sheet open={isOpen} {title} {description} {onClose} {footer} {size} {dismissible}>
+	{@render children()}
+</Sheet>

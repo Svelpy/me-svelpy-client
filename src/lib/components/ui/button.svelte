@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { LoaderIcon } from '#lib/icons/outline/index.ts';
 	import type { Snippet } from 'svelte';
-	import type { HTMLButtonAttributes, HTMLAnchorAttributes } from 'svelte/elements';
+	import type { HTMLAnchorAttributes, HTMLButtonAttributes } from 'svelte/elements';
+	import { cn } from '#lib/utils/cn.ts';
 
 	type ButtonVariant =
 		'primary' | 'secondary' | 'accent' | 'outline' | 'ghost' | 'destructive' | 'link' | 'danger';
@@ -9,6 +10,10 @@
 
 	interface Props {
 		children?: Snippet;
+		/**
+		 * primary = tinta (acciones normales); accent = naranja, solo para LA acción principal de la
+		 * pantalla; secondary/outline = con borde; ghost = sin fondo; destructive = eliminar.
+		 */
 		variant?: ButtonVariant;
 		size?: ButtonSize;
 		disabled?: boolean;
@@ -22,7 +27,7 @@
 		rel?: HTMLAnchorAttributes['rel'];
 		type?: HTMLButtonAttributes['type'];
 		onclick?: (event: MouseEvent) => void;
-		[key: string]: any;
+		[key: string]: unknown;
 	}
 
 	let {
@@ -43,75 +48,60 @@
 		...restProps
 	}: Props = $props();
 
-	const styles = {
-		base: [
-			'relative',
-			'inline-flex items-center justify-center',
-			'font-medium select-none',
-			'transition-all duration-200 ease-out',
-			'focus:outline-none focus:ring-2 focus:ring-offset-2',
-			'disabled:opacity-50 disabled:cursor-not-allowed',
-			'active:scale-95 transform-gpu',
-			'touch-manipulation'
-		].join(' '),
+	const base =
+		'relative inline-flex items-center justify-center font-semibold whitespace-nowrap select-none transition-[background-color,border-color,color,transform] duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-light-three active:scale-[0.98] motion-reduce:transform-none touch-manipulation aria-disabled:cursor-not-allowed aria-disabled:opacity-50 dark:focus-visible:outline-dark-three';
 
-		variants: {
-			primary:
-				'bg-light-two text-light-one hover:bg-light-two_d active:bg-light-two_d focus:ring-light-two shadow-md hover:shadow-lg',
-			secondary:
-				'bg-light-one border border-light-two text-light-two hover:bg-light-one_d active:bg-light-one_d focus:ring-light-two shadow-sm',
-			accent:
-				'bg-light-accent text-light-one hover:bg-light-accent/90 active:bg-light-accent_d focus:ring-light-accent shadow-md hover:shadow-lg',
-			outline:
-				'bg-transparent text-light-two border border-light-four active:bg-light-one_d focus:ring-light-four_d',
-			ghost:
-				'bg-transparent text-light-two hover:bg-light-one_d active:bg-light-one_d focus:ring-light-four_d',
-			destructive:
-				'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 focus:ring-red-500 shadow-md hover:shadow-lg',
-			danger:
-				'bg-red-500 text-white hover:bg-red-600 active:bg-red-700 focus:ring-red-500 shadow-md hover:shadow-lg',
-			link: 'bg-transparent text-light-two p-0 hover:text-light-two_d hover:underline focus:ring-light-two_d underline-offset-4'
-		},
+	const destructivo =
+		'bg-light-error text-white hover:bg-[color-mix(in_oklab,var(--color-light-error)_86%,black)] dark:bg-dark-error dark:text-dark-one dark:hover:bg-[color-mix(in_oklab,var(--color-dark-error)_88%,white)]';
 
-		sizes: {
-			xs: 'px-1.5 py-1 text-xs min-h-[32px] gap-1.5 rounded-md',
-			sm: 'px-3 py-2 text-sm min-h-[36px] gap-2 rounded-md',
-			md: 'px-4 py-2.5 text-base min-h-[44px] gap-2 rounded-lg',
-			lg: 'px-6 py-3 text-lg min-h-[52px] gap-2.5 rounded-lg',
-			xl: 'px-8 py-4 text-xl min-h-[60px] gap-3 rounded-xl'
-		},
+	const variants: Record<ButtonVariant, string> = {
+		primary:
+			'bg-light-three text-light-one hover:bg-light-three_d dark:bg-dark-three dark:text-dark-one dark:hover:bg-dark-three_d',
+		accent:
+			'bg-light-accent text-light-black hover:bg-[color-mix(in_oklab,var(--color-light-accent)_82%,white)] dark:bg-dark-accent dark:text-dark-one dark:hover:bg-dark-accent_d',
+		secondary:
+			'border border-light-four bg-light-one text-light-two hover:bg-light-one_d dark:border-dark-four dark:bg-dark-one dark:text-dark-two dark:hover:bg-dark-one_d',
+		outline:
+			'border border-light-four text-light-two hover:bg-light-one_d dark:border-dark-four dark:text-dark-two dark:hover:bg-dark-one_d',
+		ghost: 'text-light-two hover:bg-light-one_d dark:text-dark-two dark:hover:bg-dark-one_d',
+		destructive: destructivo,
+		danger: destructivo,
+		link: 'text-light-two underline decoration-light-four underline-offset-4 hover:decoration-light-two dark:text-dark-two dark:decoration-dark-four dark:hover:decoration-dark-two'
+	};
 
-		iconSizes: {
-			xs: 'p-1.5 text-xs min-h-[32px] rounded-md',
-			sm: 'p-2 text-sm min-h-[36px] rounded-md',
-			md: 'p-2.5 text-base min-h-[44px] rounded-lg',
-			lg: 'p-3 text-lg min-h-[52px] rounded-lg',
-			xl: 'p-4 text-xl min-h-[60px] rounded-xl'
-		}
-	} as const;
+	const sizes: Record<ButtonSize, string> = {
+		xs: 'h-8 gap-1.5 rounded-lg px-2.5 text-xs',
+		sm: 'h-9 gap-2 rounded-xl px-3 text-sm',
+		md: 'h-11 gap-2 rounded-xl px-4 text-sm',
+		lg: 'h-12 gap-2.5 rounded-xl px-5 text-base',
+		xl: 'h-14 gap-3 rounded-2xl px-6 text-base'
+	};
 
-	const isLink = $derived(!!href);
+	const iconSizes: Record<ButtonSize, string> = {
+		xs: 'size-8 rounded-lg',
+		sm: 'size-9 rounded-xl',
+		md: 'size-11 rounded-xl',
+		lg: 'size-12 rounded-xl',
+		xl: 'size-14 rounded-2xl'
+	};
+
 	const isDisabled = $derived(disabled || loading);
 	const isIconOnly = $derived(!children && (!!leftIcon || !!rightIcon));
 
 	$effect(() => {
 		if (isIconOnly && !restProps['aria-label']) {
-			console.warn(
-				`Accesibility Warning: An icon-only button should have an 'aria-label' prop to be accessible to screen readers.`
-			);
+			console.warn('Un botón solo con ícono necesita `aria-label` para los lectores de pantalla.');
 		}
 	});
 
 	const buttonClasses = $derived(
-		[
-			styles.base,
-			styles.variants[variant],
-			isIconOnly ? styles.iconSizes[size] : styles.sizes[size],
+		cn(
+			base,
+			variants[variant],
+			variant === 'link' ? 'h-auto px-0' : isIconOnly ? iconSizes[size] : sizes[size],
 			fullWidth && 'w-full',
 			className
-		]
-			.filter(Boolean)
-			.join(' ')
+		)
 	);
 
 	function handleClick(event: MouseEvent) {
@@ -122,54 +112,51 @@
 		}
 		onclick?.(event);
 	}
-
-	const commonProps = $derived({
-		class: buttonClasses,
-		'aria-disabled': isDisabled,
-		'aria-busy': loading,
-		tabindex: isDisabled ? -1 : undefined
-	});
 </script>
 
-{#if isLink}
+{#if href}
 	<a
-		{...commonProps}
+		{...restProps}
 		href={isDisabled ? undefined : href}
 		{target}
 		{rel}
-		role="button"
+		class={buttonClasses}
+		aria-disabled={isDisabled || undefined}
+		aria-busy={loading || undefined}
 		onclick={handleClick}
-		{...restProps}
 	>
 		{@render buttonContent()}
 	</a>
 {:else}
-	<button {...commonProps} {type} disabled={isDisabled} onclick={handleClick} {...restProps}>
+	<button
+		{...restProps}
+		{type}
+		class={buttonClasses}
+		aria-disabled={isDisabled || undefined}
+		aria-busy={loading || undefined}
+		onclick={handleClick}
+	>
 		{@render buttonContent()}
 	</button>
 {/if}
 
 {#snippet buttonContent()}
 	{#if loading}
-		<span class="absolute inset-0 flex items-center justify-center" aria-label="Cargando...">
-			<LoaderIcon class="h-5 w-5 animate-spin" />
+		<span class="absolute inset-0 flex items-center justify-center">
+			<LoaderIcon class="size-5 animate-spin motion-reduce:animate-none" />
+			<span class="sr-only">Procesando</span>
 		</span>
 	{/if}
-
 	{#if leftIcon}
-		<span aria-hidden="true" class:invisible={loading}>
+		<span aria-hidden="true" class={['inline-flex', loading && 'invisible']}>
 			{@render leftIcon()}
 		</span>
 	{/if}
-
 	{#if children}
-		<span class:invisible={loading}>
-			{@render children()}
-		</span>
+		<span class={loading ? 'invisible' : ''}>{@render children()}</span>
 	{/if}
-
 	{#if rightIcon}
-		<span aria-hidden="true" class:invisible={loading}>
+		<span aria-hidden="true" class={['inline-flex', loading && 'invisible']}>
 			{@render rightIcon()}
 		</span>
 	{/if}

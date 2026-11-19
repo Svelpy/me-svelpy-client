@@ -4,6 +4,7 @@ import type { Role } from '#lib/config/permissions.config.ts';
 import { authStore } from '#lib/stores/index.ts';
 import { canAccessRoute, getHomeRoute, isRole } from './rbac.utils';
 import { resolveStaticRoute } from './resolveRoute';
+import { signInUrl } from './signInReason';
 
 type GuardEvent = Pick<LoadEvent, 'route' | 'url' | 'untrack'>;
 
@@ -23,13 +24,13 @@ export async function guardRoute({ route, url, untrack }: GuardEvent): Promise<R
 	if (!session) {
 		// untrack: cambiar solo los query params (?page=2) no debe volver a ejecutar el guard
 		const redirectTo = untrack(() => url.pathname + url.search);
-		redirect(307, `${resolve('/auth/sign-in')}?redirectTo=${encodeURIComponent(redirectTo)}`);
+		redirect(307, signInUrl({ reason: 'protegida', redirectTo }));
 	}
 
-	const role = session.user.role;
+	const role = session.user.rol;
 	if (!isRole(role)) {
 		// Rol que el frontend no conoce: se deniega todo
-		authStore.logout();
+		await authStore.logout();
 		redirect(307, resolve('/auth/sign-in'));
 	}
 

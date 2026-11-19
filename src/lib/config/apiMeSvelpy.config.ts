@@ -2,7 +2,7 @@ import { ErrorCode } from '#lib/interfaces/index.ts';
 import { AppError, authService, errorService } from '#lib/services/index.ts';
 import { API_CONFIG, defaultHeaders } from './api.config';
 
-interface RequestOptions {
+export interface RequestOptions {
 	requireAuth?: boolean;
 	customHeaders?: HeadersInit;
 	// Enviar/recibir cookies (p. ej. refresh_token HttpOnly)
@@ -11,7 +11,7 @@ interface RequestOptions {
 	timeout?: number;
 }
 
-class ApiFidelityTupa {
+class ApiMeSvelpy {
 	// Token a enviar en la petición. Por defecto requiere auth (se envía si existe)
 	private resolveToken(options: RequestOptions): string | null {
 		if (options.requireAuth === false) return null;
@@ -151,4 +151,10 @@ class ApiFidelityTupa {
 	}
 }
 
-export const apiFidelityTupa = new ApiFidelityTupa();
+export const apiMeSvelpy = new ApiMeSvelpy();
+
+/** Lo que usan los servicios: el cliente real o el de los datos de prueba (`src/lib/mocks`) */
+export type HttpClient = Pick<
+	ApiMeSvelpy,
+	'get' | 'getBlob' | 'post' | 'put' | 'patch' | 'delete' | 'getPublic' | 'postPublic'
+>;

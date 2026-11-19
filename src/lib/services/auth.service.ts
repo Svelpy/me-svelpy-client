@@ -1,11 +1,10 @@
-import { apiMeSvelpy } from '#lib/config/index.ts';
+import { http } from '#lib/config/http.config.ts';
 import type {
 	AuthTokens,
+	CambiarPasswordRequest,
 	CurrentUser,
 	LoginCredentials,
-	LoginResponse,
-	RegisterRequest,
-	RegisterResponse
+	LoginResponse
 } from '#lib/interfaces/index.ts';
 import { ErrorCode } from '#lib/interfaces/index.ts';
 import {
@@ -48,6 +47,7 @@ class AuthService {
 		}
 	}
 
+	/** Usuario de la sesión y el resumen de su tarjeta, guardados en localStorage */
 	getCurrentUser(): CurrentUser | null {
 		try {
 			if (typeof localStorage === 'undefined') return null;
@@ -85,14 +85,14 @@ class AuthService {
 
 	async login(credentials: LoginCredentials): Promise<LoginResponse> {
 		try {
-			// El endpoint espera application/x-www-form-urlencoded (OAuth2 password flow)
+			// OAuth2 password flow (application/x-www-form-urlencoded): el correo va en `username`
 			const body = new URLSearchParams({
 				grant_type: 'password',
-				username: credentials.username,
+				username: credentials.email.trim().toLowerCase(),
 				password: credentials.password
 			});
 
-			const response = await apiMeSvelpy.postPublic<LoginResponse>('/auth/login', body, {
+			const response = await http.postPublic<LoginResponse>('/auth/login', body, {
 				withCredentials: true
 			});
 
@@ -101,7 +101,7 @@ class AuthService {
 				csrfToken: response.csrf_token
 			});
 
-			// Obtener la información completa del usuario inmediatamente después del login
+			// La información completa del usuario se pide justo después del login
 			await this.getMe();
 
 			return response;
@@ -111,31 +111,29 @@ class AuthService {
 		}
 	}
 
+	/** `GET /users/me`: el usuario y el resumen de su tarjeta */
 	async getMe(): Promise<CurrentUser> {
-		const currentUser = await apiMeSvelpy.get<CurrentUser>('/users/me', { requireAuth: true });
+		const currentUser = await http.get<CurrentUser>('/users/me', { requireAuth: true });
 		this.setCurrentUser(currentUser);
 		return currentUser;
 	}
 
-	async register(data: RegisterRequest): Promise<RegisterResponse> {
-		return apiMeSvelpy.postPublic<RegisterResponse>('/auth/register', data);
+	/** `PATCH /users/me/password`. Cierra las demás sesiones del usuario */
+	async cambiarPassword(datos: CambiarPasswordRequest): Promise<void> {
+		await http.patch('/users/me/password', datos, { requireAuth: true });
 	}
 
-	/** Siempre responde 202: no revela si la cédula existe ni si tiene email registrado */
-	async forgotPassword(ci: string): Promise<void> {
-		await apiMeSvelpy.postPublic('/auth/forgot-password', { ci });
-	}
-
-	async resetPassword(token: string, newPassword: string): Promise<void> {
-		await apiMeSvelpy.postPublic('/auth/reset-password', {
-			token,
-			new_password: newPassword
-		});
-	}
-
+	/** Cierra la sesión en el servidor (invalida el refresh) y borra la local, aunque falle la red */
 	async logout(): Promise<void> {
-		AuthService.clearAuth();
+		try {
+			await http.postPublic('/auth/logout', undefined, { withCredentials: true });
+		} catch {
+			// Sin red igual se cierra la sesión local
+		} finally {
+			AuthService.clearAuth();
+		}
 	}
+
 	getToken(): string | null {
 		return AuthService.getTokens()?.accessToken || null;
 	}
@@ -194,7 +192,7 @@ class AuthService {
 		try {
 			// postPublic no envía el access token, así que un 401 aquí no dispara otro refresh.
 			// El refresh_token viaja en la cookie HttpOnly.
-			const response = await apiMeSvelpy.postPublic<LoginResponse>('/auth/refresh', undefined, {
+			const response = await http.postPublic<LoginResponse>('/auth/refresh', undefined, {
 				withCredentials: true,
 				customHeaders: { 'X-CSRF-Token': csrfToken }
 			});

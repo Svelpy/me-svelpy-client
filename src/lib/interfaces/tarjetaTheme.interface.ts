@@ -1,10 +1,21 @@
 // Tema visual de una tarjeta ME (tabla `tarjeta_theme`). Los nombres de campo siguen a la base de datos.
+import type { Timestamps } from './common.interface';
 
-export type TemaPreset = 'claro' | 'oscuro' | 'elegante' | 'salud' | 'corporativo';
+export type TemaPreset =
+	| 'claro'
+	| 'oscuro'
+	| 'elegante'
+	| 'salud'
+	| 'corporativo'
+	| 'calido'
+	| 'natural'
+	| 'belleza'
+	| 'creativo'
+	| 'energia';
 export type IconoForma = 'circulo' | 'redondeado' | 'cuadrado' | 'ninguno';
 export type FabPosicion = 'derecha' | 'izquierda';
 
-/** Colores (hex #RRGGBB) y estilo editables de una tarjeta: todo `tarjeta_theme` salvo ids, preset y fechas. */
+/** Colores (hex #RRGGBB) y estilo editables de una tarjeta: lo que define cada preset. */
 export interface TarjetaThemeColores {
 	color_fondo: string;
 	color_superficie: string;
@@ -32,11 +43,17 @@ export interface TarjetaThemeColores {
 	fab_posicion: FabPosicion;
 }
 
-export interface TarjetaTheme extends TarjetaThemeColores {
+export interface TarjetaTheme extends TarjetaThemeColores, Timestamps {
 	id: string;
 	tarjeta_id: string;
 	/** Preset con el que se creó; los colores pueden haberse editado después. */
 	preset: TemaPreset | null;
-	created_at: string;
-	updated_at: string;
+	/** Id de `TIPOGRAFIAS_TARJETA` (par de fuentes locales del frontend). */
+	tipografia: number;
+}
+
+/** `PUT /tarjetas/{id}/theme`: el tema completo */
+export interface TarjetaThemeUpdateRequest extends TarjetaThemeColores {
+	preset: TemaPreset | null;
+	tipografia: number;
 }

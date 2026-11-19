@@ -73,7 +73,9 @@
 
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:site" content={APP_SITE_CONFIG.APP_TWITTER_HANDLE} />
+	{#if APP_SITE_CONFIG.APP_TWITTER_HANDLE}
+		<meta name="twitter:site" content={APP_SITE_CONFIG.APP_TWITTER_HANDLE} />
+	{/if}
 	<meta name="twitter:title" content={title} />
 	{#if description}
 		<meta name="twitter:description" content={description} />

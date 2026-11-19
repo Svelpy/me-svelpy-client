@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { ChevronLeftIcon } from '#lib/icons/outline/index.ts';
-	import ChevronRightIcon from '#lib/icons/outline/chevronRightIcon.svelte';
+	import { ChevronLeftIcon, ChevronRightIcon } from '#lib/icons/outline/index.ts';
+	import { formatNumber } from '#lib/utils/format.ts';
 
 	interface Props {
 		currentPage: number;
@@ -9,6 +9,8 @@
 		total: number;
 		onPageChange: (page: number) => void;
 		maxVisiblePages?: number;
+		/** Qué se cuenta: "tarjetas", "cuentas" */
+		nombre?: string;
 	}
 
 	let {
@@ -17,130 +19,77 @@
 		perPage,
 		total,
 		onPageChange,
-		maxVisiblePages = 10
+		maxVisiblePages = 7,
+		nombre = 'resultados'
 	}: Props = $props();
 
-	function getVisiblePages(): number[] {
-		const maxVisible = maxVisiblePages;
-		let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-		let end = Math.min(totalPages, start + maxVisible - 1);
+	const visiblePages = $derived.by(() => {
+		let start = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+		const end = Math.min(totalPages, start + maxVisiblePages - 1);
+		start = Math.max(1, end - maxVisiblePages + 1);
+		return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+	});
 
-		if (end - start + 1 < maxVisible) {
-			start = Math.max(1, end - maxVisible + 1);
-		}
+	const startItem = $derived(total === 0 ? 0 : (currentPage - 1) * perPage + 1);
+	const endItem = $derived(Math.min(currentPage * perPage, total));
 
-		end = Math.min(totalPages, start + maxVisible - 1);
-
-		const pages: number[] = [];
-		for (let i = start; i <= end; i++) {
-			pages.push(i);
-		}
-
-		return pages;
+	function go(page: number) {
+		if (page !== currentPage && page >= 1 && page <= totalPages) onPageChange(page);
 	}
 
-	function handlePageClick(page: number) {
-		if (page === currentPage || page < 1 || page > totalPages) return;
-		onPageChange(page);
-	}
-
-	function goToPreviousPage() {
-		if (currentPage > 1) {
-			onPageChange(currentPage - 1);
-		}
-	}
-
-	function goToNextPage() {
-		if (currentPage < totalPages) {
-			onPageChange(currentPage + 1);
-		}
-	}
-
-	let startItem = $derived((currentPage - 1) * perPage + 1);
-	let endItem = $derived(Math.min(currentPage * perPage, total));
-	let visiblePages = $derived(getVisiblePages());
+	const boton =
+		'inline-flex h-9 min-w-9 items-center justify-center rounded-xl px-2.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-light-three disabled:cursor-not-allowed disabled:opacity-40 dark:focus-visible:outline-dark-three';
 </script>
 
-<div class="flex flex-col gap-4 px-4 py-3 sm:px-6">
-	<div class="hidden w-full items-center justify-between md:flex">
-		<div class="flex items-center gap-4">
-			<p class="text-sm text-light-black">
-				Mostrando <span class="font-medium">{startItem}</span> a
-				<span class="font-medium">{endItem}</span> de
-				<span class="font-medium">{total}</span> resultados
-			</p>
-		</div>
-
-		<div class="flex items-center gap-2">
-			<button
-				onclick={goToPreviousPage}
-				disabled={currentPage === 1}
-				class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-light-four bg-light-one text-sm font-medium text-light-two_d transition-colors hover:bg-light-one_d disabled:cursor-not-allowed disabled:opacity-40"
-				title="Página anterior"
-			>
-				<ChevronLeftIcon />
-			</button>
-
-			<div class="flex items-center gap-1">
-				{#each visiblePages as page (page)}
+<nav aria-label="Paginación" class="flex flex-col items-center justify-between gap-3 sm:flex-row">
+	<p class="text-sm text-light-two_d dark:text-dark-two_d">
+		<span class="tabular-nums">{formatNumber(startItem)}–{formatNumber(endItem)}</span> de
+		<span class="tabular-nums">{formatNumber(total)}</span>
+		{nombre}
+	</p>
+	{#if totalPages > 1}
+		<ul class="flex items-center gap-1">
+			<li>
+				<button
+					type="button"
+					class="{boton} text-light-two hover:bg-light-one_d dark:text-dark-two dark:hover:bg-dark-one_d"
+					onclick={() => go(currentPage - 1)}
+					disabled={currentPage === 1}
+					aria-label="Página anterior"
+				>
+					<ChevronLeftIcon class="size-4" />
+				</button>
+			</li>
+			{#each visiblePages as page (page)}
+				<li>
 					<button
-						onclick={() => handlePageClick(page)}
-						class="inline-flex h-9 min-w-9 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors {page ===
-						currentPage
-							? 'border-light-three bg-light-two text-light-one'
-							: 'border-light-four bg-light-one text-light-two_d hover:bg-light-one_d'}"
+						type="button"
+						onclick={() => go(page)}
+						aria-current={page === currentPage ? 'page' : undefined}
+						aria-label="Página {page}"
+						class={[
+							boton,
+							'tabular-nums',
+							page === currentPage
+								? 'bg-light-three text-light-one dark:bg-dark-three dark:text-dark-one'
+								: 'text-light-two hover:bg-light-one_d dark:text-dark-two dark:hover:bg-dark-one_d'
+						]}
 					>
 						{page}
 					</button>
-				{/each}
-			</div>
-
-			<button
-				onclick={goToNextPage}
-				disabled={currentPage === totalPages}
-				class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-light-four bg-light-one text-sm font-medium text-light-two_d transition-colors hover:bg-light-one_d disabled:cursor-not-allowed disabled:opacity-40"
-				title="Página siguiente"
-			>
-				<ChevronRightIcon />
-			</button>
-		</div>
-	</div>
-
-	<div class="flex w-full flex-col items-center gap-3 md:hidden">
-		<div class="flex w-full items-center justify-between">
-			<button
-				onclick={goToPreviousPage}
-				disabled={currentPage === 1}
-				class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-light-four bg-light-one text-light-two_d transition-colors active:bg-light-one_d disabled:opacity-30"
-			>
-				<ChevronLeftIcon />
-			</button>
-
-			<div class="flex items-center gap-1.5">
-				{#each visiblePages.filter((p) => Math.abs(p - currentPage) <= 1) as page (page)}
-					<button
-						onclick={() => handlePageClick(page)}
-						class="inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-colors {page ===
-						currentPage
-							? 'border-light-three bg-light-two text-light-one'
-							: 'border-light-four bg-light-one text-light-two_d'}"
-					>
-						{page}
-					</button>
-				{/each}
-			</div>
-
-			<button
-				onclick={goToNextPage}
-				disabled={currentPage === totalPages}
-				class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-light-four bg-light-one text-light-two_d transition-colors active:bg-light-one_d disabled:opacity-30"
-			>
-				<ChevronRightIcon />
-			</button>
-		</div>
-		<p class="text-xs font-medium text-light-two">
-			Página <span class="text-light-black">{currentPage}</span> de
-			<span class="text-light-black">{totalPages}</span>
-		</p>
-	</div>
-</div>
+				</li>
+			{/each}
+			<li>
+				<button
+					type="button"
+					class="{boton} text-light-two hover:bg-light-one_d dark:text-dark-two dark:hover:bg-dark-one_d"
+					onclick={() => go(currentPage + 1)}
+					disabled={currentPage === totalPages}
+					aria-label="Página siguiente"
+				>
+					<ChevronRightIcon class="size-4" />
+				</button>
+			</li>
+		</ul>
+	{/if}
+</nav>

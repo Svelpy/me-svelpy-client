@@ -1,6 +1,7 @@
 <script lang="ts">
 	import qrMe from '#lib/assets/landing/qr-me-svelpy.svg';
 	import { TEMAS_TARJETA } from '#lib/config/temasTarjeta.config.ts';
+	import type { TemaPreset } from '#lib/interfaces/tarjetaTheme.interface.ts';
 	import {
 		CalendarIcon,
 		ChevronDownIcon,
@@ -15,6 +16,12 @@
 	import PaletteDemo from '../demos/paletteDemo.svelte';
 	import { LandingSection, SectionHeader } from '../ui/index.ts';
 	import { FUNCIONES, ME_DOMINIO } from '../landing.content.ts';
+
+	/** La landing enseña los 5 temas de siempre; el editor del panel ofrece todos */
+	const PRESETS_LANDING: TemaPreset[] = ['claro', 'oscuro', 'elegante', 'salud', 'corporativo'];
+	const temasLanding = Object.fromEntries(
+		PRESETS_LANDING.map((preset) => [preset, TEMAS_TARJETA[preset]])
+	);
 
 	const celda = 'flex flex-col rounded-[1.75rem] border border-primary-200 bg-white p-6 sm:p-7';
 	const tituloCelda = 'font-display text-xl font-bold tracking-[-0.01em] text-primary-900';
@@ -53,7 +60,7 @@
 		<article class="{celda} md:row-span-2 lg:col-span-3">
 			<h3 class={tituloCelda}>{FUNCIONES.paleta.titulo}</h3>
 			<p class={textoCelda}>{FUNCIONES.paleta.texto}</p>
-			<PaletteDemo temas={TEMAS_TARJETA} nota={FUNCIONES.paleta.nota} class="mt-auto" />
+			<PaletteDemo temas={temasLanding} nota={FUNCIONES.paleta.nota} class="mt-auto" />
 		</article>
 
 		<!-- Catálogo -->

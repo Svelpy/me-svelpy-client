@@ -4,6 +4,21 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="text-scale" content="scale" />
+		<script>
+			// Modo de color del panel (claro, oscuro o sistema) aplicado antes del primer pintado, sin
+			// destello. Misma clave y regla que stores/temaUi.ts. La landing no usa `dark:`, no le afecta.
+			(function () {
+				try {
+					var tema = localStorage.getItem('me::ui::tema');
+					var oscuro =
+						tema === 'oscuro' ||
+						(tema !== 'claro' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+					if (oscuro) document.documentElement.classList.add('dark');
+				} catch (e) {
+					// Sin acceso a localStorage: se queda en claro
+				}
+			})();
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
