@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { resolve } from '$app/paths';
 	import EnlacePublico from '../../panel/enlacePublico.svelte';
 	import { AlertBox, Button, QrCode } from '#lib/components/ui/index.ts';
@@ -22,12 +23,11 @@
 
 	interface Props {
 		alVolver?: () => void;
-		/** Publicar o pasar a borrador (lo maneja el editor) */
-		onPublicar: () => void;
-		publicando: boolean;
+		/** El botón de publicar del editor (o el de activar Pro, si la cuenta es Free) */
+		publicar: Snippet<['sm' | 'md']>;
 	}
 
-	let { alVolver, onPublicar, publicando }: Props = $props();
+	let { alVolver, publicar }: Props = $props();
 
 	const editor = getEditor();
 	const tarjeta = $derived(editor.tarjeta);
@@ -84,14 +84,17 @@
 	{alVolver}
 >
 	<div class="space-y-8">
-		{#if !tarjeta.is_public}
+		{#if !tarjeta.is_public && editor.conPlanPro}
 			<AlertBox variant="warning" title="Tu tarjeta está en borrador">
 				Solo tú la ves. Publícala para que el enlace y el QR funcionen para tus clientes.
-				{#snippet accion()}
-					<Button variant="accent" size="sm" loading={publicando} onclick={onPublicar}>
-						Publicar tarjeta
-					</Button>
-				{/snippet}
+				{#snippet accion()}{@render publicar('sm')}{/snippet}
+			</AlertBox>
+		{:else if !tarjeta.is_public}
+			<AlertBox variant="info" title="Publicar es parte del plan Pro">
+				{editor.modo === 'owner'
+					? 'Con el plan Free armas tu tarjeta completa y la ves en el espejo. El enlace y el QR empiezan a funcionar cuando la publicas con Pro.'
+					: 'Esta cuenta tiene el plan Free: puede armar su tarjeta, pero publicarla pide Pro.'}
+				{#snippet accion()}{@render publicar('sm')}{/snippet}
 			</AlertBox>
 		{/if}
 

@@ -66,6 +66,11 @@ class TarjetaService {
 		return http.get(`/tarjetas/slug-disponible?${query}`);
 	}
 
+	/** `GET /public/slug-disponible`: para el registro, sin sesión */
+	slugDisponiblePublico(slug: string): Promise<SlugDisponibilidad> {
+		return http.getPublic(`/public/slug-disponible?${new URLSearchParams({ slug })}`);
+	}
+
 	/** `GET /public/tarjetas/{slug}`: lo que ve cualquier visitante (sin sesión) */
 	obtenerPublica(slug: string): Promise<TarjetaPublica> {
 		return http.getPublic(`/public/tarjetas/${encodeURIComponent(slug)}`);

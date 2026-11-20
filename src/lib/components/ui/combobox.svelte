@@ -24,6 +24,8 @@
 		required?: boolean;
 		/** Acepta un texto que no está en la lista */
 		permitirLibre?: boolean;
+		/** A la derecha de la opción "Usar «…»" (p. ej. "Rubro propio") */
+		etiquetaLibre?: string;
 		/** Máximo de opciones visibles */
 		limite?: number;
 		onseleccionar?: (valor: string, opcion: OpcionCombobox | null) => void;
@@ -40,6 +42,7 @@
 		error,
 		required = false,
 		permitirLibre = true,
+		etiquetaLibre,
 		limite = 60,
 		onseleccionar,
 		id: idPropio,
@@ -91,14 +94,30 @@
 		return resultado;
 	});
 
-	const expandido = $derived(abierto && filtradas.length > 0);
+	/**
+	 * Con texto libre, lo escrito también es una opción (al final de la lista) cuando no coincide
+	 * exactamente con ninguna: así queda claro que se puede usar aunque no esté en el catálogo.
+	 */
+	const opcionLibre = $derived.by((): OpcionCombobox | null => {
+		const propio = texto.trim();
+		if (!permitirLibre || !propio) return null;
+		const buscado = normalizarTexto(propio);
+		if (opciones.some((opcion) => normalizarTexto(opcion.etiqueta) === buscado)) return null;
+		return { valor: propio, etiqueta: `Usar «${propio}»`, detalle: etiquetaLibre };
+	});
+
+	/** Todas las opciones navegables, en orden: las del catálogo y al final la propia */
+	const visibles = $derived(opcionLibre ? [...filtradas, opcionLibre] : filtradas);
+
+	const expandido = $derived(abierto && visibles.length > 0);
 
 	function seleccionar(opcion: OpcionCombobox) {
-		texto = opcion.etiqueta;
+		const esLibre = opcion === opcionLibre;
+		texto = esLibre ? opcion.valor : opcion.etiqueta;
 		value = opcion.valor;
 		abierto = false;
 		activo = -1;
-		onseleccionar?.(opcion.valor, opcion);
+		onseleccionar?.(opcion.valor, esLibre ? null : opcion);
 	}
 
 	function alEscribir(event: Event & { currentTarget: HTMLInputElement }) {
@@ -113,8 +132,8 @@
 
 	function mover(paso: number) {
 		abierto = true;
-		if (filtradas.length === 0) return;
-		activo = (activo + paso + filtradas.length) % filtradas.length;
+		if (visibles.length === 0) return;
+		activo = (activo + paso + visibles.length) % visibles.length;
 		queueMicrotask(() =>
 			lista
 				?.querySelector(`#${CSS.escape(`${id}-op-${activo}`)}`)
@@ -131,7 +150,7 @@
 			mover(-1);
 		} else if (event.key === 'Enter' && expandido && activo >= 0) {
 			event.preventDefault();
-			seleccionar(filtradas[activo]);
+			seleccionar(visibles[activo]);
 		} else if (event.key === 'Escape' && abierto) {
 			event.preventDefault();
 			abierto = false;
@@ -149,6 +168,27 @@
 			.join(' ') || undefined
 	);
 </script>
+
+{#snippet opcionLi(opcion: OpcionCombobox, indice: number)}
+	<li
+		id="{id}-op-{indice}"
+		role="option"
+		aria-selected={indice === activo}
+		onmousedown={(event) => {
+			event.preventDefault();
+			seleccionar(opcion);
+		}}
+		onmousemove={() => (activo = indice)}
+		class="flex cursor-pointer items-baseline justify-between gap-3 rounded-lg px-2.5 py-2 text-sm text-light-two aria-selected:bg-light-one_d dark:text-dark-two dark:aria-selected:bg-dark-one_d"
+	>
+		<span class={opcion === opcionLibre ? 'font-medium' : ''}>{opcion.etiqueta}</span>
+		{#if opcion.detalle}
+			<span class="shrink-0 text-xs text-light-two_d dark:text-dark-two_d">
+				{opcion.detalle}
+			</span>
+		{/if}
+	</li>
+{/snippet}
 
 <div class={cn('relative', className)}>
 	<label for={id} class="mb-1.5 block text-sm font-medium text-light-two dark:text-dark-two">
@@ -200,26 +240,12 @@
 				</li>
 			{/if}
 			{#each grupo.opciones as { opcion, indice } (opcion.valor)}
-				<li
-					id="{id}-op-{indice}"
-					role="option"
-					aria-selected={indice === activo}
-					onmousedown={(event) => {
-						event.preventDefault();
-						seleccionar(opcion);
-					}}
-					onmousemove={() => (activo = indice)}
-					class="flex cursor-pointer items-baseline justify-between gap-3 rounded-lg px-2.5 py-2 text-sm text-light-two aria-selected:bg-light-one_d dark:text-dark-two dark:aria-selected:bg-dark-one_d"
-				>
-					<span>{opcion.etiqueta}</span>
-					{#if opcion.detalle}
-						<span class="shrink-0 text-xs text-light-two_d dark:text-dark-two_d">
-							{opcion.detalle}
-						</span>
-					{/if}
-				</li>
+				{@render opcionLi(opcion, indice)}
 			{/each}
 		{/each}
+		{#if opcionLibre}
+			{@render opcionLi(opcionLibre, filtradas.length)}
+		{/if}
 	</ul>
 	{#if hint && !error}
 		<p id="{id}-hint" class="mt-1.5 text-xs text-light-two_d dark:text-dark-two_d">{hint}</p>

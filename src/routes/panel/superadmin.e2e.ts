@@ -119,11 +119,11 @@ test.describe('Panel del superadministrador', () => {
 		await expect(page.getByRole('table')).toBeVisible();
 	});
 
-	test('edita la tarjeta de otra persona y puede cambiar su dirección', async ({ page }) => {
+	test('edita la tarjeta de otra persona y puede cambiar su enlace', async ({ page }) => {
 		await page.goto('/panel/tarjetas');
 		await page.getByRole('link', { name: /Rodrigo Paz/ }).click();
 		await expect(page.getByRole('heading', { level: 1, name: 'Rodrigo Paz' })).toBeVisible();
-		await expect(page.getByLabel('Dirección de la tarjeta')).toBeEditable();
+		await expect(page.getByRole('textbox', { name: 'Enlace de la tarjeta' })).toBeEditable();
 
 		await page.getByLabel('Cargo').fill('Chef ejecutivo');
 		await page.getByRole('button', { name: 'Guardar cambios' }).click();

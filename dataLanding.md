@@ -24,7 +24,7 @@ Este es el documento maestro con todo el contexto estratégico, técnico, visual
 
 - - _Principal:_ **"Que no solo guarden tu contacto: haz que te encuentren primero."**
 
-  - _Secundario:_ **"El poder de una página web, la agilidad de una tarjeta digital."**
+  - _Secundario:_ **"El poder de la web, la agilidad de una tarjeta digital."**
 
   - _Corto:_ **"ME by Svelpy: Posiciónate. Conecta. Vende."**
 

@@ -3,6 +3,6 @@
 export { default as LandingButton } from './landingButton.svelte';
 export { default as LandingSection } from './landingSection.svelte';
 export { default as SectionHeader } from './sectionHeader.svelte';
-export { default as CapsuleMarker } from './capsuleMarker.svelte';
-export { default as CapsuleTabs } from './capsuleTabs.svelte';
 export { default as PhoneFrame } from './phoneFrame.svelte';
+export { default as ReservaEnlace } from './reservaEnlace.svelte';
+export { default as AlternativaWhatsapp } from './alternativaWhatsapp.svelte';

@@ -21,3 +21,18 @@ export function sugerirSlug(partes: {
 	const primerApellido = partes.apellidos?.trim().split(/\s+/)[0] ?? '';
 	return slugify([partes.prefijo, partes.nombres, primerApellido].filter(Boolean).join(' '));
 }
+
+/**
+ * Lo que se escribe en el campo de la dirección, ya como dirección: sin tildes ni mayúsculas, con
+ * guiones en lugar de espacios y signos. A diferencia de `slugify`, deja un guion al final para
+ * que se pueda seguir escribiendo ("rocio-" → "rocio-suarez").
+ */
+export function limpiarSlugEscrito(texto: string): string {
+	return texto
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+/, '')
+		.slice(0, SLUG_MAX);
+}

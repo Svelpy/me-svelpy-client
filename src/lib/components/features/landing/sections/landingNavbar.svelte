@@ -1,13 +1,10 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { Menu2Icon, XMarkIcon } from '#lib/icons/outline/index.ts';
+	import { Menu2Icon, WhatsappIcon, XMarkIcon } from '#lib/icons/outline/index.ts';
 	import { LandingButton } from '../ui/index.ts';
-	import { LANDING_LINKS, LOGOS, NAV_LINKS } from '../landing.content.ts';
+	import { CTA_CREAR, CTA_SOLICITAR, LANDING_LINKS, LOGOS, NAV_LINKS } from '../landing.content.ts';
 
 	let abierto = $state(false);
-	const crearExterno = LANDING_LINKS.crearMe.startsWith('http');
-	// TODO: quitar cuando exista /auth/sign-in; "external" evita que el prerender rastree una ruta que aún no existe.
-	const LOGIN_REL = 'external';
 
 	function cerrar() {
 		abierto = false;
@@ -52,7 +49,6 @@
 		<div class="ml-auto flex items-center gap-1.5 lg:ml-0">
 			<LandingButton
 				href={LANDING_LINKS.iniciarSesion}
-				rel={LOGIN_REL}
 				variant="ghost"
 				tone="dark"
 				size="sm"
@@ -60,8 +56,8 @@
 			>
 				Iniciar sesión
 			</LandingButton>
-			<LandingButton href={LANDING_LINKS.crearMe} external={crearExterno} tone="dark" size="sm">
-				Solicitar mi ME
+			<LandingButton href={LANDING_LINKS.registro} tone="dark" size="sm">
+				{CTA_CREAR}
 			</LandingButton>
 			<button
 				type="button"
@@ -97,15 +93,26 @@
 					</li>
 				{/each}
 			</ul>
-			<LandingButton
-				href={LANDING_LINKS.iniciarSesion}
-				rel={LOGIN_REL}
-				variant="secondary"
-				tone="dark"
-				class="mt-4 w-full sm:hidden"
-			>
-				Iniciar sesión
-			</LandingButton>
+			<div class="mt-4 flex flex-col gap-2.5">
+				<LandingButton
+					href={LANDING_LINKS.iniciarSesion}
+					variant="secondary"
+					tone="dark"
+					class="w-full sm:hidden"
+				>
+					Iniciar sesión
+				</LandingButton>
+				<LandingButton
+					href={LANDING_LINKS.solicitarMe}
+					external
+					variant="secondary"
+					tone="dark"
+					class="w-full"
+				>
+					<WhatsappIcon class="size-5 shrink-0" />
+					{CTA_SOLICITAR}
+				</LandingButton>
+			</div>
 		</div>
 	{/if}
 </header>

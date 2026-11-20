@@ -2,17 +2,31 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { EstadoFormulario } from '#lib/components/features/editor/index.ts';
+	import { EstadoPlan } from '#lib/components/features/planes/index.ts';
 	import { MainLayout } from '#lib/components/layout/index.ts';
 	import { AlertBox, Button, Input, PageHeader } from '#lib/components/ui/index.ts';
+	import { Role } from '#lib/config/permissions.config.ts';
+	import { Plan, planVigente } from '#lib/config/planes.config.ts';
 	import { APP_SITE_CONFIG, ROLE_LABEL } from '#lib/constants/index.ts';
 	import { authService } from '#lib/services/index.ts';
 	import { authStore, currentRole, currentUserStore } from '#lib/stores/index.ts';
 	import { whatsappUrl } from '#lib/utils/contacto.ts';
+	import { urlActivarPro } from '#lib/utils/plan.ts';
 	import { signInUrl } from '#lib/utils/signInReason.ts';
 	import { cambiarPasswordSchema } from '#lib/zod/auth.schema.ts';
 
 	const usuario = $derived($currentUserStore?.user);
 	const tarjeta = $derived($currentUserStore?.tarjeta ?? null);
+
+	// Plan (solo propietarios): Free se activa; un Pro con fecha se renueva; sin fecha no hace falta
+	const esPro = $derived(!!usuario && planVigente(usuario) === Plan.PRO);
+	const accionPlan = $derived.by(() => {
+		if (!usuario || (esPro && !usuario.plan_vence_at)) return null;
+		return {
+			href: urlActivarPro(tarjeta?.slug, esPro),
+			texto: esPro ? 'Renovar por WhatsApp' : 'Activar Pro'
+		};
+	});
 
 	let actual = $state('');
 	let nueva = $state('');
@@ -54,6 +68,24 @@
 				<dt class="text-light-two_d dark:text-dark-two_d">Rol</dt>
 				<dd class="font-medium">{$currentRole ? ROLE_LABEL[$currentRole] : ''}</dd>
 			</div>
+			{#if usuario && $currentRole === Role.OWNER}
+				<div class="flex flex-col gap-0.5 px-4 py-3 sm:flex-row sm:justify-between">
+					<dt class="text-light-two_d dark:text-dark-two_d">Plan</dt>
+					<dd class="flex flex-wrap items-center gap-x-3 gap-y-1 sm:justify-end">
+						<EstadoPlan cuenta={usuario} class="font-medium text-light-two dark:text-dark-two" />
+						{#if accionPlan}
+							<a
+								href={accionPlan.href}
+								target="_blank"
+								rel="external noopener noreferrer"
+								class="font-semibold underline decoration-light-four underline-offset-4 hover:decoration-light-two dark:decoration-dark-four dark:hover:decoration-dark-two"
+							>
+								{accionPlan.texto}
+							</a>
+						{/if}
+					</dd>
+				</div>
+			{/if}
 			{#if tarjeta}
 				<div class="flex flex-col gap-0.5 px-4 py-3 sm:flex-row sm:justify-between">
 					<dt class="text-light-two_d dark:text-dark-two_d">Tarjeta</dt>

@@ -8,11 +8,11 @@ test.describe('Landing ME by Svelpy', () => {
 	});
 
 	test('expone los metadatos de SEO, Open Graph y JSON-LD', async ({ page }) => {
-		await expect(page).toHaveTitle('ME | Tarjeta digital profesional con SEO y GEO');
+		await expect(page).toHaveTitle('ME | Tarjeta digital profesional');
 		await expect(page.locator('html')).toHaveAttribute('lang', 'es');
 		await expect(page.locator('meta[name="description"]')).toHaveAttribute(
 			'content',
-			/guarda tu contacto en un toque/
+			/Crea gratis tu tarjeta digital profesional/
 		);
 		await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
 			'href',
@@ -37,7 +37,7 @@ test.describe('Landing ME by Svelpy', () => {
 		const tipos = jsonLd['@graph'].map((n: { '@type': string }) => n['@type']);
 		expect(tipos).toEqual(['Organization', 'WebSite', 'Service', 'FAQPage']);
 		const faq = jsonLd['@graph'].find((n: { '@type': string }) => n['@type'] === 'FAQPage');
-		expect(faq.mainEntity).toHaveLength(6);
+		expect(faq.mainEntity).toHaveLength(5);
 
 		const og = await page.request.get('/images/landing/og-me-by-svelpy.png');
 		expect(og.ok()).toBe(true);
@@ -94,20 +94,13 @@ test.describe('Landing ME by Svelpy', () => {
 		expect(comandos).toEqual(['js', 'config']);
 	});
 
-	test('muestra el titular y las llamadas a la acción del hero', async ({ page }) => {
+	test('muestra el titular y el acceso para iniciar sesión', async ({ page }) => {
 		await expect(
 			page.getByRole('heading', {
 				level: 1,
-				name: 'Que no solo guarden tu contacto: haz que te encuentren primero.'
+				name: 'Tu tarjeta de presentación, ahora es una web.'
 			})
 		).toBeVisible();
-		const hero = page.locator('#inicio');
-		await expect(
-			hero.getByRole('link', { name: 'Ver perfiles de ejemplo', exact: true })
-		).toHaveAttribute('href', '#sectores');
-		// Sin etiquetas sobre los titulares.
-		await expect(page.getByText('Nueva generación de identidad digital')).toHaveCount(0);
-		await expect(page.getByText('Tecnología exclusiva de posicionamiento')).toHaveCount(0);
 		await expect(
 			page
 				.getByRole('navigation', { name: 'Principal' })
@@ -115,105 +108,98 @@ test.describe('Landing ME by Svelpy', () => {
 		).toHaveAttribute('href', '/auth/sign-in');
 	});
 
-	test('la acción principal tiene un solo nombre y abre WhatsApp', async ({ page }) => {
-		const wa = /^https:\/\/wa\.me\/59176727537\?text=Hola%2C%20quiero%20crear%20mi%20ME\.$/;
+	test('el enlace escrito en el hero lleva al registro ya completo', async ({ page }) => {
+		const hero = page.locator('#inicio');
+		const enlace = hero.getByRole('textbox', { name: 'Tu enlace' });
+		await enlace.fill('Dra. Fabiola Pérez');
+		await expect(enlace).toHaveValue('dra-fabiola-perez');
+		await hero.getByRole('button', { name: 'Crear mi ME gratis' }).click();
+
+		await expect(page).toHaveURL(/\/auth\/sign-up\?enlace=dra-fabiola-perez$/);
+		await expect(page.getByLabel(/^Tu enlace/)).toHaveValue('dra-fabiola-perez');
+	});
+
+	test('crear gratis lleva al registro desde el menú y desde las secciones', async ({ page }) => {
+		await expect(
+			page
+				.getByRole('navigation', { name: 'Principal' })
+				.getByRole('link', { name: 'Crear mi ME gratis' })
+		).toHaveAttribute('href', '/auth/sign-up');
+		const enlaces = page.locator('main').getByRole('link', { name: 'Crear mi ME gratis' });
+		await expect(enlaces).toHaveCount(2); // funciones y «Créala tú»
+		for (const link of await enlaces.all()) {
+			await expect(link).toHaveAttribute('href', '/auth/sign-up');
+		}
+		// Hero y cierre lo ofrecen como formulario con el enlace.
+		await expect(page.getByRole('button', { name: 'Crear mi ME gratis' })).toHaveCount(2);
+	});
+
+	test('solicitar por WhatsApp tiene un solo nombre y abre WhatsApp', async ({ page }) => {
+		const wa =
+			/^https:\/\/wa\.me\/59176727537\?text=Hola%2C%20quiero%20que%20me%20armen%20mi%20ME\.$/;
 
 		const solicitar = page.getByRole('link', { name: 'Solicitar mi ME por WhatsApp' });
-		await expect(solicitar).toHaveCount(3); // hero, sectores y cierre
+		await expect(solicitar).toHaveCount(3); // hero, «Te la armamos» y cierre
 		for (const link of await solicitar.all()) {
 			await expect(link).toHaveAttribute('href', wa);
 			await expect(link).toHaveAttribute('target', '_blank');
 			await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
 		}
-		await expect(
-			page
-				.getByRole('navigation', { name: 'Principal' })
-				.getByRole('link', { name: 'Solicitar mi ME' })
-		).toHaveAttribute('href', wa);
 
 		// El enlace de dudas abre WhatsApp con un mensaje de consulta.
 		await expect(page.getByRole('link', { name: 'Escríbenos por WhatsApp' })).toHaveAttribute(
 			'href',
 			/text=Hola%2C%20tengo%20una%20consulta%20sobre%20ME\.$/
 		);
-		for (const link of await page
-			.getByRole('link', { name: 'Ver perfiles de ejemplo', exact: true })
-			.all()) {
-			await expect(link).toHaveAttribute('href', '#sectores');
-		}
+	});
+
+	test('las dos formas de empezar explican el plan', async ({ page }) => {
+		const crear = page.getByRole('article', { name: 'Créala tú' });
+		await expect(crear.getByText('Publícala con el plan Pro y compártela.')).toBeVisible();
+		const armar = page.getByRole('article', { name: 'Te la armamos' });
+		await expect(armar.getByText('Lista para compartir en 24 horas.')).toBeVisible();
 	});
 
 	test('no ofrece plan corporativo', async ({ page }) => {
 		await expect(page.getByText(/plan corporativo/i)).toHaveCount(0);
-		await expect(page.getByRole('tab', { name: 'Empresas y equipos' })).toHaveCount(0);
 	});
 
-	test('el selector del hero cambia el perfil del teléfono y se puede pausar', async ({ page }) => {
+	test('el carrusel del hero rota los perfiles solo, sin pestañas ni pausa', async ({ page }) => {
 		const hero = page.getByRole('group', { name: 'Perfiles de ejemplo' });
 		const url = hero.getByTestId('phone-url');
 		await expect(url).toHaveText('me.svelpy.com/valeria-rojas');
+		await expect(hero.getByRole('tab')).toHaveCount(0);
+		await expect(hero.getByRole('button')).toHaveCount(0);
 
-		await hero.getByRole('tab', { name: 'Odontología' }).click();
-		await expect(url).toHaveText('me.svelpy.com/dra-camila-rivas');
+		// Pasa al siguiente perfil por sí solo, con su tarjeta física.
+		await expect(url).toHaveText('me.svelpy.com/dra-camila-rivas', { timeout: 7000 });
 		await expect(
 			hero.getByRole('img', { name: /Tarjeta física ME de Dra\. Camila Rivas/ })
 		).toBeVisible();
-		await expect(
-			hero.getByRole('img', { name: /Perfil ME de la Dra\. Camila Rivas/ })
-		).toBeVisible();
+	});
 
-		// Elegir un perfil detiene la rotación automática.
-		await expect(
-			hero.getByRole('button', { name: 'Reanudar la rotación de perfiles' })
-		).toBeVisible();
-		await page.waitForTimeout(5000);
-		await expect(url).toHaveText('me.svelpy.com/dra-camila-rivas');
+	test('el carrusel se detiene mientras el puntero está encima', async ({ page }) => {
+		const hero = page.getByRole('group', { name: 'Perfiles de ejemplo' });
+		const url = hero.getByTestId('phone-url');
+		await hero.hover();
+		await page.waitForTimeout(5500);
+		await expect(url).toHaveText('me.svelpy.com/valeria-rojas');
 	});
 
 	test('los enlaces del menú llevan a su sección', async ({ page }) => {
 		await page
 			.getByRole('navigation', { name: 'Principal' })
-			.getByRole('link', { name: 'Sectores' })
+			.getByRole('link', { name: 'Cómo empezar' })
 			.click();
-		await expect(page).toHaveURL(/#sectores$/);
+		await expect(page).toHaveURL(/#empezar$/);
 		await expect(
-			page.getByRole('heading', { name: 'Una solución adaptada a tu profesión.' })
+			page.getByRole('heading', { name: 'Dos formas de tener tu ME.' })
 		).toBeInViewport();
 	});
 
-	test('las pestañas de sectores cambian el contenido, también con teclado', async ({ page }) => {
-		const tabs = page.getByRole('tablist', { name: 'Profesiones' });
-		await tabs.getByRole('tab', { name: 'Abogados y consultores' }).click();
-		await expect(
-			page.getByRole('heading', {
-				name: 'Autoridad y prestigio corporativo desde el primer saludo.'
-			})
-		).toBeVisible();
-		await expect(
-			page.getByRole('region', { name: 'Perfil de ejemplo de Mariana Ortiz' })
-		).toBeVisible();
-
-		await page.keyboard.press('ArrowRight');
-		await expect(tabs.getByRole('tab', { name: 'Cualquier profesión' })).toBeFocused();
-		await expect(
-			page.getByRole('heading', {
-				name: 'Sea cual sea tu rubro, tu ME se adapta a lo que haces.'
-			})
-		).toBeVisible();
-		await expect(
-			page.getByRole('region', { name: 'Perfil de ejemplo de Andrés Quiroga' })
-		).toBeVisible();
-
-		// Desde la última pestaña, la flecha derecha vuelve a la primera.
-		await page.keyboard.press('ArrowRight');
-		await expect(tabs.getByRole('tab', { name: 'Agentes inmobiliarios' })).toBeFocused();
-	});
-
-	test('la demo de temas muestra los 5 presets y aplica el elegido', async ({ page }) => {
+	test('la demo de temas muestra los 10 presets y aplica el elegido', async ({ page }) => {
 		const temas = page.getByRole('group', { name: /^Tema inicial:/ });
-		for (const nombre of ['Claro', 'Oscuro', 'Elegante', 'Salud', 'Corporativo']) {
-			await expect(temas.getByRole('radio', { name: nombre })).toHaveCount(1);
-		}
+		await expect(temas.getByRole('radio')).toHaveCount(10);
 		const oscuro = page.getByRole('radio', { name: 'Oscuro' });
 		await page.locator('label').filter({ has: oscuro }).click();
 		await expect(oscuro).toBeChecked();
@@ -221,14 +207,18 @@ test.describe('Landing ME by Svelpy', () => {
 	});
 
 	test('las preguntas frecuentes se abren de a una', async ({ page }) => {
-		const primera = page.getByText('¿Mis clientes necesitan descargar alguna aplicación', {
+		const primera = page.getByText('¿Mis clientes necesitan instalar algo?', {
 			exact: false
 		});
-		const segunda = page.getByText('¿Puedo cambiar mis fotos, propiedades, precios', {
+		const segunda = page.getByText('¿Puedo cambiar mis datos después?', {
 			exact: false
 		});
-		const respuesta1 = page.getByText('se abre al instante en cualquier celular', { exact: false });
-		const respuesta2 = page.getByText('Cuentas con un panel autoadministrable', { exact: false });
+		const respuesta1 = page.getByText('se abre en el navegador de cualquier celular', {
+			exact: false
+		});
+		const respuesta2 = page.getByText('Tu enlace y tu QR siguen siendo los mismos', {
+			exact: false
+		});
 
 		await expect(respuesta1).toBeHidden();
 		await primera.click();
@@ -250,8 +240,9 @@ test.describe('Landing en móvil', () => {
 
 		const menu = page.locator('#menu-movil');
 		await expect(menu.getByRole('link', { name: 'Iniciar sesión' })).toBeVisible();
-		await menu.getByRole('link', { name: 'Contacto' }).click();
-		await expect(page).toHaveURL(/#contacto$/);
+		await expect(menu.getByRole('link', { name: 'Solicitar mi ME por WhatsApp' })).toBeVisible();
+		await menu.getByRole('link', { name: 'Preguntas' }).click();
+		await expect(page).toHaveURL(/#preguntas$/);
 		await expect(menu).toBeHidden();
 
 		await page.getByRole('button', { name: 'Abrir menú' }).click();
@@ -269,11 +260,12 @@ test.describe('Landing en móvil', () => {
 test.describe('Movimiento reducido', () => {
 	test.use({ reducedMotion: 'reduce' });
 
-	test('el hero no rota los perfiles por sí solo', async ({ page }) => {
+	test('el carrusel sigue rotando, sin fundido', async ({ page }) => {
 		await page.goto('/');
 		const hero = page.getByRole('group', { name: 'Perfiles de ejemplo' });
-		await expect(
-			hero.getByRole('button', { name: 'Reanudar la rotación de perfiles' })
-		).toBeVisible();
+		await expect(hero.getByTestId('phone-url')).toHaveText('me.svelpy.com/dra-camila-rivas', {
+			timeout: 7000
+		});
+		await expect(hero.locator('.duration-500').first()).toHaveCSS('transition-property', 'none');
 	});
 });

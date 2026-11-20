@@ -1,4 +1,5 @@
 import type { Role } from '#lib/config/permissions.config.ts';
+import type { Plan } from '#lib/config/planes.config.ts';
 import type {
 	ContactoTipo,
 	DiaSemana,
@@ -22,6 +23,12 @@ export const PAGINATION = {
 export const ROLE_LABEL: Record<Role, string> = {
 	SUPERADMIN: 'Superadministrador',
 	OWNER: 'Propietario'
+};
+
+/** Nombre visible de cada plan (enum `plan`) */
+export const PLAN_LABEL: Record<Plan, string> = {
+	free: 'Free',
+	pro: 'Pro'
 };
 
 export const CONTACTO_TIPO_LABEL: Record<ContactoTipo, string> = {

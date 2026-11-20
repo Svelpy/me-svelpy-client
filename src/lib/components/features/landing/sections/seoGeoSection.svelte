@@ -1,26 +1,31 @@
+<!--
+	El único bloque naranja de la página: texto ciruela sobre #FF4724 (5,3:1, AA).
+-->
 <script lang="ts">
 	import AiAnswerMock from '../demos/aiAnswerMock.svelte';
-	import JsonLdSnippet from '../demos/jsonLdSnippet.svelte';
 	import SearchResultMock from '../demos/searchResultMock.svelte';
-	import { LandingSection, SectionHeader } from '../ui/index.ts';
 	import { SEO_GEO } from '../landing.content.ts';
 </script>
 
-<LandingSection id="seo-geo" labelledby="seo-geo-titulo" tone="night">
-	<SectionHeader id="seo-geo-titulo" title={SEO_GEO.titulo} subtitle={SEO_GEO.cuerpo} tone="dark" />
+<section
+	id="seo-geo"
+	aria-labelledby="seo-geo-titulo"
+	class="relative bg-secondary py-20 text-primary-950 sm:py-28"
+>
+	<div class="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+		<header class="max-w-3xl">
+			<h2
+				id="seo-geo-titulo"
+				class="font-display text-[2rem] leading-[1.02] font-bold tracking-[-0.035em] text-balance sm:text-[3.25rem]"
+			>
+				{SEO_GEO.titulo}
+			</h2>
+			<p class="mt-5 max-w-[58ch] text-lg leading-relaxed text-pretty">{SEO_GEO.subtitulo}</p>
+		</header>
 
-	<div class="mt-16 grid gap-12 lg:grid-cols-2 lg:gap-8">
-		<div class="flex flex-col">
-			<h3 class="font-display text-2xl font-bold tracking-[-0.02em]">{SEO_GEO.seo.titulo}</h3>
-			<p class="mt-3 mb-8 max-w-[52ch] leading-relaxed text-primary-300">{SEO_GEO.seo.texto}</p>
-			<SearchResultMock class="mt-auto" />
-		</div>
-		<div class="flex flex-col">
-			<h3 class="font-display text-2xl font-bold tracking-[-0.02em]">{SEO_GEO.geo.titulo}</h3>
-			<p class="mt-3 mb-8 max-w-[52ch] leading-relaxed text-primary-300">{SEO_GEO.geo.texto}</p>
-			<AiAnswerMock class="mt-auto" />
+		<div class="mt-14 grid gap-4 lg:grid-cols-2">
+			<SearchResultMock />
+			<AiAnswerMock />
 		</div>
 	</div>
-
-	<JsonLdSnippet class="mt-8" />
-</LandingSection>
+</section>

@@ -14,7 +14,7 @@ import {
 } from './db/sesion';
 import { db } from './db/tablas';
 import { resumenTarjeta, tarjetaMock } from './modelos/tarjeta.mock';
-import { usuarioPublico } from './modelos/usuario.mock';
+import { usuarioMock, usuarioPublico } from './modelos/usuario.mock';
 
 /** Rutas de autenticación del backend simulado (login, refresh, logout, /users/me) */
 
@@ -53,6 +53,17 @@ export const authRutas: RutaMock[] = [
 			}
 			db.usuarios.actualizar(usuario.id, { last_login_at: ahora() });
 			return crearSesion(usuario.id);
+		}
+	},
+	{
+		// Registro propio: cuenta + tarjeta en borrador, y queda con la sesión abierta
+		metodo: 'POST',
+		patron: '/auth/registro',
+		publica: true,
+		manejar: async (ctx) => {
+			const cuenta = await usuarioMock.registrar(ctx.cuerpo);
+			db.usuarios.actualizar(cuenta.id, { last_login_at: ahora() });
+			return crearSesion(cuenta.id);
 		}
 	},
 	{

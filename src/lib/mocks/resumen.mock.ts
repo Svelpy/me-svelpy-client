@@ -1,4 +1,5 @@
 import { Role } from '#lib/config/permissions.config.ts';
+import { Plan, planVigente } from '#lib/config/planes.config.ts';
 import type { ResumenAdmin } from '#lib/interfaces/index.ts';
 import { error, esSuperadmin, exigirSesion, type RutaMock } from './db/contexto';
 import { db } from './db/tablas';
@@ -21,6 +22,8 @@ function resumen(): ResumenAdmin {
 			publicadas: tarjetas.filter((t) => t.is_public).length,
 			borradores: tarjetas.filter((t) => !t.is_public).length,
 			usuarios_activos: activos.length,
+			cuentas_pro: activos.filter((u) => u.rol === Role.OWNER && planVigente(u) === Plan.PRO)
+				.length,
 			usuarios_sin_tarjeta: activos.filter((u) => u.rol === Role.OWNER && !conTarjeta.has(u.id))
 				.length
 		},

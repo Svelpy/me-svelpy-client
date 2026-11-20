@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { Module, Role } from '#lib/config/permissions.config.ts';
+import { puedePublicar } from '#lib/config/planes.config.ts';
 import { normalizarTexto } from '#lib/config/rubros.config.ts';
 import { SLUGS_RESERVADOS } from '#lib/constants/slugs.ts';
 import type {
@@ -77,7 +78,19 @@ export function resumenTarjeta(fila: TarjetaRow): TarjetaResumen {
 
 function propietarioDe(fila: TarjetaRow): TarjetaPropietario {
 	const usuario = db.usuarios.todas().find((u) => u.id === fila.user_id);
-	return { id: fila.user_id, email: usuario?.email ?? '', is_active: !!usuario?.is_active };
+	return {
+		id: fila.user_id,
+		email: usuario?.email ?? '',
+		is_active: !!usuario?.is_active,
+		plan: usuario?.plan ?? 'free',
+		plan_vence_at: usuario?.plan_vence_at ?? null
+	};
+}
+
+/** Publicar pide el plan Pro vigente del dueño de la tarjeta (no de quien hace la petición) */
+function exigirPlanParaPublicar(userId: string): void {
+	const dueno = db.usuarios.buscar(userId);
+	if (!dueno || !puedePublicar(dueno)) throw error.planRequerido();
 }
 
 export function itemDeLista(fila: TarjetaRow): TarjetaListItem {
@@ -121,13 +134,13 @@ export function completa(fila: TarjetaRow): TarjetaCompleta {
 }
 
 /**
- * Lo que ve un visitante: solo tarjetas publicadas de cuentas activas, solo lo visible y nada de
+ * Lo que ve un visitante: solo tarjetas publicadas de cuentas activas con plan Pro vigente, solo lo visible y nada de
  * las secciones ocultas. Cualquier otro caso responde 404 (no se revela si existe).
  */
 function publica(slug: string): TarjetaPublica {
 	const fila = db.tarjetas.activas().find((t) => t.slug === slug.toLowerCase());
 	const propietario = fila ? db.usuarios.buscar(fila.user_id) : undefined;
-	if (!fila || !fila.is_public || !propietario?.is_active) {
+	if (!fila || !fila.is_public || !propietario?.is_active || !puedePublicar(propietario)) {
 		throw error.noEncontrado('Esta tarjeta no existe o todavía no está publicada.');
 	}
 	const { propietario: _propietario, user_id: _userId, ...tarjeta } = completa(fila);
@@ -160,7 +173,7 @@ function publica(slug: string): TarjetaPublica {
 	};
 }
 
-/** Un slug queda tomado aunque su tarjeta se elimine: así ningún QR impreso apunta a otra persona */
+/** Un enlace queda tomado aunque su tarjeta se elimine: así ningún QR impreso apunta a otra persona */
 function slugEnUso(slug: string, excluirId?: string): boolean {
 	return db.tarjetas.todas().some((t) => t.slug === slug && t.id !== excluirId);
 }
@@ -187,7 +200,7 @@ function slugDisponible(slug: string, excluirId?: string): SlugDisponibilidad {
 		return {
 			slug: formato.data,
 			disponible: false,
-			motivo: 'Esa dirección ya está en uso.',
+			motivo: 'Ese enlace ya está en uso.',
 			sugerencia: slugLibre(formato.data, excluirId)
 		};
 	}
@@ -196,7 +209,7 @@ function slugDisponible(slug: string, excluirId?: string): SlugDisponibilidad {
 
 function conflictoDeSlug(slug: string, excluirId?: string): never {
 	const sugerencia = slugLibre(slug, excluirId);
-	const mensaje = `Esa dirección ya está en uso. Prueba con ${sugerencia}.`;
+	const mensaje = `Ese enlace ya está en uso. Prueba con ${sugerencia}.`;
 	throw error.conflicto(mensaje, { slug: mensaje });
 }
 
@@ -213,6 +226,7 @@ function crearAnidada(userId: string, cuerpo: unknown): TarjetaRow {
 		});
 	}
 	if (slugEnUso(datos.slug)) conflictoDeSlug(datos.slug);
+	if (datos.is_public) exigirPlanParaPublicar(userId);
 
 	const marca = ahora();
 	const fila = db.tarjetas.insertar({
@@ -262,7 +276,7 @@ function actualizar(fila: TarjetaRow, cuerpo: unknown, sesion: Sesion): TarjetaR
 	const cambiaSlug = 'slug' in cambios && cambios.slug !== fila.slug;
 	if (cambiaSlug && !canCambiarSlug(rolDe(sesion))) {
 		throw error.prohibido(
-			'Para cambiar la dirección de tu tarjeta, escríbenos: tus QR impresos dejarían de funcionar.'
+			'Para cambiar el enlace de tu tarjeta, escríbenos: tus QR impresos dejarían de funcionar.'
 		);
 	}
 	const datos = validar(tarjetaEditarSchema, { ...fila, ...cambios });
@@ -287,12 +301,13 @@ function actualizar(fila: TarjetaRow, cuerpo: unknown, sesion: Sesion): TarjetaR
 	});
 }
 
-/** Publicar fija `published_at` la primera vez; despublicar lo conserva */
+/** Publicar (solo con plan Pro) fija `published_at` la primera vez; despublicar lo conserva */
 function publicar(fila: TarjetaRow, cuerpo: unknown): TarjetaRow {
 	const { is_public } = validar(
 		z.object({ is_public: z.boolean({ message: 'Indica si la tarjeta se publica.' }) }),
 		cuerpo
 	);
+	if (is_public) exigirPlanParaPublicar(fila.user_id);
 	const marca = ahora();
 	return db.tarjetas.actualizar(fila.id, {
 		is_public,
@@ -319,6 +334,12 @@ function eliminar(fila: TarjetaRow): void {
 function eliminarDeUsuario(userId: string): void {
 	const fila = deUsuario(userId);
 	if (fila) eliminar(fila);
+}
+
+/** La cuenta perdió el plan Pro: su tarjeta vuelve a borrador (`published_at` se conserva) */
+function despublicarDeUsuario(userId: string): void {
+	const fila = deUsuario(userId);
+	if (fila?.is_public) db.tarjetas.actualizar(fila.id, { is_public: false, updated_at: ahora() });
 }
 
 /** Directorio del superadmin: busca en nombre, slug, rubro, empresa y email del propietario */
@@ -359,6 +380,7 @@ export const tarjetaMock = {
 	publicar,
 	eliminar,
 	eliminarDeUsuario,
+	despublicarDeUsuario,
 	listar
 };
 
@@ -467,6 +489,13 @@ export const tarjetaRutas: RutaMock[] = [
 			enTransaccion(() => eliminar(fila));
 			return {};
 		}
+	},
+	{
+		// Para el registro: todavía no hay sesión
+		metodo: 'GET',
+		patron: '/public/slug-disponible',
+		publica: true,
+		manejar: (ctx) => slugDisponible(ctx.query.get('slug') ?? '')
 	},
 	{
 		metodo: 'GET',

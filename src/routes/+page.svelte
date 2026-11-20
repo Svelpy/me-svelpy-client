@@ -1,16 +1,15 @@
 <script lang="ts">
 	import {
 		ClosingSection,
+		DesignSection,
 		FaqSection,
 		FeaturesSection,
 		HeroSection,
-		HowItWorksSection,
 		LandingFooter,
 		LandingNavbar,
 		LandingSeo,
-		ProblemSection,
-		SectorsSection,
-		SeoGeoSection
+		SeoGeoSection,
+		StartSection
 	} from '#lib/components/features/landing/index.ts';
 </script>
 
@@ -28,11 +27,10 @@
 
 	<main id="contenido">
 		<HeroSection />
-		<ProblemSection />
 		<FeaturesSection />
+		<DesignSection />
 		<SeoGeoSection />
-		<SectorsSection />
-		<HowItWorksSection />
+		<StartSection />
 		<FaqSection />
 		<ClosingSection />
 	</main>

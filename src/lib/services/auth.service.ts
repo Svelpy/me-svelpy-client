@@ -4,6 +4,7 @@ import type {
 	CambiarPasswordRequest,
 	CurrentUser,
 	LoginCredentials,
+	RegistroRequest,
 	LoginResponse
 } from '#lib/interfaces/index.ts';
 import { ErrorCode } from '#lib/interfaces/index.ts';
@@ -104,6 +105,27 @@ class AuthService {
 			// La información completa del usuario se pide justo después del login
 			await this.getMe();
 
+			return response;
+		} catch (error) {
+			AuthService.clearAuth();
+			throw error;
+		}
+	}
+
+	/**
+	 * `POST /auth/registro`: crea la cuenta (propietario, plan free) con su tarjeta en borrador y deja
+	 * la sesión iniciada, igual que el login.
+	 */
+	async registrar(datos: RegistroRequest): Promise<LoginResponse> {
+		try {
+			const response = await http.postPublic<LoginResponse>('/auth/registro', datos, {
+				withCredentials: true
+			});
+			AuthService.setTokens({
+				accessToken: response.access_token,
+				csrfToken: response.csrf_token
+			});
+			await this.getMe();
 			return response;
 		} catch (error) {
 			AuthService.clearAuth();

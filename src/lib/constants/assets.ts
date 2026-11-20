@@ -8,7 +8,9 @@ export const APP_SITE_CONFIG = {
 	/** Vacío = no se publica twitter:site */
 	APP_TWITTER_HANDLE: '',
 	/** WhatsApp de soporte (+591 76727537): solo dígitos, con código de país */
-	SOPORTE_WHATSAPP: '59176727537'
+	SOPORTE_WHATSAPP: '59176727537',
+	/** WhatsApp de ventas (activar el plan Pro): solo dígitos, con código de país */
+	VENTAS_WHATSAPP: '59176727537'
 } as const;
 
 /** Logos de ME en static/images/landing. "claro" = para fondos claros (ciruela y naranja) */

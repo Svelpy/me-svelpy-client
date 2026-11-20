@@ -13,3 +13,10 @@ export function latestBirthDateForAge(years: number): string {
 	const [year, month, day] = todayISO().split('-');
 	return `${Number(year) - years}-${month}-${day}`;
 }
+
+/** El último instante (hora local) del día de `fecha`, en ISO */
+export function finDelDia(fecha: string | Date): string {
+	const dia = new Date(fecha);
+	dia.setHours(23, 59, 59, 999);
+	return dia.toISOString();
+}

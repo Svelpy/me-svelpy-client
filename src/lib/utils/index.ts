@@ -24,3 +24,4 @@ export * from './tarjeta';
 export * from './temaTarjeta';
 export * from './urlPublica';
 export * from './vcard';
+export * from './plan';

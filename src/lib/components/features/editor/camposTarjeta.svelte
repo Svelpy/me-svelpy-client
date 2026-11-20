@@ -1,6 +1,7 @@
 <!--
-	Datos con los que nace una tarjeta. La dirección se sugiere desde el nombre hasta que la persona
-	la edita, y se revisa que esté libre mientras se escribe.
+	Datos con los que nace una tarjeta. El enlace se sugiere desde el nombre hasta que la persona lo
+	edita, y se revisa que esté libre mientras se escribe. Sin `slug` (el registro lo pide en su
+	propio paso), solo los datos de la persona.
 -->
 <script lang="ts">
 	import { Input } from '#lib/components/ui/index.ts';
@@ -8,9 +9,8 @@
 	import { TEMAS_TARJETA } from '#lib/config/temasTarjeta.config.ts';
 	import { tipografiaPorId } from '#lib/config/tipografiasTarjeta.config.ts';
 	import { PREFIJOS_SUGERIDOS } from '#lib/constants/data.ts';
-	import { tarjetaService } from '#lib/services/index.ts';
 	import { sugerirSlug } from '#lib/utils/slug.ts';
-	import { DOMINIO_PUBLICO } from '#lib/utils/urlPublica.ts';
+	import CampoEnlace from './campoEnlace.svelte';
 	import RubroCombobox from './rubroCombobox.svelte';
 
 	interface Props {
@@ -19,7 +19,8 @@
 		apellidos: string;
 		cargo: string;
 		rubro: string;
-		slug: string;
+		/** Omitido: no se muestra el campo del enlace */
+		slug?: string;
 		/** Errores con el nombre de cada campo (o con un prefijo, p. ej. `tarjeta.slug`) */
 		errores: Record<string, string>;
 		prefijoErrores?: string;
@@ -37,33 +38,14 @@
 	}: Props = $props();
 
 	const listaPrefijos = $props.id();
+	const conEnlace = slug !== undefined;
 	let slugEditado = $state(false);
-	let avisoSlug = $state('');
-	let temporizador: ReturnType<typeof setTimeout> | undefined;
 
 	const error = (campo: string) => errores[`${prefijoErrores}${campo}`];
 
 	$effect(() => {
 		const sugerido = sugerirSlug({ prefijo, nombres, apellidos });
-		if (!slugEditado) slug = sugerido;
-	});
-
-	$effect(() => {
-		const actual = slug;
-		clearTimeout(temporizador);
-		avisoSlug = '';
-		if (actual.length < 3) return;
-		temporizador = setTimeout(async () => {
-			try {
-				const respuesta = await tarjetaService.slugDisponible(actual);
-				if (actual !== slug) return;
-				avisoSlug = respuesta.disponible
-					? `${DOMINIO_PUBLICO}/${respuesta.slug} está libre.`
-					: `${respuesta.motivo ?? 'No disponible.'}${respuesta.sugerencia ? ` Prueba con ${respuesta.sugerencia}.` : ''}`;
-			} catch {
-				avisoSlug = '';
-			}
-		}, 400);
+		if (conEnlace && !slugEditado) slug = sugerido;
 	});
 
 	const inicio = $derived.by(() => {
@@ -99,14 +81,13 @@
 			error={error('cargo')}
 		/>
 	</div>
-	<Input
-		label="Dirección de la tarjeta"
-		required
-		maxlength={80}
-		bind:value={slug}
-		oninput={() => (slugEditado = true)}
-		hint={avisoSlug || `Así la abrirán tus clientes: ${DOMINIO_PUBLICO}/${slug || 'tu-nombre'}`}
-		error={error('slug')}
-		mono
-	/>
+	{#if conEnlace && slug !== undefined}
+		<CampoEnlace
+			bind:value={slug}
+			required
+			hint="Así la abrirán tus clientes. Se sugiere desde el nombre."
+			error={error('slug')}
+			oneditar={() => (slugEditado = true)}
+		/>
+	{/if}
 </div>

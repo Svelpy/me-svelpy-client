@@ -1,4 +1,4 @@
-import type { TarjetaResumen } from './tarjeta.interface';
+import type { TarjetaNuevaRequest, TarjetaResumen } from './tarjeta.interface';
 import type { Usuario } from './usuario.interface';
 
 export interface LoginCredentials {
@@ -32,4 +32,15 @@ export interface CurrentUser {
 export interface CambiarPasswordRequest {
 	password_actual: string;
 	password_nueva: string;
+}
+
+/**
+ * `POST /auth/registro` (pública): alguien crea su cuenta y su tarjeta en un paso. Siempre nace
+ * como propietario con plan free y la tarjeta en borrador (el backend ignora rol, plan e is_public).
+ * Responde como el login (`LoginResponse`): queda con la sesión iniciada.
+ */
+export interface RegistroRequest {
+	email: string;
+	password: string;
+	tarjeta: Omit<TarjetaNuevaRequest, 'is_public'>;
 }

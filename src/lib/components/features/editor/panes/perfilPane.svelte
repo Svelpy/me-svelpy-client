@@ -10,6 +10,7 @@
 	import { DOMINIO_PUBLICO } from '#lib/utils/urlPublica.ts';
 	import { tarjetaEditarSchema } from '#lib/zod/tarjeta.schema.ts';
 	import CampoImagen from '../campoImagen.svelte';
+	import CampoEnlace from '../campoEnlace.svelte';
 	import EditorPanel from '../editorPanel.svelte';
 	import { getEditor } from '../estadoEditor.svelte.ts';
 	import { EstadoFormulario } from '../estadoFormulario.svelte.ts';
@@ -36,7 +37,6 @@
 	let coverUrl = $state(inicial.cover_url);
 	let logoUrl = $state(inicial.logo_empresa_url);
 	let agendaUrl = $state(inicial.photo_usuario_url);
-	let slugAviso = $state('');
 	const estado = new EstadoFormulario();
 	const listaPrefijos = $props.id();
 
@@ -68,20 +68,6 @@
 		editor.previsualizar(cambiado ? datos : null, cambiado);
 	});
 	$effect(() => () => editor.previsualizar(null, false));
-
-	// Disponibilidad de la dirección (solo el superadmin puede cambiarla)
-	let temporizador: ReturnType<typeof setTimeout> | undefined;
-	function revisarSlug() {
-		clearTimeout(temporizador);
-		slugAviso = '';
-		if (slug === editor.tarjeta.slug) return;
-		temporizador = setTimeout(async () => {
-			const respuesta = await tarjetaService.slugDisponible(slug, editor.tarjeta.id);
-			slugAviso = respuesta.disponible
-				? 'Disponible.'
-				: `${respuesta.motivo ?? 'No disponible.'}${respuesta.sugerencia ? ` Prueba con ${respuesta.sugerencia}.` : ''}`;
-		}, 350);
-	}
 
 	function enviar(event: SubmitEvent) {
 		event.preventDefault();
@@ -155,17 +141,18 @@
 		</div>
 
 		{#if puedeCambiarSlug}
-			<Input
-				label="Dirección de la tarjeta"
+			<!-- Solo el superadmin cambia el enlace -->
+			<CampoEnlace
 				bind:value={slug}
-				oninput={revisarSlug}
-				hint={slugAviso || `${DOMINIO_PUBLICO}/${slug}. Cambiarla rompe los QR ya impresos.`}
+				required
+				excluirId={editor.tarjeta.id}
+				actual={editor.tarjeta.slug}
+				hint="Cambiarlo rompe los QR ya impresos."
 				error={estado.errores.slug}
-				mono
 			/>
 		{:else}
 			<div>
-				<p class="text-sm font-medium">Dirección de la tarjeta</p>
+				<p class="text-sm font-medium">Enlace de la tarjeta</p>
 				<p class="mt-1.5 font-mono text-[0.9375rem]">{DOMINIO_PUBLICO}/{editor.tarjeta.slug}</p>
 				<p class="mt-1 text-xs text-light-two_d dark:text-dark-two_d">
 					Para cambiarla, escríbenos: tus QR impresos dejarían de funcionar.

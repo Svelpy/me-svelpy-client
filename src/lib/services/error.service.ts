@@ -53,6 +53,7 @@ const DEFAULT_MESSAGES: Record<ErrorCode, string> = {
 	[ErrorCode.REFRESH_FAILED]: 'Tu sesión expiró. Inicia sesión nuevamente.',
 	[ErrorCode.RESOURCE_NOT_FOUND]: 'El recurso solicitado no existe.',
 	[ErrorCode.CONFLICT]: 'El registro ya existe o entra en conflicto con otro.',
+	[ErrorCode.PLAN_REQUERIDO]: 'Esta acción necesita el plan Pro.',
 	[ErrorCode.NETWORK_ERROR]: 'Problema de conexión. Verifica tu internet.',
 	[ErrorCode.TIMEOUT]: 'El servidor tardó demasiado en responder. Inténtalo nuevamente.',
 	[ErrorCode.UNKNOWN_ERROR]: 'Ocurrió un error inesperado. Inténtalo más tarde.'

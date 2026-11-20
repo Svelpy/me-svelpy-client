@@ -16,7 +16,7 @@
 	let { slug, publicada, sinEstado = false, class: className }: Props = $props();
 </script>
 
-<!-- La dirección de la tarjeta: es su identidad, por eso va en monoespaciada -->
+<!-- El enlace de la tarjeta: es su identidad, por eso va en monoespaciada -->
 <!-- Sin espacio, el enlace baja a su propia línea junto con su botón de copiar -->
 <div class={cn('flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1', className)}>
 	{#if !sinEstado}<EstadoPublicacion {publicada} />{/if}

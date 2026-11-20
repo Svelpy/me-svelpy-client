@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { CamposTarjeta, EstadoFormulario } from '#lib/components/features/editor/index.ts';
+	import { CamposPlan } from '#lib/components/features/planes/index.ts';
 	import { generarPassword } from '#lib/components/features/usuarios/password.ts';
 	import { MainLayout } from '#lib/components/layout/index.ts';
 	import {
@@ -14,12 +15,14 @@
 		Switch
 	} from '#lib/components/ui/index.ts';
 	import { Role, type AssignableUserRole } from '#lib/config/permissions.config.ts';
+	import { Plan } from '#lib/config/planes.config.ts';
 	import { CONTACTO_TIPO_LABEL, ROLE_LABEL } from '#lib/constants/index.ts';
 	import { LinkIcon, MailIcon, PlusIcon, XIcon } from '#lib/icons/outline/index.ts';
 	import type { ContactoTipo, TarjetaContactoCreateRequest } from '#lib/interfaces/index.ts';
 	import { usuarioService } from '#lib/services/index.ts';
 	import { alert } from '#lib/utils/alert.ts';
 	import { detectarRedSocial, usuarioDesdeUrl, websiteUrl } from '#lib/utils/contacto.ts';
+	import { planDelFormulario } from '#lib/utils/plan.ts';
 	import { usuarioCreateSchema } from '#lib/zod/usuario.schema.ts';
 
 	let email = $state('');
@@ -27,6 +30,8 @@
 	let rol = $state<AssignableUserRole>(Role.OWNER);
 	let activa = $state(true);
 	let conTarjeta = $state(true);
+	let plan = $state<Plan>(Plan.FREE);
+	let vence = $state('');
 
 	let prefijo = $state('');
 	let nombres = $state('');
@@ -62,6 +67,7 @@
 			password,
 			rol,
 			is_active: activa,
+			...(rol === Role.OWNER && planDelFormulario(plan, vence)),
 			...(armaTarjeta && {
 				tarjeta: {
 					prefijo,
@@ -146,6 +152,9 @@
 					]}
 				/>
 				<Switch label="Cuenta activa" bind:checked={activa} />
+				{#if rol === Role.OWNER}
+					<CamposPlan bind:plan bind:vence errores={estado.errores} />
+				{/if}
 			</section>
 
 			{#if rol === Role.OWNER}
@@ -157,7 +166,9 @@
 						<div>
 							<h2 id="tarjeta-titulo" class="font-display text-lg font-semibold">Su tarjeta</h2>
 							<p class="mt-1 text-sm text-light-two_d dark:text-dark-two_d">
-								Nace en borrador; el resto se completa en el editor.
+								Nace en borrador; el resto se completa en el editor.{plan === Plan.PRO
+									? ' Con Pro se puede publicar desde ahí.'
+									: ''}
 							</p>
 						</div>
 						<Switch label="Crear su tarjeta ahora" etiquetaOculta bind:checked={conTarjeta} />

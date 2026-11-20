@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { EstadoFormulario } from '#lib/components/features/editor/index.ts';
+	import { CamposPlan, EstadoPlan } from '#lib/components/features/planes/index.ts';
 	import { generarPassword } from '#lib/components/features/usuarios/password.ts';
 	import { MainLayout } from '#lib/components/layout/index.ts';
 	import { TablaSkeleton } from '#lib/components/skeletons/index.ts';
@@ -21,6 +22,7 @@
 		Switch
 	} from '#lib/components/ui/index.ts';
 	import { Role, type AssignableUserRole } from '#lib/config/permissions.config.ts';
+	import { Plan, planVigente } from '#lib/config/planes.config.ts';
 	import { ROLE_LABEL } from '#lib/constants/index.ts';
 	import {
 		CircleCheckIcon,
@@ -37,6 +39,7 @@
 	import { currentUserStore } from '#lib/stores/index.ts';
 	import { alert } from '#lib/utils/alert.ts';
 	import { formatRelativeTime } from '#lib/utils/format.ts';
+	import { planDelFormulario, vencimientoAFecha } from '#lib/utils/plan.ts';
 	import { isRole } from '#lib/utils/rbac.utils.ts';
 	import { nombreCompleto } from '#lib/utils/tarjeta.ts';
 	import { usuarioPasswordSchema, usuarioUpdateSchema } from '#lib/zod/usuario.schema.ts';
@@ -84,6 +87,8 @@
 	let email = $state('');
 	let rol = $state<AssignableUserRole>(Role.OWNER);
 	let activa = $state(true);
+	let plan = $state<Plan>(Plan.FREE);
+	let vence = $state('');
 	const formEditar = new EstadoFormulario();
 
 	function abrirEditar(usuario: UsuarioListItem) {
@@ -91,14 +96,28 @@
 		email = usuario.email;
 		rol = isRole(usuario.rol) ? usuario.rol : Role.OWNER;
 		activa = usuario.is_active;
+		plan = planVigente(usuario);
+		vence = plan === Plan.PRO ? vencimientoAFecha(usuario.plan_vence_at) : '';
 		formEditar.limpiar();
 	}
+
+	/** Pasar a Free (o dejar de ser propietario) despublica su tarjeta: se avisa antes de guardar */
+	const despublica = $derived(
+		!!editando?.tarjeta?.is_public && (rol !== Role.OWNER || plan === Plan.FREE)
+	);
 
 	function guardarEdicion(event: SubmitEvent) {
 		event.preventDefault();
 		const usuario = editando;
 		if (!usuario) return;
-		formEditar.enviar(usuarioUpdateSchema, { email, rol, is_active: activa }, async (validos) => {
+		// El plan solo se envía para propietarios: un superadmin no tiene plan
+		const cuerpo = {
+			email,
+			rol,
+			is_active: activa,
+			...(rol === Role.OWNER && planDelFormulario(plan, vence))
+		};
+		formEditar.enviar(usuarioUpdateSchema, cuerpo, async (validos) => {
 			await usuarioService.actualizar(usuario.id, validos);
 			editando = null;
 			alert('success', 'Cuenta actualizada');
@@ -243,6 +262,14 @@
 	{/if}
 {/snippet}
 
+{#snippet planDe(usuario: UsuarioListItem)}
+	{#if usuario.rol === Role.OWNER}
+		<EstadoPlan cuenta={usuario} variante="celda" />
+	{:else}
+		<span class="text-light-four_d dark:text-dark-four_d">—</span>
+	{/if}
+{/snippet}
+
 <!-- Lo normal (activa) va callado; lo que pide atención (desactivada) lleva punto y peso -->
 {#snippet estadoDe(usuario: UsuarioListItem)}
 	{#if usuario.is_active}
@@ -279,11 +306,11 @@
 		{/snippet}
 	</PageHeader>
 
-	<div class="mt-8 flex flex-col gap-3 lg:flex-row lg:items-end">
+	<div class="mt-8 flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
 		<Input
 			type="search"
 			label="Buscar"
-			placeholder="Correo, nombre o dirección de su tarjeta"
+			placeholder="Correo, nombre o enlace de su tarjeta"
 			icon={SearchIcon}
 			value={busqueda}
 			oninput={(event) => buscar(event.currentTarget.value)}
@@ -300,6 +327,16 @@
 			onchange={(valor) => filtrar({ rol: valor === 'todos' ? null : valor })}
 		/>
 		<SegmentedControl
+			label="Plan"
+			options={[
+				{ value: 'todos', label: 'Todos' },
+				{ value: Plan.PRO, label: 'Pro' },
+				{ value: Plan.FREE, label: 'Free' }
+			]}
+			value={data.filtros.plan ?? 'todos'}
+			onchange={(valor) => filtrar({ plan: valor === 'todos' ? null : valor })}
+		/>
+		<SegmentedControl
 			label="Estado"
 			options={[
 				{ value: 'todos', label: 'Todas' },
@@ -313,7 +350,7 @@
 
 	<div class="mt-7">
 		{#await data.listado}
-			<TablaSkeleton columnas={5} etiqueta="Cargando las cuentas" />
+			<TablaSkeleton columnas={6} etiqueta="Cargando las cuentas" />
 		{:then listado}
 			{#if listado.data.length === 0}
 				<EmptyState
@@ -334,6 +371,7 @@
 								<th scope="col" class="px-4 py-3">Cuenta</th>
 								<th scope="col" class="px-4 py-3">Rol</th>
 								<th scope="col" class="px-4 py-3">Tarjeta</th>
+								<th scope="col" class="px-4 py-3">Plan</th>
 								<th scope="col" class="px-4 py-3">Estado</th>
 								<th scope="col" class="hidden px-4 py-3 lg:table-cell">Último acceso</th>
 								<th scope="col" class="px-4 py-3"><span class="sr-only">Acciones</span></th>
@@ -345,6 +383,7 @@
 									<td class="max-w-64 truncate px-4 py-3 font-medium">{@render cuenta(usuario)}</td>
 									<td class="px-4 py-3">{@render rolDe(usuario)}</td>
 									<td class="px-4 py-3">{@render tarjetaDe(usuario)}</td>
+									<td class="px-4 py-3">{@render planDe(usuario)}</td>
 									<td class="px-4 py-3">{@render estadoDe(usuario)}</td>
 									<td class="hidden px-4 py-3 text-light-two_d lg:table-cell dark:text-dark-two_d">
 										{usuario.last_login_at ? formatRelativeTime(usuario.last_login_at) : 'Nunca'}
@@ -369,6 +408,9 @@
 									{@render estadoDe(usuario)}
 								</div>
 								<p class="truncate">{@render tarjetaDe(usuario)}</p>
+								{#if usuario.rol === Role.OWNER}
+									<EstadoPlan cuenta={usuario} class="text-xs" />
+								{/if}
 							</div>
 							{@render botonMenu(usuario)}
 						</li>
@@ -435,6 +477,16 @@
 			descripcion="Desactivada no puede entrar y su tarjeta deja de verse."
 			bind:checked={activa}
 		/>
+		{#if rol === Role.OWNER}
+			<div class="border-t border-light-four/40 pt-5 dark:border-dark-one_d">
+				<CamposPlan bind:plan bind:vence errores={formEditar.errores} />
+			</div>
+		{/if}
+		{#if despublica}
+			<AlertBox variant="warning">
+				Su tarjeta está publicada: al guardar vuelve a borrador.
+			</AlertBox>
+		{/if}
 	</form>
 	{#snippet footer()}
 		<div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -493,7 +545,7 @@
 	isOpen={porEliminar !== null}
 	title="¿Eliminar la cuenta {porEliminar?.email ?? ''}?"
 	message={porEliminar?.tarjeta
-		? 'También se elimina su tarjeta: deja de verse de inmediato y su dirección queda reservada.'
+		? 'También se elimina su tarjeta: deja de verse de inmediato y su enlace queda reservado.'
 		: 'La cuenta deja de poder entrar al panel.'}
 	confirmLabel="Eliminar cuenta"
 	loading={eliminando}

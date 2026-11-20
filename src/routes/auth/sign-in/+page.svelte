@@ -184,9 +184,18 @@
 				Escríbenos por WhatsApp
 			</a>
 		</p>
+		<p class="mt-2 text-sm text-light-two_d dark:text-dark-two_d">
+			¿Aún no tienes cuenta?
+			<a
+				href={resolve('/auth/sign-up')}
+				class="font-semibold text-light-two underline decoration-light-four underline-offset-4 hover:decoration-light-two dark:text-dark-two dark:decoration-dark-four dark:hover:decoration-dark-two"
+			>
+				Crea tu tarjeta
+			</a>
+		</p>
 
-		<div class="mt-12">
+		<!-- <div class="mt-12">
 			<DemoAccounts onUsar={usarCuenta} />
-		</div>
+		</div> -->
 	</main>
 </MainLayout>

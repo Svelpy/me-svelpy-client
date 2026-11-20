@@ -2,6 +2,7 @@ export * from './apiMeSvelpy.config';
 export * from './api.config';
 export * from './http.config';
 export * from './permissions.config';
+export * from './planes.config';
 export * from './routeAccess.config';
 export * from './rubros.config';
 export * from './seccionesTarjeta.config';

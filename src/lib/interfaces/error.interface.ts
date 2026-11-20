@@ -16,6 +16,8 @@ export enum ErrorCode {
 	REFRESH_FAILED = 'REFRESH_FAILED',
 	RESOURCE_NOT_FOUND = 'RESOURCE_NOT_FOUND',
 	CONFLICT = 'CONFLICT',
+	/** La acción pide el plan Pro (p. ej. publicar la tarjeta) */
+	PLAN_REQUERIDO = 'PLAN_REQUERIDO',
 
 	// Cliente
 	NETWORK_ERROR = 'NETWORK_ERROR',

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SLUG_MAX } from '#lib/constants/slugs.ts';
 import { slugSchema } from '#lib/zod/common.ts';
-import { slugify, sugerirSlug } from './slug.ts';
+import { limpiarSlugEscrito, slugify, sugerirSlug } from './slug.ts';
 
 describe('slugify', () => {
 	it('quita tildes, eñes, mayúsculas y signos', () => {
@@ -39,6 +39,15 @@ describe('slugSchema', () => {
 	it('rechaza las direcciones reservadas por la app', () => {
 		const resultado = slugSchema.safeParse('auth');
 		expect(resultado.success).toBe(false);
-		expect(resultado.error?.issues[0].message).toBe('Esa dirección está reservada. Elige otra.');
+		expect(resultado.error?.issues[0].message).toBe('Ese enlace está reservado. Elige otro.');
+	});
+});
+
+describe('limpiarSlugEscrito', () => {
+	it('convierte lo escrito en dirección sin cortar el guion final', () => {
+		expect(limpiarSlugEscrito('Rocío Suárez')).toBe('rocio-suarez');
+		expect(limpiarSlugEscrito('Rocío ')).toBe('rocio-');
+		expect(limpiarSlugEscrito('  -Dra. Ñuflo')).toBe('dra-nuflo');
+		expect(limpiarSlugEscrito('mi__tarjeta!!2')).toBe('mi-tarjeta-2');
 	});
 });

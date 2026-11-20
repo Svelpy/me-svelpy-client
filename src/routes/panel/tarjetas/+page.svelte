@@ -63,7 +63,7 @@
 		<Input
 			type="search"
 			label="Buscar"
-			placeholder="Nombre, dirección, rubro, empresa o correo"
+			placeholder="Nombre, enlace, rubro, empresa o correo"
 			icon={SearchIcon}
 			value={busqueda}
 			oninput={(event) => buscar(event.currentTarget.value)}

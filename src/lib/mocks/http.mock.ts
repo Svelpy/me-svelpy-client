@@ -3,6 +3,7 @@ import { ErrorCode } from '#lib/interfaces/error.interface.ts';
 import { AppError, errorService } from '#lib/services/error.service.ts';
 import { error, type Metodo } from './db/contexto';
 import { leerTokenGuardado, sesionDesdeToken } from './db/sesion';
+import { usuarioMock } from './modelos/usuario.mock';
 import { buscarRuta } from './router';
 import { prepararDatosDePrueba } from './seed';
 
@@ -48,6 +49,7 @@ class MockHttp implements HttpClient {
 	): Promise<T> {
 		try {
 			await prepararDatosDePrueba();
+			usuarioMock.aplicarVencimientos();
 			await esperar(latencia());
 
 			const url = new URL(endpoint, 'http://me.mock');

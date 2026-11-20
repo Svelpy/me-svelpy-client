@@ -12,6 +12,7 @@ import type { TarjetaSeo, TarjetaSeoUpdateRequest } from './tarjetaSeo.interface
 import type { TarjetaSocial, TarjetaSocialCreateRequest } from './tarjetaSocial.interface';
 import type { TarjetaTheme, TarjetaThemeUpdateRequest } from './tarjetaTheme.interface';
 import type { TarjetaUbicacion, TarjetaUbicacionCreateRequest } from './tarjetaUbicacion.interface';
+import type { UsuarioPlan } from './usuario.interface';
 import type { VitrinaCompleta, VitrinaNuevaRequest } from './vitrina.interface';
 
 /**
@@ -84,6 +85,9 @@ export interface TarjetaPropietario {
 	id: string;
 	email: string;
 	is_active: boolean;
+	/** Con free la tarjeta no se puede publicar */
+	plan: UsuarioPlan;
+	plan_vence_at: string | null;
 }
 
 /** Item del directorio de tarjetas (`GET /tarjetas`, superadmin) */
@@ -140,7 +144,7 @@ export interface TarjetaNuevaRequest {
 	nombre_empresa_posicion?: NombreEmpresaPosicion;
 	cover_url?: string | null;
 	qr_pago_url?: string | null;
-	/** Por defecto false (borrador) */
+	/** Por defecto false (borrador). true solo si la cuenta tiene plan pro (si no, 403 PLAN_REQUERIDO) */
 	is_public?: boolean;
 	/** Sin tema: los colores del preset que sugiere el rubro */
 	theme?: Partial<TarjetaThemeUpdateRequest>;
@@ -196,7 +200,7 @@ export interface TarjetaFiltros extends PaginationParams {
 	estado?: TarjetaEstado;
 }
 
-/** `GET /tarjetas/slug-disponible?slug=&excluir=` */
+/** `GET /tarjetas/slug-disponible?slug=&excluir=` y `GET /public/slug-disponible?slug=` (registro) */
 export interface SlugDisponibilidad {
 	slug: string;
 	disponible: boolean;

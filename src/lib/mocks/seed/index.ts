@@ -1,4 +1,8 @@
 import { Role } from '#lib/config/permissions.config.ts';
+import { Plan } from '#lib/config/planes.config.ts';
+import { finDelDia } from '#lib/utils/date.ts';
+import { passwordSchema } from '#lib/zod/common.ts';
+import { hashPassword } from '../db/sesion';
 import { borrarTodo, guardarValor, leerValor } from '../db/storage';
 import { db } from '../db/tablas';
 import { usuarioMock } from '../modelos/usuario.mock';
@@ -10,25 +14,35 @@ import { CUENTAS_DE_PRUEBA } from './usuarios.seed';
  */
 
 /** Subir al cambiar los datos de prueba: cada navegador vuelve a sembrar su base */
-const VERSION_DATOS = '2';
+const VERSION_DATOS = '3';
 
 let preparacion: Promise<void> | null = null;
 
 async function sembrar(): Promise<void> {
 	if (leerValor('version') === VERSION_DATOS) return;
 	borrarTodo();
-	for (const cuenta of CUENTAS_DE_PRUEBA) {
-		await usuarioMock.crear({
-			email: cuenta.email,
-			password: cuenta.password,
-			rol: cuenta.rol,
-			is_active: cuenta.is_active ?? true,
-			...(cuenta.tarjeta && { tarjeta: cuenta.tarjeta })
-		});
-	}
-	// Fechas escalonadas: así "Actualizadas hace poco" y "Último acceso" tienen sentido
 	const ahora = Date.now();
 	const haceHoras = (horas: number) => new Date(ahora - horas * 3_600_000).toISOString();
+	for (const cuenta of CUENTAS_DE_PRUEBA) {
+		// Una cuenta de prueba puede tener una contraseña que el panel no aceptaría (p. ej. 12345678):
+		// se crea con una válida y después se guarda la suya
+		const passwordValida = passwordSchema.safeParse(cuenta.password).success;
+		const creada = await usuarioMock.crear({
+			email: cuenta.email,
+			password: passwordValida ? cuenta.password : 'Semilla1234',
+			rol: cuenta.rol,
+			is_active: cuenta.is_active ?? true,
+			plan: cuenta.plan ?? Plan.FREE,
+			// Fin del día local, como lo elige el superadmin en el panel
+			plan_vence_at:
+				cuenta.venceEnDias == null ? null : finDelDia(haceHoras(-cuenta.venceEnDias * 24)),
+			...(cuenta.tarjeta && { tarjeta: cuenta.tarjeta })
+		});
+		if (!passwordValida) {
+			db.usuarios.actualizar(creada.id, { password_hash: await hashPassword(cuenta.password) });
+		}
+	}
+	// Fechas escalonadas: así "Actualizadas hace poco" y "Último acceso" tienen sentido
 	const tarjetas = db.tarjetas.activas();
 	tarjetas.forEach((tarjeta, indice) => {
 		db.tarjetas.actualizar(tarjeta.id, { updated_at: haceHoras(indice * 7) });

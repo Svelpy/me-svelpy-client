@@ -3,6 +3,8 @@ uuid id PK "default gen_random_uuid()"
 varchar email UK "255, NOT NULL, unico sin mayusculas entre los no eliminados"  
 text password_hash "NOT NULL, hash bcrypt o argon2"  
 varchar rol "20, NOT NULL, owner | superadmin"  
+plan plan "NOT NULL, default free, enum plan, solo aplica a owner"
+timestamptz plan_vence_at "NULL, solo con pro, NULL = no vence; al vencer: plan = free, plan_vence_at = NULL y su tarjeta is_public = false"
 boolean is_active "NOT NULL, default true"  
 timestamptz last_login_at "NULL"  
 boolean is_deleted "NOT NULL, default false, borrado logico"
@@ -28,7 +30,7 @@ varchar nombre_empresa_posicion "10, NOT NULL, default derecha, arriba | abajo |
 text cover_url "NULL, https"
 text qr_tarjeta_url "NULL, https"
 text qr_pago_url "NULL, https"
-boolean is_public "NOT NULL, default false"
+boolean is_public "NOT NULL, default false, true solo si el usuario tiene plan pro vigente"
 timestamptz published_at "NULL"
 boolean is_deleted "NOT NULL, default false, borrado logico"
 timestamptz created_at "NOT NULL, default now()"
@@ -133,6 +135,11 @@ timestamptz updated_at "NOT NULL, default now()"
     	time hora_fin  "NOT NULL, mayor que hora_inicio"
     	boolean is_deleted  "NOT NULL, default false, borrado logico"
     	timestamptz created_at  "NOT NULL, default now()"
+    }
+
+    plan {
+    	enum free  "edita toda su tarjeta pero no la publica"
+    	enum pro  "puede publicar su tarjeta"
     }
 
     red_social {

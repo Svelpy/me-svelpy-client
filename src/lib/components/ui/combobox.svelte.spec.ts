@@ -56,6 +56,29 @@ describe('Combobox', () => {
 		expect(valores.at(-1)).toBe('Apicultura');
 	});
 
+	it('ofrece usar lo escrito cuando no está en la lista', async () => {
+		const valores: string[] = [];
+		const screen = await render(Combobox, {
+			label: 'Rubro',
+			value: '',
+			opciones,
+			etiquetaLibre: 'Rubro propio',
+			onseleccionar: (valor: string) => valores.push(valor)
+		});
+		const campo = screen.getByRole('combobox', { name: 'Rubro' });
+		await campo.fill('Apicultura');
+		const propia = screen.getByRole('option', { name: /Usar «Apicultura»/ });
+		await expect.element(propia).toBeVisible();
+
+		await propia.click();
+		await expect.element(campo).toHaveValue('Apicultura');
+		expect(valores.at(-1)).toBe('Apicultura');
+
+		// Si coincide exactamente con una del catálogo, no se ofrece aparte
+		await campo.fill('pediatría');
+		await expect.element(screen.getByRole('option', { name: /Usar «/ })).not.toBeInTheDocument();
+	});
+
 	it('Escape cierra la lista', async () => {
 		const screen = await render(Combobox, { label: 'Rubro', value: '', opciones });
 		const campo = screen.getByRole('combobox', { name: 'Rubro' });

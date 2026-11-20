@@ -133,7 +133,13 @@ export function tarjetaListItemDePrueba(cambios: Partial<TarjetaListItem> = {}):
 			overlay_opacidad: tarjeta.theme.overlay_opacidad,
 			tipografia: tarjeta.theme.tipografia
 		},
-		propietario: { id: 'usuario-1', email: 'lucia@prueba.test', is_active: true },
+		propietario: {
+			id: 'usuario-1',
+			email: 'lucia@prueba.test',
+			is_active: true,
+			plan: 'pro',
+			plan_vence_at: null
+		},
 		...cambios
 	};
 }

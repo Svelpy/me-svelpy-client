@@ -1,4 +1,5 @@
 import { getContext, setContext } from 'svelte';
+import { puedePublicar } from '#lib/config/planes.config.ts';
 import type { SeccionClave, TarjetaCompleta } from '#lib/interfaces/index.ts';
 
 /** Paneles del editor: los de la tarjeta y uno por cada sección */
@@ -19,6 +20,9 @@ export class EditorTarjeta {
 	borrador = $state<Partial<TarjetaCompleta> | null>(null);
 	/** Hay cambios sin guardar en el panel abierto */
 	sinGuardar = $state(false);
+
+	/** El dueño tiene plan Pro vigente: solo así la tarjeta se puede publicar */
+	conPlanPro = $derived(puedePublicar(this.tarjeta.propietario));
 
 	/** Lo que muestra el espejo: lo guardado más el borrador */
 	vistaPrevia = $derived<TarjetaCompleta>(

@@ -1,7 +1,9 @@
 /**
  * Contenido de la landing de ME by Svelpy (fuente: dataLanding.md).
  * Todo el texto y los enlaces viven aquí para que las secciones solo se ocupen del diseño.
+ * Pocas palabras por bloque: un titular, una frase y una acción.
  */
+import { resolve } from '$app/paths';
 import valeriaRojas from '#lib/assets/landing/perfiles/valeria-rojas.png?enhanced';
 import camilaRivas from '#lib/assets/landing/perfiles/dra-camila-rivas.png?enhanced';
 import andresQuiroga from '#lib/assets/landing/perfiles/andres-quiroga.png?enhanced';
@@ -26,15 +28,19 @@ function whatsapp(mensaje: string): string {
 }
 
 export const LANDING_LINKS = {
-	// TODO: usar resolve('/auth/sign-in') cuando exista la ruta.
-	iniciarSesion: '/auth/sign-in',
-	crearMe: whatsapp('Hola, quiero crear mi ME.'),
+	iniciarSesion: resolve('/auth/sign-in'),
+	/** Registro propio; el campo de enlace de la landing le agrega `?enlace=` */
+	registro: resolve('/auth/sign-up'),
+	solicitarMe: whatsapp('Hola, quiero que me armen mi ME.'),
 	consulta: whatsapp('Hola, tengo una consulta sobre ME.'),
-	perfilesEjemplo: '#sectores',
 	svelpy: 'https://svelpy.com'
 } as const;
 
-/** Nombre único de la acción principal (abre WhatsApp) en toda la landing. */
+/**
+ * Las dos formas de tener un ME, cada una con un solo nombre en toda la landing:
+ * crearla uno mismo (registro gratis) o pedir que la arme el equipo (WhatsApp).
+ */
+export const CTA_CREAR = 'Crear mi ME gratis';
 export const CTA_SOLICITAR = 'Solicitar mi ME por WhatsApp';
 
 export const LOGOS = {
@@ -53,11 +59,11 @@ export interface LandingNavLink {
 }
 
 export const NAV_LINKS: LandingNavLink[] = [
-	{ label: 'Cómo funciona', href: '#como-funciona' },
-	{ label: 'Beneficios', href: '#beneficios' },
-	{ label: 'Sectores', href: '#sectores' },
+	{ label: 'Funciones', href: '#funciones' },
+	{ label: 'Diseño', href: '#diseno' },
 	{ label: 'SEO + GEO', href: '#seo-geo' },
-	{ label: 'Contacto', href: '#contacto' }
+	{ label: 'Cómo empezar', href: '#empezar' },
+	{ label: 'Preguntas', href: '#preguntas' }
 ];
 
 // ── Perfiles de ejemplo (simulados: reemplazar por capturas de clientes reales)
@@ -67,8 +73,6 @@ export interface PerfilEjemplo {
 	nombre: string;
 	cargo: string;
 	empresa: string;
-	/** Etiqueta corta para el selector del hero. */
-	rubro: string;
 	imagen: Picture;
 	alt: string;
 }
@@ -79,7 +83,6 @@ export const PERFILES = {
 		nombre: 'Valeria Rojas',
 		cargo: 'Agente inmobiliaria',
 		empresa: 'Horizonte Propiedades',
-		rubro: 'Inmobiliaria',
 		imagen: valeriaRojas,
 		alt: 'Perfil ME de Valeria Rojas, agente inmobiliaria: botón Guardar contacto, accesos a llamada, WhatsApp, correo y ubicación, dos propiedades destacadas con precio y su oficina en el mapa.'
 	},
@@ -88,7 +91,6 @@ export const PERFILES = {
 		nombre: 'Dra. Camila Rivas',
 		cargo: 'Odontóloga',
 		empresa: 'Clínica Sonríe',
-		rubro: 'Odontología',
 		imagen: camilaRivas,
 		alt: 'Perfil ME de la Dra. Camila Rivas, odontóloga: botón Guardar contacto, tratamientos con precio y consulta por WhatsApp, consultorio en el mapa y botón Agendar cita.'
 	},
@@ -97,7 +99,6 @@ export const PERFILES = {
 		nombre: 'Andrés Quiroga',
 		cargo: 'Gerente comercial',
 		empresa: 'Andina Logística',
-		rubro: 'Ejecutivo',
 		imagen: andresQuiroga,
 		alt: 'Perfil ME de Andrés Quiroga, gerente comercial de una empresa de logística: botón Guardar contacto, servicios para cotizar, centro logístico en el mapa y botón Solicitar cotización.'
 	},
@@ -106,7 +107,6 @@ export const PERFILES = {
 		nombre: 'Mariana Ortiz',
 		cargo: 'Abogada corporativa',
 		empresa: 'Ortiz & Asociados',
-		rubro: 'Abogacía',
 		imagen: marianaOrtiz,
 		alt: 'Perfil ME de Mariana Ortiz, abogada corporativa: diseño sobrio en verde, botón Guardar contacto, áreas de práctica, estudio jurídico en el mapa y botón Agendar reunión.'
 	}
@@ -115,218 +115,111 @@ export const PERFILES = {
 // ── Hero
 
 export const HERO = {
-	titulo: 'Que no solo guarden tu contacto: haz que te encuentren primero.',
+	titulo: 'Tu tarjeta de presentación, ahora es una web.',
 	subtitulo:
-		'Reemplaza las antiguas tarjetas de papel por tu propia vitrina digital autoadministrable. Comparte tu contacto en un toque, exhibe tu catálogo de propiedades o servicios, muestra tus sucursales y posiciona tu nombre en Google e Inteligencia Artificial.',
-	ctaPrimario: CTA_SOLICITAR,
-	ctaSecundario: 'Ver perfiles de ejemplo',
-	garantias: ['Listo en 24 horas', '100% autoadministrable', 'Sin instalar aplicaciones'],
-	perfiles: [PERFILES.valeria, PERFILES.camila, PERFILES.andres]
+		'Contacto, servicios, sucursales y horarios en un solo enlace con QR. Que te guarden en un toque y te encuentren en Google y en la IA.',
+	notaGratis: 'Crearla y diseñarla es gratis.',
+	alternativa: '¿Prefieres que la armemos por ti?',
+	perfiles: [PERFILES.valeria, PERFILES.camila, PERFILES.andres, PERFILES.mariana]
 };
 
-// ── Problema vs. solución
+// ── Funciones (se muestran como la pila de botones de un perfil)
 
-export const PROBLEMA = {
-	titulo: 'El 90% de las tarjetas de papel terminan en la basura antes de cerrar el negocio.',
-	subtitulo:
-		'Eres excelente en lo que haces, pero un trozo de cartón estático no demuestra tu nivel ni te ayuda a vender.',
-	antes: {
-		titulo: 'La tarjeta tradicional o el link básico',
-		puntos: [
-			'Si cambias de número, de oficina o de horarios, quedan obsoletas.',
-			'Tu cliente tiene que teclear tu número manualmente (casi nadie lo hace).',
-			'No muestra tus propiedades del mes, tus tratamientos ni tus casos de éxito.',
-			'Es invisible en internet: solo sirve si tienes a la persona enfrente.'
-		]
-	},
-	despues: {
-		titulo: 'El estándar ME',
-		puntos: [
-			{
-				titulo: 'Descarga directa en 1 clic',
-				texto:
-					'Tu foto, nombre, especialidad y teléfono se guardan directo en la agenda de tu cliente.'
-			},
-			{
-				titulo: 'Vitrina viva 24/7',
-				texto:
-					'Sube y actualiza tus mejores viviendas, servicios o catálogo en 10 segundos desde tu celular.'
-			},
-			{
-				titulo: 'Visibilidad total (SEO + GEO)',
-				texto:
-					'Optimizada para que nuevos clientes te encuentren buscando tu especialidad en Google o preguntándole a la IA.'
-			}
-		]
-	}
-};
+export type IconoFuncion =
+	'contacto' | 'vitrina' | 'sucursales' | 'pago' | 'redes' | 'formacion' | 'preguntas' | 'qr';
 
-// ── Funciones autoadministrables (bento)
+export interface Funcion {
+	icono: IconoFuncion;
+	titulo: string;
+	texto: string;
+}
 
 export const FUNCIONES = {
-	titulo: 'El poder de una página web. La agilidad de una tarjeta digital.',
+	titulo: 'Todo lo que tu cliente busca, en un solo enlace.',
 	subtitulo:
-		'No dependas de programadores ni diseñadores cada vez que quieras actualizar tu información. Desde tu propio panel administras todo en tiempo real y muestras solo las secciones que te sirven.',
-	paleta: {
-		titulo: 'Paleta de colores a medida',
-		texto:
-			'Empieza con un tema listo y luego ajusta cada color a tu marca: fondo, botones, precios, íconos y botón flotante.',
-		nota: 'Este es solo el punto de partida: después puedes cambiar cada color por separado.'
-	},
-	catalogo: {
-		titulo: 'Catálogo y destacados',
-		texto:
-			'Publica tus viviendas estrella, servicios o promociones con fotos, categorías, precio de oferta y botón de consulta directo a tu WhatsApp.'
-	},
-	sucursales: {
-		titulo: 'Múltiples sucursales y mapas',
-		texto:
-			'¿Atiendes en dos consultorios o tienes varias oficinas? Muestra cada dirección con su propio pin de Google Maps.'
-	},
-	horarios: {
-		titulo: 'Horarios inteligentes',
-		texto:
-			'Configura tus horarios por día y sucursal para que tus clientes sepan cuándo visitarte o llamarte.'
-	},
-	vcf: {
-		titulo: 'Guardado en agenda',
-		texto:
-			'Un botón central para que tu contacto quede registrado con tu foto en el teléfono de tu cliente.'
-	},
-	qr: {
-		titulo: 'Código QR y enlace corto',
-		texto:
-			'Un link limpio y un código QR con el isotipo ME, listo para tu celular, firma de correo o tarjeta física.'
-	},
-	qrPago: {
-		titulo: 'QR de pago',
-		texto:
-			'Sube el QR de cobro de tu banco y recibe pagos de consultas, reservas o anticipos desde tu propio perfil.'
-	},
-	credenciales: {
-		titulo: 'Formación y certificaciones',
-		texto:
-			'Si quieres, agrega tus estudios y certificaciones con su código y enlace de verificación. Es opcional: actívalo solo si suma a tu perfil.'
-	},
-	redes: {
-		titulo: 'Redes y agenda en línea',
-		texto:
-			'Enlaza Instagram, TikTok, LinkedIn y más de 20 redes, incluidas Calendly y Doctoralia para que te agenden en dos toques.'
-	},
-	faq: {
-		titulo: 'Tus propias preguntas frecuentes',
-		texto:
-			'Responde por adelantado lo que más te consultan: formas de pago, zonas de atención o cómo prepararse para una cita.'
-	}
+		'Muestra solo las secciones que te sirven y cámbialas cuando quieras desde tu celular.',
+	items: [
+		{
+			icono: 'contacto',
+			titulo: 'Guardar contacto',
+			texto: 'Tu foto, nombre y teléfono directo a su agenda.'
+		},
+		{
+			icono: 'vitrina',
+			titulo: 'Vitrina con precios',
+			texto: 'Servicios, productos o propiedades con consulta por WhatsApp.'
+		},
+		{
+			icono: 'sucursales',
+			titulo: 'Sucursales y horarios',
+			texto: 'Cada dirección con su mapa y sus horas de atención.'
+		},
+		{
+			icono: 'pago',
+			titulo: 'QR de pago',
+			texto: 'El QR de tu banco para cobrar consultas o reservas.'
+		},
+		{
+			icono: 'redes',
+			titulo: 'Redes y agenda',
+			texto: 'Instagram, LinkedIn, Calendly, Doctoralia y más de 20 redes.'
+		},
+		{
+			icono: 'formacion',
+			titulo: 'Formación y certificaciones',
+			texto: 'Opcional, con enlace para verificar cada credencial.'
+		},
+		{
+			icono: 'preguntas',
+			titulo: 'Tus preguntas frecuentes',
+			texto: 'Responde antes de que te pregunten.'
+		},
+		{
+			icono: 'qr',
+			titulo: 'Enlace corto y QR',
+			texto: 'Para tu bio, tu firma de correo o tu tarjeta física.'
+		}
+	] satisfies Funcion[]
+};
+
+// ── Diseño
+
+export const DISENO = {
+	titulo: 'Con tus colores, no con los de una plantilla.',
+	subtitulo: 'Parte de uno de los 10 temas y ajusta cada color y la tipografía a tu marca.',
+	nota: 'Es solo el punto de partida: cada color se cambia por separado.'
 };
 
 // ── SEO + GEO
 
 export const SEO_GEO = {
-	titulo: 'Diseñada para que Google y la Inteligencia Artificial te recomienden.',
-	cuerpo:
-		'Una tarjeta común solo funciona cuando tú la entregas en mano. ME estructura técnicamente tu perfil profesional con metadatos avanzados y esquemas semánticos para que trabajes mientras duermes.',
-	seo: {
-		titulo: 'Optimización SEO (Google)',
-		texto:
-			'Cuando alguien busque tu nombre o tu especialidad en tu ciudad, tu perfil oficial aparecerá indexado con tus servicios y contacto directo.'
+	titulo: 'Que te encuentren en Google y te recomiende la IA.',
+	subtitulo:
+		'Tu ME se publica con los datos que leen los buscadores y asistentes como ChatGPT o Gemini: tu rubro, tu zona y tus servicios.'
+};
+
+// ── Dos formas de empezar
+
+export const EMPEZAR = {
+	titulo: 'Dos formas de tener tu ME.',
+	crear: {
+		titulo: 'Créala tú',
+		texto: 'Gratis para crear y diseñar. Publicas cuando estés listo.',
+		pasos: [
+			'Reserva tu enlace y crea tu cuenta.',
+			'Completa tus datos y elige tu diseño.',
+			'Publícala con el plan Pro y compártela.'
+		]
 	},
-	geo: {
-		titulo: 'Optimización GEO (ChatGPT, Gemini, Perplexity)',
-		texto:
-			'Indicas tu rubro y estructuramos tu especialidad, zona de cobertura, sucursales y catálogo en el lenguaje exacto que leen las inteligencias artificiales para recomendarte cuando un usuario pregunte por el mejor profesional de tu sector.'
+	solicitar: {
+		titulo: 'Te la armamos',
+		texto: 'Nos envías tus datos por WhatsApp y nuestro equipo la deja lista.',
+		puntos: [
+			'Diseño y carga de contenido incluidos.',
+			'Lista para compartir en 24 horas.',
+			'Después la editas tú cuando quieras.'
+		]
 	}
-};
-
-// ── Sectores
-
-export interface Sector {
-	id: string;
-	tab: string;
-	titular: string;
-	descripcion: string;
-	destaca: string[];
-	perfil: PerfilEjemplo;
-}
-
-export const SECTORES = {
-	titulo: 'Una solución adaptada a tu profesión.',
-	items: [
-		{
-			id: 'inmobiliarios',
-			tab: 'Agentes inmobiliarios',
-			titular: 'Que tu comprador recuerde tu cara y tus propiedades, no un papel.',
-			descripcion:
-				'Destaca tus captaciones más rentables del mes, actualiza precios al instante, permite que agenden visitas por WhatsApp y haz que tu contacto quede guardado con tu foto en el celular de cada inversionista.',
-			destaca: [
-				'Botón «Guardar contacto» con tu foto',
-				'Carrusel de viviendas estrella del mes',
-				'WhatsApp directo por propiedad'
-			],
-			perfil: PERFILES.valeria
-		},
-		{
-			id: 'salud',
-			tab: 'Médicos y odontólogos',
-			titular: 'Llena tu agenda de consultas y facilita que tus pacientes te recomienden.',
-			descripcion:
-				'Cuando un paciente te recomiende a un familiar, compartirá tu perfil completo con tus credenciales, ubicación exacta de tus consultorios en el mapa, horarios actualizados y botón de reserva de turno en dos toques.',
-			destaca: [
-				'Especialidades y tratamientos con precio',
-				'Varios consultorios en Google Maps',
-				'Horarios y reserva por WhatsApp, Calendly o Doctoralia'
-			],
-			perfil: PERFILES.camila
-		},
-		{
-			id: 'profesionales',
-			tab: 'Abogados y consultores',
-			titular: 'Autoridad y prestigio corporativo desde el primer saludo.',
-			descripcion:
-				'Presenta tus especialidades, certificaciones, portafolio de proyectos u obras ejecutadas y ubicación de tu estudio con una estética sobria y ejecutiva.',
-			destaca: [
-				'Diseño sobrio y ejecutivo',
-				'Áreas de práctica o dossier de obras',
-				'Formación y certificaciones con enlace de verificación'
-			],
-			perfil: PERFILES.mariana
-		},
-		{
-			id: 'otros',
-			tab: 'Cualquier profesión',
-			titular: 'Sea cual sea tu rubro, tu ME se adapta a lo que haces.',
-			descripcion:
-				'Ejecutivos, arquitectos, contadores, fotógrafos, coaches o cualquier profesional: indicas tu rubro, eliges qué secciones mostrar y cargas tus servicios o productos. Tu perfil queda listo para compartir en un toque y para que Google y la IA te encuentren.',
-			destaca: [
-				'Tu rubro, para que Google y la IA sepan a qué te dedicas',
-				'Solo las secciones que necesitas',
-				'Vitrina con tus servicios o productos'
-			],
-			perfil: PERFILES.andres
-		}
-	] satisfies Sector[]
-};
-
-// ── Cómo funciona
-
-export const PASOS = {
-	titulo: 'Tu vitrina digital activa en 3 simples pasos.',
-	items: [
-		{
-			titulo: 'Elige tu enlace y configura tu estilo',
-			texto: `Asegura tu URL personalizada (${ME_DOMINIO}/tu-nombre) elige un tema y ajusta los colores de tu marca.`
-		},
-		{
-			titulo: 'Carga tu catálogo y ubicaciones',
-			texto:
-				'Agrega tus datos de contacto, redes, sucursales y tus propiedades o servicios destacados desde tu celular o PC.'
-		},
-		{
-			titulo: 'Comparte, posiciona y vende',
-			texto:
-				'Muestra tu QR en reuniones, pon tu enlace en tu biografía de Instagram o TikTok y deja que nuestro motor SEO + GEO atraiga nuevos clientes.'
-		}
-	]
 };
 
 // ── Preguntas frecuentes
@@ -338,45 +231,36 @@ export interface PreguntaFrecuente {
 
 export const FAQ: PreguntaFrecuente[] = [
 	{
-		pregunta: '¿Mis clientes necesitan descargar alguna aplicación para ver mi tarjeta?',
+		pregunta: '¿Crear mi ME tiene costo?',
 		respuesta:
-			'No. Tu perfil ME se abre al instante en cualquier celular (iPhone o Android) o computadora directamente desde el navegador al escanear tu QR o tocar tu enlace.'
+			'Crearla, completarla y diseñarla es gratis. Para publicarla y compartir tu enlace activas el plan Pro.'
 	},
 	{
-		pregunta: '¿Puedo cambiar mis fotos, propiedades, precios o colores yo mismo?',
+		pregunta: '¿Mis clientes necesitan instalar algo?',
 		respuesta:
-			'Sí, el 100%. Cuentas con un panel autoadministrable desde donde puedes editar tus colores, subir o bajar viviendas o servicios, cambiar horarios o añadir sucursales cuantas veces quieras y en tiempo real.'
+			'No. Tu ME se abre en el navegador de cualquier celular o computadora, con tu enlace o tu QR.'
 	},
 	{
-		pregunta: '¿Qué pasa si cambio de número de teléfono o me mudo de oficina o consultorio?',
+		pregunta: '¿Puedo cambiar mis datos después?',
 		respuesta:
-			'Solo entras a tu panel, actualizas el dato en 5 segundos y tu mismo enlace y tu mismo código QR mostrarán la información nueva, sin gastar un centavo en reimpresiones.'
+			'Sí, cuando quieras y desde tu celular. Tu enlace y tu QR siguen siendo los mismos y muestran lo nuevo.'
 	},
 	{
-		pregunta: '¿Mis clientes pueden pagarme o agendar desde mi perfil?',
+		pregunta: '¿En qué se diferencia crearla yo de pedirla por WhatsApp?',
 		respuesta:
-			'Sí. Puedes mostrar el QR de cobro de tu banco para recibir pagos y enlazar tu WhatsApp, Calendly o Doctoralia para que te agenden en dos toques.'
+			'Por WhatsApp nuestro equipo la arma por ti y te la entrega lista en 24 horas. En los dos casos, después la administras tú.'
 	},
 	{
-		pregunta: '¿Puedo mostrar mis estudios y certificaciones?',
+		pregunta: '¿Sirve para mi profesión?',
 		respuesta:
-			'Sí, si lo deseas. Son secciones opcionales: agrega tu formación y tus certificaciones con la entidad emisora, el código y el enlace de verificación de cada credencial, o déjalas ocultas.'
-	},
-	{
-		pregunta: '¿ME sirve si mi profesión no aparece en la página?',
-		respuesta:
-			'Sí. ME funciona para cualquier profesional o negocio: indicas tu rubro, eliges qué secciones mostrar y tu perfil se adapta a lo que haces.'
+			'Sí. Indicas tu rubro y eliges qué secciones mostrar: funciona para cualquier profesional o negocio.'
 	}
 ];
 
 // ── Cierre
 
 export const CIERRE = {
-	titulo: 'Tu próxima gran venta empieza en el primer contacto. Haz que sea inolvidable.',
-	subtitulo:
-		'Únete a médicos, agentes inmobiliarios, abogados y profesionales de todos los rubros que ya evolucionaron su marca personal con ME.',
-	ctaPrimario: CTA_SOLICITAR,
-	ctaSecundario: 'Ver perfiles de ejemplo'
+	titulo: 'Reserva tu enlace antes que otro.'
 };
 
 // ── Metadatos
@@ -384,7 +268,7 @@ export const CIERRE = {
 export const LANDING_SEO = {
 	titulo: 'ME | Tarjeta digital profesional',
 	descripcion:
-		'Tu mini-web profesional autoadministrable: guarda tu contacto en un toque, muestra tu catálogo y sucursales.',
+		'Crea gratis tu tarjeta digital profesional: que guarden tu contacto en un toque, muestra tus servicios y sucursales, y que Google y la IA te encuentren.',
 	keywords: [
 		'tarjeta digital',
 		'tarjeta de presentación digital',
@@ -401,7 +285,7 @@ export const LANDING_SEO = {
 	],
 	ogImagen: '/images/landing/og-me-by-svelpy.png',
 	ogImagenAlt:
-		'ME: perfiles digitales de una odontóloga y una agente inmobiliaria junto al titular «Que no solo guarden tu contacto: haz que te encuentren primero».',
+		'ME: perfiles digitales de una odontóloga y una agente inmobiliaria junto al titular «Tu tarjeta de presentación, ahora es una web» y el campo me.svelpy.com/tu-nombre para crear tu ME gratis.',
 	locale: 'es_LA',
 	themeColor: '#1c0f1e'
 };

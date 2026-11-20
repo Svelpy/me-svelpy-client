@@ -68,7 +68,7 @@
 		<ModalConfirm
 			isOpen={confirmar}
 			title="¿Eliminar la tarjeta de {nombreCompleto(tarjeta)}?"
-			message="Deja de verse en {tarjeta.slug} de inmediato. La dirección queda reservada para que los QR impresos no lleven a otra persona."
+			message="Deja de verse en {tarjeta.slug} de inmediato. El enlace queda reservado para que los QR impresos no lleven a otra persona."
 			confirmLabel="Eliminar tarjeta"
 			loading={eliminando}
 			onConfirm={() => eliminar(tarjeta.id)}

@@ -18,6 +18,7 @@ class UsuarioService {
 		if (filtros.q) query.set('q', filtros.q);
 		if (filtros.rol) query.set('rol', filtros.rol);
 		if (filtros.estado) query.set('estado', filtros.estado);
+		if (filtros.plan) query.set('plan', filtros.plan);
 		return http.get(`/usuarios?${query}`);
 	}
 

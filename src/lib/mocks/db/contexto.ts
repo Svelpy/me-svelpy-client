@@ -46,7 +46,9 @@ export const error = {
 	validacion: (details: Record<string, string>, message = 'Revisa los datos marcados.') =>
 		new AppError({ message, code: ErrorCode.VALIDATION_ERROR, status: 422, details }),
 	noAutenticado: (message = 'Tu sesión expiró. Inicia sesión nuevamente.') =>
-		new AppError({ message, code: ErrorCode.TOKEN_INVALID, status: 401 })
+		new AppError({ message, code: ErrorCode.TOKEN_INVALID, status: 401 }),
+	planRequerido: (message = 'Para publicar la tarjeta, la cuenta necesita el plan Pro.') =>
+		new AppError({ message, code: ErrorCode.PLAN_REQUERIDO, status: 403 })
 };
 
 /** Valida el cuerpo como lo haría el backend: 422 con el primer error de cada campo */

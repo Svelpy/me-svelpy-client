@@ -3,7 +3,8 @@
 //   - src/lib/assets/landing/qr-me-svelpy.svg → QR de la tarjeta física (abre me.svelpy.com)
 //   - static/images/landing/og-me-by-svelpy.png → imagen Open Graph 1200x630
 //
-// Uso: pnpm landing:imagenes   (requiere Chromium de Playwright: pnpm exec playwright install chromium)
+// Uso: pnpm landing:imagenes          (requiere Chromium de Playwright: pnpm exec playwright install chromium)
+//      pnpm landing:imagenes --og     solo la imagen Open Graph (usa los PNG de perfiles existentes)
 //
 // Los perfiles son ficticios. Cuando haya clientes reales, reemplaza los PNG por capturas reales
 // con el mismo nombre de archivo y deja de ejecutar este script.
@@ -385,25 +386,34 @@ function profileHtml(p) {
 // ── Ejecución
 const outProfiles = join(ROOT, 'src/lib/assets/landing/perfiles');
 mkdirSync(outProfiles, { recursive: true });
+const soloOg = process.argv.includes('--og');
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
 
-for (const p of PROFILES) {
-	await page.setContent(profileHtml(p), { waitUntil: 'load' });
-	await page.evaluate(() => document.fonts.ready);
-	await page.screenshot({ path: join(outProfiles, `${p.slug}.png`), fullPage: true });
-	console.log('perfil', p.slug);
+if (!soloOg) {
+	const page = await browser.newPage({
+		viewport: { width: 390, height: 844 },
+		deviceScaleFactor: 2
+	});
+	for (const p of PROFILES) {
+		await page.setContent(profileHtml(p), { waitUntil: 'load' });
+		await page.evaluate(() => document.fonts.ready);
+		await page.screenshot({ path: join(outProfiles, `${p.slug}.png`), fullPage: true });
+		console.log('perfil', p.slug);
+	}
+	await generarQr();
 }
 
 // QR de la tarjeta física → me.svelpy.com
-const qrSvg = await QRCode.toString('https://me.svelpy.com', {
-	type: 'svg',
-	margin: 0,
-	errorCorrectionLevel: 'H',
-	color: { dark: '#2a182dff', light: '#00000000' }
-});
-writeFileSync(join(ROOT, 'src/lib/assets/landing/qr-me-svelpy.svg'), qrSvg);
-console.log('qr ok');
+async function generarQr() {
+	const qrSvg = await QRCode.toString('https://me.svelpy.com', {
+		type: 'svg',
+		margin: 0,
+		errorCorrectionLevel: 'H',
+		color: { dark: '#2a182dff', light: '#00000000' }
+	});
+	writeFileSync(join(ROOT, 'src/lib/assets/landing/qr-me-svelpy.svg'), qrSvg);
+	console.log('qr ok');
+}
 
 // Imagen Open Graph 1200x630
 const logo = readFileSync(
@@ -417,9 +427,12 @@ const og = `<!doctype html><html><head><meta charset="utf-8"><style>${FONTS}
 body{width:1200px;height:630px;background:#1c0f1e;color:#fff;font-family:'Jakarta';overflow:hidden;position:relative}
 .logo{position:absolute;left:64px;top:44px;width:150px;height:150px}
 .logo svg{width:100%;height:100%}
-h1{position:absolute;left:72px;top:200px;width:560px;font-family:'Grotesk';font-weight:700;font-size:54px;line-height:1.04;letter-spacing:-.035em}
-.url{position:absolute;left:72px;bottom:58px;font-family:'Mono';font-size:24px;color:#ff4724}
-.url span{color:#c8bccb}
+h1{position:absolute;left:72px;top:196px;width:580px;font-family:'Grotesk';font-weight:700;font-size:66px;line-height:.98;letter-spacing:-.045em}
+.claim{position:absolute;left:72px;bottom:60px;display:flex;gap:10px;font-size:22px}
+.claim span{display:flex;align-items:center;height:60px;border-radius:999px;padding:0 26px}
+.claim .campo{background:#fff;color:#8a7490;min-width:300px}
+.claim .campo b{color:#1c0f1e;font-weight:600}
+.claim .cta{background:#ff4724;color:#1c0f1e;font-weight:600}
 .ph{position:absolute;width:260px;height:540px;border-radius:44px;background:#3b2540;padding:10px;box-shadow:0 0 0 2px #503756}
 .ph div{width:100%;height:100%;border-radius:34px;background-size:100% auto;background-position:top;background-repeat:no-repeat}
 .a{right:250px;top:70px;transform:rotate(-4deg)}
@@ -427,8 +440,8 @@ h1{position:absolute;left:72px;top:200px;width:560px;font-family:'Grotesk';font-
 .pill{position:absolute;right:120px;top:40px;width:200px;height:56px;border-radius:999px;background:#ff4724}
 </style></head><body>
 <div class="logo">${logo}</div>
-<h1>Que no solo guarden tu contacto: haz que te encuentren primero.</h1>
-<p class="url"><span>me.svelpy.com/</span>tu-nombre</p>
+<h1>Tu tarjeta de presentación, ahora es una web.</h1>
+<p class="claim"><span class="campo">me.svelpy.com/<b>tu-nombre</b></span><span class="cta">Crear mi ME gratis</span></p>
 <div class="ph b"><div style="background-image:url(data:image/png;base64,${shot2})"></div></div>
 <div class="ph a"><div style="background-image:url(data:image/png;base64,${shot})"></div></div>
 </body></html>`;

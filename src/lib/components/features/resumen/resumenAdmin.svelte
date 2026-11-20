@@ -27,6 +27,10 @@
 			etiqueta: resumen.totales.usuarios_activos === 1 ? 'cuenta activa' : 'cuentas activas'
 		},
 		{
+			valor: resumen.totales.cuentas_pro,
+			etiqueta: resumen.totales.cuentas_pro === 1 ? 'cuenta Pro' : 'cuentas Pro'
+		},
+		{
 			valor: resumen.totales.usuarios_sin_tarjeta,
 			etiqueta:
 				resumen.totales.usuarios_sin_tarjeta === 1 ? 'cuenta sin tarjeta' : 'cuentas sin tarjeta'

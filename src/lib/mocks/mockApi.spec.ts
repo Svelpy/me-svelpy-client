@@ -21,10 +21,12 @@ import { AppError } from '#lib/services/error.service.ts';
 import { authStore, miTarjetaStore } from '#lib/stores/index.ts';
 import type { Sesion } from './db/contexto';
 import { db } from './db/tablas';
+import { usuarioMock } from './modelos/usuario.mock';
 import { mockHttp } from './http.mock';
 import { buscarRuta } from './router';
 import { restablecerDatosDePrueba } from './seed';
 import { tarjetaFabiola } from './seed/tarjetas/salud.seed';
+import { CUENTAS_DE_PRUEBA } from './seed/usuarios.seed';
 
 type Metodo = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -74,7 +76,7 @@ beforeEach(async () => {
 
 describe('Datos de prueba', () => {
 	it('siembra las cuentas y sus tarjetas validadas por el mismo backend', () => {
-		expect(db.usuarios.activas()).toHaveLength(14);
+		expect(db.usuarios.activas()).toHaveLength(CUENTAS_DE_PRUEBA.length);
 		expect(db.tarjetas.activas()).toHaveLength(12);
 		const fabiola = tarjetaDe('fabiola@me.test');
 		expect(db.secciones.donde((s) => s.tarjeta_id === fabiola.id)).toHaveLength(9);
@@ -104,6 +106,8 @@ describe('POST /usuarios', () => {
 				email: 'Nueva@Me.Test',
 				password: 'Clave1234',
 				rol: 'OWNER',
+				// La tarjeta de Fabiola nace publicada: pide Pro
+				plan: 'pro',
 				tarjeta: {
 					...tarjetaFabiola,
 					slug: 'dra-nueva',
@@ -314,5 +318,179 @@ describe('Login', () => {
 			authStore.login({ email: 'inactivo@me.test', password: 'Demo1234' })
 		);
 		expect(inactiva.status).toBe(403);
+	});
+});
+
+describe('Planes', () => {
+	const superadmin = () => sesionDe('superadmin@me.test');
+	const cuenta = (email: string) => db.usuarios.activas().find((u) => u.email === email)!;
+
+	it('una cuenta Free no puede publicar su tarjeta, ni aunque lo pida el superadmin', async () => {
+		const paola = tarjetaDe('paola@me.test');
+		const comoOwner = await errorDe(
+			llamar('PATCH', `/tarjetas/${paola.id}/publicacion`, {
+				sesion: sesionDe('paola@me.test'),
+				cuerpo: { is_public: true }
+			})
+		);
+		expect(comoOwner.status).toBe(403);
+		expect(comoOwner.code).toBe('PLAN_REQUERIDO');
+
+		const comoAdmin = await errorDe(
+			llamar('PATCH', `/tarjetas/${paola.id}/publicacion`, {
+				sesion: superadmin(),
+				cuerpo: { is_public: true }
+			})
+		);
+		expect(comoAdmin.code).toBe('PLAN_REQUERIDO');
+		expect(tarjetaDe('paola@me.test').is_public).toBe(false);
+	});
+
+	it('con Pro la publica, y pasar a Free la vuelve a borrador', async () => {
+		const id = cuenta('paola@me.test').id;
+		const tarjeta = tarjetaDe('paola@me.test');
+		await llamar('PATCH', `/usuarios/${id}`, { sesion: superadmin(), cuerpo: { plan: 'pro' } });
+		expect(cuenta('paola@me.test')).toMatchObject({ plan: 'pro', plan_vence_at: null });
+
+		await llamar('PATCH', `/tarjetas/${tarjeta.id}/publicacion`, {
+			sesion: sesionDe('paola@me.test'),
+			cuerpo: { is_public: true }
+		});
+		expect(tarjetaDe('paola@me.test').is_public).toBe(true);
+
+		await llamar('PATCH', `/usuarios/${id}`, { sesion: superadmin(), cuerpo: { plan: 'free' } });
+		expect(tarjetaDe('paola@me.test').is_public).toBe(false);
+		expect((await errorDe(llamar('GET', '/public/tarjetas/paola-estilista'))).status).toBe(404);
+	});
+
+	it('al vencer el Pro, la cuenta vuelve a Free y su tarjeta a borrador', async () => {
+		const fabiola = cuenta('fabiola@me.test');
+		expect(fabiola.plan).toBe('pro');
+		expect(tarjetaDe('fabiola@me.test').is_public).toBe(true);
+
+		// Un día después de su vencimiento
+		const despues = new Date(Date.parse(fabiola.plan_vence_at!) + 86_400_000);
+		expect(usuarioMock.aplicarVencimientos(despues)).toBeGreaterThan(0);
+
+		expect(cuenta('fabiola@me.test')).toMatchObject({ plan: 'free', plan_vence_at: null });
+		expect(tarjetaDe('fabiola@me.test').is_public).toBe(false);
+		// published_at se conserva: al renovar y publicar, mantiene su fecha original
+		expect(tarjetaDe('fabiola@me.test').published_at).not.toBeNull();
+		expect((await errorDe(llamar('GET', '/public/tarjetas/doctora-fabiola'))).status).toBe(404);
+		// Las cuentas sin vencimiento no se tocan
+		expect(cuenta('camila@me.test').plan).toBe('pro');
+	});
+
+	it('valida el vencimiento: futuro y solo con Pro', async () => {
+		const id = cuenta('paola@me.test').id;
+		const pasado = await errorDe(
+			llamar('PATCH', `/usuarios/${id}`, {
+				sesion: superadmin(),
+				cuerpo: { plan: 'pro', plan_vence_at: '2020-01-01T03:59:59.000Z' }
+			})
+		);
+		expect(pasado.details).toHaveProperty('plan_vence_at');
+		const conFree = await errorDe(
+			llamar('PATCH', `/usuarios/${id}`, {
+				sesion: superadmin(),
+				cuerpo: { plan: 'free', plan_vence_at: '2099-01-01T03:59:59.000Z' }
+			})
+		);
+		expect(conFree.details).toHaveProperty('plan_vence_at');
+	});
+
+	it('una tarjeta anidada solo nace publicada si la cuenta es Pro', async () => {
+		const base = {
+			password: 'Demo1234',
+			rol: 'OWNER',
+			tarjeta: { ...tarjetaFabiola, slug: 'doctora-nueva', is_public: true }
+		};
+		const free = await errorDe(
+			llamar('POST', '/usuarios', {
+				sesion: superadmin(),
+				cuerpo: { ...base, email: 'free@me.test' }
+			})
+		);
+		expect(free.code).toBe('PLAN_REQUERIDO');
+		// Todo o nada: tampoco quedó la cuenta
+		expect(db.usuarios.activas().some((u) => u.email === 'free@me.test')).toBe(false);
+
+		await llamar('POST', '/usuarios', {
+			sesion: superadmin(),
+			cuerpo: { ...base, email: 'pro@me.test', plan: 'pro' }
+		});
+		expect(tarjetaDe('pro@me.test').is_public).toBe(true);
+	});
+
+	it('el listado de usuarios filtra por plan vigente', async () => {
+		const pro = await llamar<{ data: { plan: string }[] }>(
+			'GET',
+			'/usuarios?plan=pro&per_page=100',
+			{ sesion: superadmin() }
+		);
+		expect(pro.data.length).toBeGreaterThan(0);
+		expect(pro.data.every((u) => u.plan === 'pro')).toBe(true);
+	});
+});
+
+describe('Registro propio', () => {
+	const cuerpo = {
+		email: 'nueva@me.test',
+		password: 'Clave1234',
+		tarjeta: { nombres: 'Rocío', apellidos: 'Suárez', rubro: 'Nutrición', slug: 'rocio-suarez' }
+	};
+
+	it('crea un propietario Free con su tarjeta en borrador y abre la sesión', async () => {
+		// Aunque el cuerpo pida otra cosa, nace propietario, Free y en borrador
+		const respuesta = await llamar<{ access_token: string }>('POST', '/auth/registro', {
+			cuerpo: {
+				...cuerpo,
+				rol: 'SUPERADMIN',
+				plan: 'pro',
+				tarjeta: { ...cuerpo.tarjeta, is_public: true }
+			}
+		});
+		expect(respuesta.access_token).toBeTruthy();
+		const usuario = db.usuarios.activas().find((u) => u.email === 'nueva@me.test')!;
+		expect(usuario).toMatchObject({ rol: 'OWNER', plan: 'free', plan_vence_at: null });
+		const tarjeta = tarjetaDe('nueva@me.test');
+		expect(tarjeta).toMatchObject({ slug: 'rocio-suarez', is_public: false });
+		expect(db.secciones.donde((s) => s.tarjeta_id === tarjeta.id)).toHaveLength(9);
+	});
+
+	it('rechaza un correo o una dirección en uso', async () => {
+		const correo = await errorDe(
+			llamar('POST', '/auth/registro', { cuerpo: { ...cuerpo, email: 'fabiola@me.test' } })
+		);
+		expect(correo.status).toBe(409);
+		expect(correo.details).toHaveProperty('email');
+
+		const slug = await errorDe(
+			llamar('POST', '/auth/registro', {
+				cuerpo: { ...cuerpo, tarjeta: { ...cuerpo.tarjeta, slug: 'doctora-fabiola' } }
+			})
+		);
+		expect(slug.status).toBe(409);
+		expect(slug.details).toHaveProperty('slug');
+	});
+
+	it('revisa la dirección sin sesión', async () => {
+		const libre = await llamar<{ disponible: boolean }>(
+			'GET',
+			'/public/slug-disponible?slug=rocio-suarez'
+		);
+		expect(libre.disponible).toBe(true);
+		const tomada = await llamar<{ disponible: boolean; sugerencia: string }>(
+			'GET',
+			'/public/slug-disponible?slug=doctora-fabiola'
+		);
+		expect(tomada).toMatchObject({ disponible: false, sugerencia: 'doctora-fabiola-2' });
+	});
+
+	it('authStore.registrar deja la sesión lista con la tarjeta cargada', async () => {
+		await authStore.registrar(cuerpo);
+		expect(get(miTarjetaStore).tarjeta?.slug).toBe('rocio-suarez');
+		expect(get(miTarjetaStore).tarjeta?.propietario.plan).toBe('free');
+		await authStore.logout();
 	});
 });

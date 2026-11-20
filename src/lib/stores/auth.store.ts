@@ -3,6 +3,7 @@ import { Role } from '#lib/config/permissions.config.ts';
 import type {
 	CurrentUser,
 	LoginCredentials,
+	RegistroRequest,
 	TarjetaResumen,
 	Usuario
 } from '#lib/interfaces/index.ts';
@@ -50,6 +51,23 @@ export const authStore = {
 				if (userData.user.rol === Role.OWNER) await miTarjetaStore.cargar(true);
 			}
 			return loginResponse;
+		} finally {
+			isLoading.set(false);
+		}
+	},
+
+	/** Registro propio: crea la cuenta y su tarjeta, entra y carga la tarjeta completa */
+	registrar: async (datos: RegistroRequest) => {
+		isLoading.set(true);
+		try {
+			const respuesta = await authService.registrar(datos);
+			const userData = authService.getCurrentUser();
+			if (userData) {
+				currentUserStore.set(userData);
+				isSessionVerified = true;
+				await miTarjetaStore.cargar(true);
+			}
+			return respuesta;
 		} finally {
 			isLoading.set(false);
 		}

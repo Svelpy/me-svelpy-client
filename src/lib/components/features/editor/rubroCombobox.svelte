@@ -26,7 +26,8 @@
 	bind:value
 	{opciones}
 	placeholder="Escribe para buscar: pediatría, abogacía…"
-	hint={hint ?? 'Ayuda a Google y a las IAs a saber a qué te dedicas.'}
+	etiquetaLibre="Rubro propio"
+	hint={hint ?? 'Elige uno de la lista o escribe el tuyo si no está.'}
 	{error}
 	onseleccionar={(valor) => onseleccionar?.(valor)}
 	class={className}

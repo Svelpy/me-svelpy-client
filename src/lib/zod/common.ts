@@ -127,14 +127,14 @@ export const passwordSchema = z
 	.regex(/\d/, { message: 'Incluye al menos un número.' });
 
 export const slugSchema = z
-	.string({ message: 'Elige la dirección de la tarjeta.' })
+	.string({ message: 'Elige el enlace de la tarjeta.' })
 	.trim()
 	.toLowerCase()
-	.min(SLUG_MIN, { message: `La dirección necesita al menos ${SLUG_MIN} caracteres.` })
-	.max(SLUG_MAX, { message: `La dirección admite hasta ${SLUG_MAX} caracteres.` })
+	.min(SLUG_MIN, { message: `El enlace necesita al menos ${SLUG_MIN} caracteres.` })
+	.max(SLUG_MAX, { message: `El enlace admite hasta ${SLUG_MAX} caracteres.` })
 	.regex(SLUG_REGEX, {
 		message: 'Usa solo minúsculas, números y guiones, sin guion al inicio ni al final.'
 	})
 	.refine((slug) => !SLUGS_RESERVADOS.has(slug), {
-		message: 'Esa dirección está reservada. Elige otra.'
+		message: 'Ese enlace está reservado. Elige otro.'
 	});

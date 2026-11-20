@@ -32,7 +32,7 @@ test.describe('Panel del propietario', () => {
 
 	test('no puede cambiar la dirección de su tarjeta', async ({ page }) => {
 		await expect(page.getByText('Para cambiarla, escríbenos')).toBeVisible();
-		await expect(page.getByRole('textbox', { name: 'Dirección de la tarjeta' })).toHaveCount(0);
+		await expect(page.getByRole('textbox', { name: 'Enlace de la tarjeta' })).toHaveCount(0);
 	});
 
 	test('agrega, edita y elimina un contacto', async ({ page }) => {
@@ -158,10 +158,15 @@ test.describe('Propietario sin tarjeta', () => {
 		await page.getByLabel('Nombres').fill('Sofía');
 		await page.getByLabel('Apellidos').fill('Arce');
 		await page.getByRole('combobox', { name: 'Rubro' }).fill('Nutrición deportiva');
-		await expect(page.getByLabel('Dirección de la tarjeta')).toHaveValue('sofia-arce');
+		await expect(page.getByRole('textbox', { name: 'Enlace de la tarjeta' })).toHaveValue(
+			'sofia-arce'
+		);
 		await page.getByRole('button', { name: 'Crear tarjeta' }).click();
 
 		await expect(page.getByRole('heading', { level: 1, name: 'Sofía Arce' })).toBeVisible();
-		await expect(page.getByRole('button', { name: 'Publicar tarjeta' })).toBeVisible();
+		// Una cuenta Free no publica: la acción principal lleva a activar Pro
+		await expect(
+			page.getByRole('link', { name: 'Activar Pro para publicar' }).first()
+		).toBeVisible();
 	});
 });

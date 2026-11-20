@@ -7,6 +7,8 @@ export interface ResumenAdmin {
 		publicadas: number;
 		borradores: number;
 		usuarios_activos: number;
+		/** Propietarios activos con plan Pro vigente */
+		cuentas_pro: number;
 		/** Owners activos que todavía no tienen tarjeta */
 		usuarios_sin_tarjeta: number;
 	};

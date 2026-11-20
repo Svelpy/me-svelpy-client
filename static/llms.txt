@@ -2,11 +2,16 @@
 
 > ME es una mini-web de marca personal y vitrina comercial 100% autoadministrable para profesionales y equipos comerciales. Cada perfil vive en me.svelpy.com/<nombre>, guarda el contacto en el teléfono del cliente con un toque (archivo .vcf) y está optimizado para buscadores (SEO) y asistentes de IA (GEO). Es un producto de Svelpy (https://svelpy.com).
 
+## Cómo tener un ME
+
+- Crearlo uno mismo: registro gratis en me.svelpy.com/auth/sign-up. Con el plan Free se arma y diseña toda la tarjeta; para publicarla se activa el plan Pro.
+- Pedirlo por WhatsApp (+591 76727537): el equipo de Svelpy arma la tarjeta y la entrega lista en 24 horas; después la administra el profesional.
+
 ## Qué incluye cada perfil
 
 - Botón «Guardar contacto» (.vcf) con foto, nombre, cargo, empresa, teléfono, correo y dirección.
 - Panel autoadministrable en tiempo real: foto, portada, logo, biografía y descripción.
-- Temas de color predefinidos (claro, oscuro, elegante, salud y corporativo) como punto de partida; después se edita cada color por separado.
+- 10 temas de color predefinidos y pares de tipografías como punto de partida; después se edita cada color por separado.
 - Vitrina: propiedades, tratamientos, servicios o productos con fotos, categorías, precio, precio anterior (ofertas), ítems destacados y consulta directa por WhatsApp.
 - Varias sucursales con dirección, horarios por día y pin de Google Maps.
 - Enlace corto y código QR dinámico: si cambian los datos, el mismo QR muestra la información nueva.
@@ -24,6 +29,8 @@
 - Cualquier otro profesional o negocio: ejecutivos, arquitectos, contadores, fotógrafos, coaches y más. Cada perfil muestra solo las secciones que necesita.
 
 ## Preguntas frecuentes
+
+- ¿Crear un ME tiene costo? Crearlo y diseñarlo es gratis; publicarlo requiere el plan Pro.
 
 - ¿Hace falta instalar una aplicación? No. El perfil se abre en el navegador de cualquier celular o computadora.
 - ¿Puedo editar mis datos yo mismo? Sí, desde el panel, cuantas veces quieras y en tiempo real.
