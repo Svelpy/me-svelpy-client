@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { AlternativaWhatsapp, ReservaEnlace } from '../ui/index.ts';
-	import { CIERRE, HERO, LOGOS } from '../landing.content.ts';
+	import { CIERRE, LOGOS } from '../landing.content.ts';
 </script>
 
 <section
@@ -25,7 +25,6 @@
 			{CIERRE.titulo}
 		</h2>
 		<ReservaEnlace class="mt-10" />
-		<p class="mt-3.5 pl-6 text-sm text-primary-400">{HERO.notaGratis}</p>
 		<AlternativaWhatsapp class="mt-10 border-t border-white/10 pt-6" />
 	</div>
 </section>

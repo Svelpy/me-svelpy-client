@@ -98,7 +98,7 @@ test.describe('Landing ME by Svelpy', () => {
 		await expect(
 			page.getByRole('heading', {
 				level: 1,
-				name: 'Tu tarjeta de presentación, ahora es una web.'
+				name: 'Que no solo guarden tu contacto: haz que te encuentren primero.'
 			})
 		).toBeVisible();
 		await expect(
@@ -113,7 +113,7 @@ test.describe('Landing ME by Svelpy', () => {
 		const enlace = hero.getByRole('textbox', { name: 'Tu enlace' });
 		await enlace.fill('Dra. Fabiola Pérez');
 		await expect(enlace).toHaveValue('dra-fabiola-perez');
-		await hero.getByRole('button', { name: 'Crear mi ME gratis' }).click();
+		await hero.getByRole('button', { name: 'Crear ME gratis' }).click();
 
 		await expect(page).toHaveURL(/\/auth\/sign-up\?enlace=dra-fabiola-perez$/);
 		await expect(page.getByLabel(/^Tu enlace/)).toHaveValue('dra-fabiola-perez');
@@ -123,22 +123,22 @@ test.describe('Landing ME by Svelpy', () => {
 		await expect(
 			page
 				.getByRole('navigation', { name: 'Principal' })
-				.getByRole('link', { name: 'Crear mi ME gratis' })
+				.getByRole('link', { name: 'Crear ME gratis' })
 		).toHaveAttribute('href', '/auth/sign-up');
-		const enlaces = page.locator('main').getByRole('link', { name: 'Crear mi ME gratis' });
+		const enlaces = page.locator('main').getByRole('link', { name: 'Crear ME gratis' });
 		await expect(enlaces).toHaveCount(2); // funciones y «Créala tú»
 		for (const link of await enlaces.all()) {
 			await expect(link).toHaveAttribute('href', '/auth/sign-up');
 		}
 		// Hero y cierre lo ofrecen como formulario con el enlace.
-		await expect(page.getByRole('button', { name: 'Crear mi ME gratis' })).toHaveCount(2);
+		await expect(page.getByRole('button', { name: 'Crear ME gratis' })).toHaveCount(2);
 	});
 
 	test('solicitar por WhatsApp tiene un solo nombre y abre WhatsApp', async ({ page }) => {
 		const wa =
 			/^https:\/\/wa\.me\/59176727537\?text=Hola%2C%20quiero%20que%20me%20armen%20mi%20ME\.$/;
 
-		const solicitar = page.getByRole('link', { name: 'Solicitar mi ME por WhatsApp' });
+		const solicitar = page.getByRole('link', { name: 'Solicitar ME por WhatsApp' });
 		await expect(solicitar).toHaveCount(3); // hero, «Te la armamos» y cierre
 		for (const link of await solicitar.all()) {
 			await expect(link).toHaveAttribute('href', wa);
@@ -198,12 +198,30 @@ test.describe('Landing ME by Svelpy', () => {
 	});
 
 	test('la demo de temas muestra los 10 presets y aplica el elegido', async ({ page }) => {
-		const temas = page.getByRole('group', { name: /^Tema inicial:/ });
+		const temas = page.getByRole('group', { name: /^Tema seleccionado:/ });
 		await expect(temas.getByRole('radio')).toHaveCount(10);
 		const oscuro = page.getByRole('radio', { name: 'Oscuro' });
 		await page.locator('label').filter({ has: oscuro }).click();
 		await expect(oscuro).toBeChecked();
 		await expect(page.getByTestId('palette-preview')).toHaveAttribute('data-preset', 'oscuro');
+	});
+
+	test('SEO + GEO muestra los dos ejemplos y aclara que son ilustrativos', async ({ page }) => {
+		const seccion = page.locator('#seo-geo');
+		await expect(
+			seccion.getByRole('heading', {
+				level: 2,
+				name: 'Haz que tu perfil sea más fácil de encontrar en Google y en la era de la IA.'
+			})
+		).toBeVisible();
+		await expect(seccion.getByRole('figure')).toHaveCount(2);
+		await expect(
+			seccion.getByText('odontóloga estética cerca de mí', { exact: true })
+		).toBeVisible();
+		await expect(
+			seccion.getByText('¿Qué odontóloga me recomiendas para un diseño de sonrisa?')
+		).toBeVisible();
+		await expect(seccion.getByText(/^Ejemplos ilustrativos\./)).toBeVisible();
 	});
 
 	test('las preguntas frecuentes se abren de a una', async ({ page }) => {
@@ -240,7 +258,7 @@ test.describe('Landing en móvil', () => {
 
 		const menu = page.locator('#menu-movil');
 		await expect(menu.getByRole('link', { name: 'Iniciar sesión' })).toBeVisible();
-		await expect(menu.getByRole('link', { name: 'Solicitar mi ME por WhatsApp' })).toBeVisible();
+		await expect(menu.getByRole('link', { name: 'Solicitar ME por WhatsApp' })).toBeVisible();
 		await menu.getByRole('link', { name: 'Preguntas' }).click();
 		await expect(page).toHaveURL(/#preguntas$/);
 		await expect(menu).toBeHidden();

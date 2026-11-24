@@ -25,7 +25,6 @@
 			</p>
 
 			<ReservaEnlace class="mt-10" />
-			<p class="mt-3.5 pl-6 text-sm text-primary-400">{HERO.notaGratis}</p>
 
 			<AlternativaWhatsapp class="mt-10 border-t border-white/10 pt-6" />
 		</div>

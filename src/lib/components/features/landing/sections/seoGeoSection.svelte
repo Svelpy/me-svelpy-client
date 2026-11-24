@@ -13,19 +13,20 @@
 	class="relative bg-secondary py-20 text-primary-950 sm:py-28"
 >
 	<div class="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-		<header class="max-w-3xl">
+		<header class="max-w-4xl">
 			<h2
 				id="seo-geo-titulo"
-				class="font-display text-[2rem] leading-[1.02] font-bold tracking-[-0.035em] text-balance sm:text-[3.25rem]"
+				class="font-display text-[2rem] leading-[1.02] font-bold tracking-[-0.035em] text-balance sm:text-[2.75rem]"
 			>
 				{SEO_GEO.titulo}
 			</h2>
-			<p class="mt-5 max-w-[58ch] text-lg leading-relaxed text-pretty">{SEO_GEO.subtitulo}</p>
+			<p class="mt-5 max-w-[62ch] text-lg leading-relaxed text-pretty">{SEO_GEO.subtitulo}</p>
 		</header>
 
 		<div class="mt-14 grid gap-4 lg:grid-cols-2">
 			<SearchResultMock />
 			<AiAnswerMock />
 		</div>
+		<p class="mt-5 text-sm">{SEO_GEO.nota}</p>
 	</div>
 </section>

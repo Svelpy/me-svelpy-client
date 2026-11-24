@@ -40,8 +40,8 @@ export const LANDING_LINKS = {
  * Las dos formas de tener un ME, cada una con un solo nombre en toda la landing:
  * crearla uno mismo (registro gratis) o pedir que la arme el equipo (WhatsApp).
  */
-export const CTA_CREAR = 'Crear mi ME gratis';
-export const CTA_SOLICITAR = 'Solicitar mi ME por WhatsApp';
+export const CTA_CREAR = 'Crear ME gratis';
+export const CTA_SOLICITAR = 'Solicitar ME por WhatsApp';
 
 export const LOGOS = {
 	isotipoOscuro: '/images/landing/me-isotipo-oscuro.svg',
@@ -115,10 +115,10 @@ export const PERFILES = {
 // ── Hero
 
 export const HERO = {
-	titulo: 'Tu tarjeta de presentación, ahora es una web.',
+	titulo: 'Que no solo guarden tu contacto: haz que te encuentren primero.',
 	subtitulo:
-		'Contacto, servicios, sucursales y horarios en un solo enlace con QR. Que te guarden en un toque y te encuentren en Google y en la IA.',
-	notaGratis: 'Crearla y diseñarla es gratis.',
+		'Transforma tu tarjeta de presentación en una vitrina digital profesional. Comparte tus datos de contacto con un toque, exhibe tus servicios y catálogo, y fortalece tu presencia digital para que más personas puedan descubrirte en Google y otras plataformas.',
+	//notaGratis: 'Crearla y diseñarla es gratis.',
 	alternativa: '¿Prefieres que la armemos por ti?',
 	perfiles: [PERFILES.valeria, PERFILES.camila, PERFILES.andres, PERFILES.mariana]
 };
@@ -135,9 +135,9 @@ export interface Funcion {
 }
 
 export const FUNCIONES = {
-	titulo: 'Todo lo que tu cliente busca, en un solo enlace.',
+	titulo: 'Todo lo que necesitas para mostrar tu negocio o perfil profesional, en un solo enlace.',
 	subtitulo:
-		'Muestra solo las secciones que te sirven y cámbialas cuando quieras desde tu celular.',
+		'Personaliza tu espacio digital a tu manera. Activa únicamente las secciones que necesitas y actualízalas cuando quieras, directamente desde tu celular.',
 	items: [
 		{
 			icono: 'contacto',
@@ -185,17 +185,19 @@ export const FUNCIONES = {
 // ── Diseño
 
 export const DISENO = {
-	titulo: 'Con tus colores, no con los de una plantilla.',
-	subtitulo: 'Parte de uno de los 10 temas y ajusta cada color y la tipografía a tu marca.',
-	nota: 'Es solo el punto de partida: cada color se cambia por separado.'
+	titulo: 'Un diseño que refleja tu identidad, no una plantilla genérica.',
+	subtitulo:
+		'Elige entre 10 estilos visuales y personaliza los colores y la tipografía para adaptar tu perfil a tu marca personal o empresarial. Tú decides cómo quieres presentarte.',
+	nota: 'Cada tema es un punto de partida. Personaliza individualmente los colores para conseguir el estilo que representa tu marca.'
 };
 
 // ── SEO + GEO
 
 export const SEO_GEO = {
-	titulo: 'Que te encuentren en Google y te recomiende la IA.',
+	titulo: 'Haz que tu perfil sea más fácil de encontrar en Google y en la era de la IA.',
 	subtitulo:
-		'Tu ME se publica con los datos que leen los buscadores y asistentes como ChatGPT o Gemini: tu rubro, tu zona y tus servicios.'
+		'Tu perfil digital está preparado para presentar tu información de forma clara y estructurada. Muestra quién eres, qué servicios ofreces y dónde trabajas, facilitando que los buscadores y asistentes de inteligencia artificial puedan descubrir tu información.',
+	nota: 'Ejemplos ilustrativos. No son resultados garantizados en Google ni en asistentes de IA.'
 };
 
 // ── Dos formas de empezar

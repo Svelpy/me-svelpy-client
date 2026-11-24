@@ -62,7 +62,7 @@
 
 		<div class="-mt-9 flex flex-col items-center px-4 pb-16">
 			<span
-				class="relative grid size-[72px] place-items-center rounded-full border-4 font-display text-xl font-bold"
+				class="relative grid size-18 place-items-center rounded-full border-4 font-display text-xl font-bold"
 				style:background={c.color_secundario}
 				style:color={c.color_texto_sobre_secundario}
 				style:border-color={c.color_fondo}
@@ -136,7 +136,7 @@
 	<!-- Selector de tema -->
 	<fieldset class="min-w-0">
 		<legend class="mb-3 text-sm font-semibold text-primary-900">
-			Tema inicial: <span class="font-normal text-primary-600">{tema.nombre}</span>
+			Tema seleccionado: <span class="font-normal text-primary-600">{tema.nombre}</span>
 		</legend>
 		<div class="flex flex-wrap gap-2">
 			{#each presets as [preset, opcion] (preset)}

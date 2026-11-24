@@ -26,7 +26,9 @@ describe('PaletteDemo', () => {
 		const vista = screen.getByTestId('palette-preview');
 		await expect.element(vista).toHaveAttribute('data-preset', 'salud');
 		await expect.element(vista).toHaveStyle({ backgroundColor: 'rgb(247, 251, 250)' });
-		await expect.element(screen.getByRole('group', { name: 'Tema inicial: Salud' })).toBeVisible();
+		await expect
+			.element(screen.getByRole('group', { name: 'Tema seleccionado: Salud' }))
+			.toBeVisible();
 		await expect.element(screen.getByText('Después puedes cambiar cada color.')).toBeVisible();
 	});
 });
