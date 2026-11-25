@@ -176,6 +176,24 @@ test.describe('Verificación del correo', () => {
 		expect(api.llamadasA('POST', '/auth/verify-email')[0].cuerpo).toEqual({ token: 'valido' });
 	});
 
+	test('abrir otra vez el enlace ya usado muestra que el correo quedó verificado', async ({
+		page
+	}) => {
+		const api = await apiFalsa(page);
+		await iniciarSesion(page, CUENTAS.nuevo);
+		await page.goto('/auth/verify-email?token=valido');
+		await expect(
+			page.getByRole('heading', { level: 1, name: 'Tu correo quedó verificado' })
+		).toBeVisible();
+
+		// Segunda vez (recarga o el correo abierto de nuevo): el token ya no sirve
+		await page.goto('/auth/verify-email?token=usado');
+		await expect(
+			page.getByRole('heading', { level: 1, name: 'Tu correo quedó verificado' })
+		).toBeVisible();
+		expect(api.llamadasA('POST', '/auth/verify-email')).toHaveLength(2);
+	});
+
 	test('un enlace usado ofrece enviar uno nuevo', async ({ page }) => {
 		const api = await apiFalsa(page);
 		await iniciarSesion(page, CUENTAS.nuevo);

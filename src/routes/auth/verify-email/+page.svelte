@@ -40,10 +40,22 @@
 			// La sesión abierta pasa a "verificado" sin tener que volver a entrar
 			if (authService.getToken()) await authStore.refreshUser().catch(() => null);
 		} catch (causa) {
+			// El mismo enlace abierto otra vez (recarga, otra pestaña, otro navegador): el token ya se
+			// usó, pero si la cuenta de esta sesión quedó verificada eso es lo que hay que decir
+			if (await yaVerificado()) {
+				estado = 'listo';
+				return;
+			}
 			error = errorService.getMessage(causa);
 			estado = 'error';
 		}
 	});
+
+	async function yaVerificado(): Promise<boolean> {
+		if (!authService.getToken()) return false;
+		const sesion = await authStore.refreshUser().catch(() => null);
+		return !!sesion?.user.email_verified_at;
+	}
 
 	async function reenviar() {
 		reenviando = true;
@@ -135,8 +147,12 @@
 					Enviar un enlace nuevo
 				</Button>
 			{:else}
+				<p class="text-sm text-light-two_d dark:text-dark-two_d">
+					¿Ya lo habías abierto? Entonces tu correo ya quedó verificado: inicia sesión y lo verás en
+					tu cuenta.
+				</p>
 				<Button href={resolve('/auth/sign-in')} variant="accent" size="lg" fullWidth>
-					Iniciar sesión para pedir otro
+					Iniciar sesión
 				</Button>
 			{/if}
 		</div>
