@@ -1,79 +1,90 @@
+import { conQuery } from '#lib/config/api.config.ts';
 import { http } from '#lib/config/http.config.ts';
 import type {
 	PaginatedResponse,
 	SlugDisponibilidad,
-	Tarjeta,
 	TarjetaCompleta,
 	TarjetaCreateRequest,
+	TarjetaDetalle,
 	TarjetaFiltros,
 	TarjetaListItem,
-	TarjetaNuevaRequest,
 	TarjetaPublica,
+	TarjetasDespublicadasResponse,
 	TarjetaUpdateRequest
 } from '#lib/interfaces/index.ts';
-import { buildPaginationQuery } from '#lib/utils/pagination.ts';
 
-/** Tarjetas: directorio (superadmin), la del owner, la pública y su publicación */
+interface OpcionesPublicas {
+	/** El `fetch` del `load` de SvelteKit (SSR) */
+	fetch?: typeof fetch;
+}
+
+/** Tarjetas: directorio, edición, publicación y lectura pública */
 class TarjetaService {
-	/** `GET /tarjetas` (superadmin) */
+	/** `GET /tarjetas/`: un admin ve todas; un user, solo la suya */
 	listar(filtros: TarjetaFiltros = {}): Promise<PaginatedResponse<TarjetaListItem>> {
-		const query = buildPaginationQuery(filtros);
-		if (filtros.q) query.set('q', filtros.q);
-		if (filtros.rubro) query.set('rubro', filtros.rubro);
-		if (filtros.estado) query.set('estado', filtros.estado);
-		return http.get(`/tarjetas?${query}`);
+		const { page, per_page, user_id, is_public } = filtros;
+		return http.get(conQuery('/tarjetas/', { page, per_page, user_id, is_public }));
 	}
 
-	/** `GET /tarjetas/mia`: toda la tarjeta del owner en una sola respuesta (404 si aún no tiene) */
-	obtenerMia(): Promise<TarjetaCompleta> {
-		return http.get('/tarjetas/mia');
+	/** `GET /tarjetas/{id}/completa`: todo su árbol, con theme, SEO y vitrina (como la ve su dueño) */
+	obtenerCompleta(id: string): Promise<TarjetaCompleta> {
+		return http.get(`/tarjetas/${id}/completa`);
 	}
 
-	/** `POST /tarjetas/mia`: el owner crea su tarjeta, con contenido anidado si lo trae */
-	crearMia(datos: TarjetaNuevaRequest): Promise<TarjetaCompleta> {
-		return http.post('/tarjetas/mia', datos);
-	}
-
-	/** `GET /tarjetas/{id}` */
-	obtener(id: string): Promise<TarjetaCompleta> {
+	/** `GET /tarjetas/{id}`: sin theme, SEO ni vitrina */
+	obtener(id: string): Promise<TarjetaDetalle> {
 		return http.get(`/tarjetas/${id}`);
 	}
 
-	/** `POST /tarjetas` (superadmin): tarjeta para una cuenta que aún no tiene */
-	crear(datos: TarjetaCreateRequest): Promise<TarjetaCompleta> {
-		return http.post('/tarjetas', datos);
+	/**
+	 * `POST /tarjetas/`: una por usuario, despublicada. Sin `user_id` es la propia; con `user_id`
+	 * (admin) la de otra cuenta.
+	 */
+	crear(datos: TarjetaCreateRequest): Promise<TarjetaDetalle> {
+		return http.post('/tarjetas/', datos);
 	}
 
-	/** `PATCH /tarjetas/{id}` */
-	actualizar(id: string, datos: TarjetaUpdateRequest): Promise<Tarjeta> {
+	/** `PATCH /tarjetas/{id}`: datos y listas (cada lista enviada es el estado final) */
+	actualizar(id: string, datos: TarjetaUpdateRequest): Promise<TarjetaDetalle> {
 		return http.patch(`/tarjetas/${id}`, datos);
 	}
 
-	/** `PATCH /tarjetas/{id}/publicacion` */
-	publicar(id: string, isPublic: boolean): Promise<Tarjeta> {
-		return http.patch(`/tarjetas/${id}/publicacion`, { is_public: isPublic });
-	}
-
-	/** `DELETE /tarjetas/{id}` (superadmin, borrado lógico) */
+	/** `DELETE /tarjetas/{id}`: borra también todo su árbol */
 	async eliminar(id: string): Promise<void> {
 		await http.delete(`/tarjetas/${id}`);
 	}
 
-	/** `GET /tarjetas/slug-disponible` */
-	slugDisponible(slug: string, excluirId?: string): Promise<SlugDisponibilidad> {
-		const query = new URLSearchParams({ slug });
-		if (excluirId) query.set('excluir', excluirId);
-		return http.get(`/tarjetas/slug-disponible?${query}`);
+	/** `POST /tarjetas/{id}/publicar`: 409 si el dueño está de baja, sin verificar o sin plan vigente */
+	publicar(id: string): Promise<TarjetaDetalle> {
+		return http.post(`/tarjetas/${id}/publicar`);
 	}
 
-	/** `GET /public/slug-disponible`: para el registro, sin sesión */
-	slugDisponiblePublico(slug: string): Promise<SlugDisponibilidad> {
-		return http.getPublic(`/public/slug-disponible?${new URLSearchParams({ slug })}`);
+	/** `POST /tarjetas/{id}/despublicar` */
+	despublicar(id: string): Promise<TarjetaDetalle> {
+		return http.post(`/tarjetas/${id}/despublicar`);
 	}
 
-	/** `GET /public/tarjetas/{slug}`: lo que ve cualquier visitante (sin sesión) */
-	obtenerPublica(slug: string): Promise<TarjetaPublica> {
-		return http.getPublic(`/public/tarjetas/${encodeURIComponent(slug)}`);
+	/** `POST /tarjetas/despublicar-vencidas`: lo mismo que el cron, a pedido de un admin */
+	despublicarVencidas(): Promise<TarjetasDespublicadasResponse> {
+		return http.post('/tarjetas/despublicar-vencidas');
+	}
+
+	/**
+	 * `GET /tarjetas/public/slug-disponible/{slug}`: con sesión, el slug actual de la tarjeta propia
+	 * cuenta como disponible. Un formato inválido responde 422.
+	 */
+	slugDisponible(slug: string): Promise<SlugDisponibilidad> {
+		return http.get(`/tarjetas/public/slug-disponible/${encodeURIComponent(slug)}`);
+	}
+
+	/** `GET /tarjetas/public/{slug}`: solo lo visible de una tarjeta publicada */
+	obtenerPublica(slug: string, opciones: OpcionesPublicas = {}): Promise<TarjetaPublica> {
+		return http.getPublic(`/tarjetas/public/${encodeURIComponent(slug)}`, opciones);
+	}
+
+	/** `GET /tarjetas/public/id/{id}`: la que abre el QR (`/t/{id}`) */
+	obtenerPublicaPorId(id: string, opciones: OpcionesPublicas = {}): Promise<TarjetaPublica> {
+		return http.getPublic(`/tarjetas/public/id/${encodeURIComponent(id)}`, opciones);
 	}
 }
 

@@ -1,23 +1,22 @@
 <script lang="ts">
 	import { CertificateIcon, ExternalLinkIcon } from '#lib/icons/outline/index.ts';
-	import type { IconoForma, TarjetaCertificacion } from '#lib/interfaces/index.ts';
+	import type { IconoForma, TarjetaCertificacionPublica } from '#lib/interfaces/index.ts';
 	import { todayISO } from '#lib/utils/date.ts';
-	import { mesYAnio, ordenar } from '#lib/utils/tarjeta.ts';
+	import { mesYAnio } from '#lib/utils/tarjeta.ts';
 	import TarjetaIcono from '../ui/tarjetaIcono.svelte';
 	import TarjetaSeccion from '../ui/tarjetaSeccion.svelte';
 
 	interface Props {
 		titulo: string;
-		certificaciones: TarjetaCertificacion[];
+		certificaciones: TarjetaCertificacionPublica[];
 		forma: IconoForma;
 	}
 
 	let { titulo, certificaciones, forma }: Props = $props();
 
-	const visibles = $derived(ordenar(certificaciones).filter((c) => c.is_visible));
 	const hoy = todayISO();
 
-	function vigencia(certificacion: TarjetaCertificacion): string | null {
+	function vigencia(certificacion: TarjetaCertificacionPublica): string | null {
 		if (certificacion.no_expira) return 'Sin vencimiento';
 		if (!certificacion.fecha_expiracion) return null;
 		const fecha = mesYAnio(certificacion.fecha_expiracion);
@@ -27,7 +26,7 @@
 
 <TarjetaSeccion id="certificaciones" {titulo}>
 	<ul class="space-y-3">
-		{#each visibles as certificacion (certificacion.id)}
+		{#each certificaciones as certificacion (certificacion.id)}
 			<li class="flex gap-3 rounded-2xl border border-t-borde bg-t-superficie p-4">
 				<TarjetaIcono icono={CertificateIcon} {forma} size="sm" />
 				<div class="min-w-0 flex-1">

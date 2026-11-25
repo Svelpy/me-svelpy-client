@@ -1,16 +1,9 @@
 <!--
-	El plan de una cuenta en palabras. Lo normal va callado; lo que pide atención (un Pro que vence
-	pronto) lleva el punto de aviso. `celda`: en dos líneas, para tablas y listas.
+	El plan de una cuenta en palabras. Lo normal va callado; lo que pide atención (un plan pago que
+	vence pronto o ya venció) lleva el punto de aviso. `celda`: en dos líneas, para tablas y listas.
 -->
 <script lang="ts">
-	import {
-		diasParaVencer,
-		Plan,
-		planVigente,
-		vencePronto,
-		type CuentaConPlan
-	} from '#lib/config/planes.config.ts';
-	import { PLAN_LABEL } from '#lib/constants/data.ts';
+	import { estadoPlan, type CuentaConPlan } from '#lib/config/planes.config.ts';
 	import { cn } from '#lib/utils/cn.ts';
 	import { formatVencimiento, textoDiasRestantes } from '#lib/utils/plan.ts';
 
@@ -22,16 +15,17 @@
 
 	let { cuenta, variante = 'linea', class: className }: Props = $props();
 
-	const plan = $derived(planVigente(cuenta));
-	const avisar = $derived(vencePronto(cuenta));
-	const dias = $derived(diasParaVencer(cuenta));
+	const estado = $derived(estadoPlan(cuenta));
+	const avisar = $derived(
+		estado.tipo === 'vencido' || (estado.tipo === 'vigente' && estado.vencePronto)
+	);
 
 	/** Lo que sigue al nombre del plan */
 	const detalle = $derived.by(() => {
-		if (plan !== Plan.PRO) return null;
-		if (avisar && dias !== null) return `vence ${textoDiasRestantes(dias)}`;
-		if (cuenta.plan_vence_at) return `hasta el ${formatVencimiento(cuenta.plan_vence_at)}`;
-		return 'sin vencimiento';
+		if (estado.tipo === 'free') return null;
+		if (estado.tipo === 'vencido') return `venció el ${formatVencimiento(cuenta.plan_vence_at)}`;
+		if (estado.vencePronto) return `vence ${textoDiasRestantes(estado.dias)}`;
+		return `hasta el ${formatVencimiento(cuenta.plan_vence_at)}`;
 	});
 </script>
 
@@ -44,8 +38,8 @@
 
 {#if variante === 'celda'}
 	<span class={cn('flex flex-col', className)}>
-		<span class={plan === Plan.PRO ? 'font-medium' : 'text-light-two_d dark:text-dark-two_d'}>
-			{PLAN_LABEL[plan]}
+		<span class={estado.tipo === 'free' ? 'text-light-two_d dark:text-dark-two_d' : 'font-medium'}>
+			{cuenta.plan.nombre}
 		</span>
 		{#if detalle}
 			<span
@@ -70,6 +64,6 @@
 		)}
 	>
 		{#if avisar}{@render punto()}{/if}
-		Plan {PLAN_LABEL[plan]}{detalle ? `, ${detalle}` : ''}
+		Plan {cuenta.plan.nombre}{detalle ? `, ${detalle}` : ''}
 	</span>
 {/if}

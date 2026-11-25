@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { ImageUploader } from '#lib/components/ui/index.ts';
-	import type { UploadTipo } from '#lib/interfaces/index.ts';
-	import { errorService, uploadService } from '#lib/services/index.ts';
+	import type { ImagenTipo } from '#lib/interfaces/index.ts';
+	import { FORMATOS_IMAGEN } from '#lib/utils/imagen.ts';
+	import { errorService, imagenService } from '#lib/services/index.ts';
 
 	interface Props {
 		id: string;
 		label: string;
 		hint?: string;
-		/** Define el tamaño al que se procesa la imagen */
-		tipo: UploadTipo;
+		/** Define el tamaño al que se achica antes de subirla */
+		tipo: ImagenTipo;
 		/** URL guardada (null = sin imagen) */
 		value: string | null;
 		error?: string;
@@ -37,7 +38,7 @@
 		subiendo = true;
 		errorSubida = '';
 		try {
-			const { url } = await uploadService.subir(elegido, tipo);
+			const { url } = await imagenService.subir(elegido, tipo);
 			value = url;
 			onchange?.(url);
 		} catch (causa) {
@@ -61,6 +62,7 @@
 		hint={subiendo ? 'Subiendo la imagen…' : hint}
 		bind:value={archivo}
 		currentUrl={value}
+		accept={FORMATOS_IMAGEN}
 		error={errorSubida || error}
 		disabled={subiendo}
 		onFileChange={subir}

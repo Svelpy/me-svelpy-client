@@ -1,11 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { CUENTAS, iniciarSesion, sinImagenesExternas } from './e2e.utils';
+import { apiFalsa, CUENTAS, TARJETA_PUBLICA } from './e2e.api';
+import { iniciarSesion } from './e2e.utils';
 
 const esOscuro = (page: import('@playwright/test').Page) =>
 	page.evaluate(() => document.documentElement.classList.contains('dark'));
 
 test.beforeEach(async ({ page }) => {
-	await sinImagenesExternas(page);
+	await apiFalsa(page);
 });
 
 test.describe('Modo oscuro', () => {
@@ -46,11 +47,11 @@ test.describe('Modo oscuro', () => {
 	test('la tarjeta pública conserva su paleta aunque el panel esté oscuro', async ({ page }) => {
 		await page.goto('/auth/sign-in');
 		await page.getByRole('radio', { name: 'Modo oscuro' }).click();
-		await page.goto('/doctora-fabiola');
-		// Fondo del tema Salud de la doctora: #F7FBFA
+		await page.goto(`/${TARJETA_PUBLICA.slug}`);
+		// Fondo de la tarjeta (tema Claro del ejemplo): #FFFFFF
 		await expect(page.getByTestId('tarjeta-vista')).toHaveCSS(
 			'background-color',
-			'rgb(247, 251, 250)'
+			'rgb(255, 255, 255)'
 		);
 	});
 });

@@ -1,7 +1,7 @@
 import { RED_SOCIAL_LABEL } from '#lib/constants/data.ts';
 import type { TarjetaPublica } from '#lib/interfaces/index.ts';
 import { numeroInternacional, websiteUrl } from './contacto';
-import { contactosDeTipo, nombreCompleto, ordenar } from './tarjeta';
+import { contactosDeTipo, nombreCompleto } from './tarjeta';
 
 /** Contacto .vcf (vCard 3.0) para "Guardar contacto": se guarda en la agenda del teléfono */
 
@@ -18,7 +18,7 @@ type DatosVCard = Pick<
 	| 'photo_usuario_url'
 	| 'contactos'
 	| 'ubicaciones'
-	| 'sociales'
+	| 'redes'
 >;
 
 export interface FotoVCard {
@@ -76,7 +76,8 @@ export function generarVCard(
 		lineas.push(`URL:${websiteUrl(sitio.valor)}`);
 	});
 
-	const ubicacion = ordenar(tarjeta.ubicaciones).find((u) => u.is_visible);
+	// La tarjeta pública ya viene con lo visible y en orden
+	const [ubicacion] = tarjeta.ubicaciones;
 	if (ubicacion) {
 		const adr = [
 			'',
@@ -100,14 +101,14 @@ export function generarVCard(
 		lineas.push(`NOTE:${escapar(nota)}`);
 	}
 
-	for (const social of ordenar(tarjeta.sociales).filter((s) => s.is_visible)) {
-		lineas.push(`X-SOCIALPROFILE;TYPE=${RED_SOCIAL_LABEL[social.red].toLowerCase()}:${social.url}`);
+	for (const red of tarjeta.redes) {
+		lineas.push(`X-SOCIALPROFILE;TYPE=${RED_SOCIAL_LABEL[red.red].toLowerCase()}:${red.url}`);
 	}
 
 	const urlFoto = fotoDeContacto(tarjeta);
 	if (foto) {
 		lineas.push(`PHOTO;ENCODING=b;TYPE=${foto.tipo}:${foto.base64}`);
-	} else if (urlFoto && !urlFoto.startsWith('data:')) {
+	} else if (urlFoto && /^https?:/i.test(urlFoto)) {
 		lineas.push(`PHOTO;VALUE=URI:${urlFoto}`);
 	}
 

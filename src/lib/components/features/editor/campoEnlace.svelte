@@ -1,7 +1,7 @@
 <!--
 	El enlace de una tarjeta: el dominio va pegado dentro del campo (me.svelpy.com/…) para que se lea
 	como lo que es, lo escrito se convierte en enlace al vuelo y se revisa en vivo si está libre.
-	Si está tomado, ofrece una alternativa con un clic.
+	Si está tomado, busca una alternativa libre y la ofrece con un clic.
 -->
 <script lang="ts" module>
 	export type EstadoEnlace = 'vacio' | 'revisando' | 'libre' | 'ocupado' | 'invalido' | 'actual';
@@ -9,9 +9,9 @@
 
 <script lang="ts">
 	import { CircleCheckIcon, LoaderIcon, XIcon } from '#lib/icons/outline/index.ts';
-	import { tarjetaService } from '#lib/services/index.ts';
+	import { AppError, tarjetaService } from '#lib/services/index.ts';
 	import { cn } from '#lib/utils/cn.ts';
-	import { limpiarSlugEscrito } from '#lib/utils/slug.ts';
+	import { alternativasDeSlug, limpiarSlugEscrito, motivoSlugInvalido } from '#lib/utils/slug.ts';
 	import { DOMINIO_PUBLICO } from '#lib/utils/urlPublica.ts';
 
 	interface Props {
@@ -21,12 +21,10 @@
 		hint?: string;
 		error?: string;
 		required?: boolean;
-		/** Sin sesión (registro): revisa con el endpoint público */
-		publico?: boolean;
-		/** La tarjeta que se edita: su propio enlace cuenta como libre */
-		excluirId?: string;
 		/** El enlace que ya tiene (no se revisa) */
 		actual?: string;
+		/** Palabras para armar alternativas si está ocupado (rubro, apellido…) */
+		pistas?: (string | null | undefined)[];
 		size?: 'md' | 'lg';
 		/** Estado de la revisión, para que el formulario sepa si puede seguir */
 		estado?: EstadoEnlace;
@@ -42,9 +40,8 @@
 		hint,
 		error,
 		required = false,
-		publico = false,
-		excluirId,
 		actual,
+		pistas = [],
 		size = 'md',
 		estado = $bindable('vacio'),
 		oneditar,
@@ -66,6 +63,16 @@
 		oneditar?.();
 	}
 
+	/** La primera alternativa libre (se revisan en paralelo); null si ninguna */
+	async function buscarAlternativa(slug: string): Promise<string | null> {
+		const candidatos = alternativasDeSlug(slug, pistas).slice(0, 3);
+		const respuestas = await Promise.allSettled(
+			candidatos.map((candidato) => tarjetaService.slugDisponible(candidato))
+		);
+		const libre = respuestas.findIndex((r) => r.status === 'fulfilled' && r.value.disponible);
+		return libre === -1 ? null : candidatos[libre];
+	}
+
 	// Revisa cada valor nuevo, con una pausa para no consultar en cada tecla
 	$effect(() => {
 		const slug = value;
@@ -85,23 +92,35 @@
 			estado = 'vacio';
 			return;
 		}
+		// Formato, largo y palabras reservadas se revisan aquí mismo
+		const invalido = motivoSlugInvalido(slug);
+		if (invalido) {
+			estado = 'invalido';
+			motivo = invalido;
+			return;
+		}
 		estado = 'revisando';
 		temporizador = setTimeout(async () => {
 			try {
-				const respuesta = publico
-					? await tarjetaService.slugDisponiblePublico(slug)
-					: await tarjetaService.slugDisponible(slug, excluirId);
+				const respuesta = await tarjetaService.slugDisponible(slug);
 				if (slug !== value) return;
 				if (respuesta.disponible) {
 					estado = 'libre';
-				} else {
-					estado = respuesta.sugerencia ? 'ocupado' : 'invalido';
-					motivo = respuesta.motivo ?? 'No está disponible.';
-					sugerencia = respuesta.sugerencia;
+					return;
 				}
-			} catch {
-				// Sin red no se bloquea: el backend lo vuelve a revisar al guardar
-				if (slug === value) estado = 'vacio';
+				estado = 'ocupado';
+				motivo = 'Ya está en uso.';
+				const alternativa = await buscarAlternativa(slug);
+				if (slug === value) sugerencia = alternativa;
+			} catch (causa) {
+				if (slug !== value) return;
+				// 422: el backend no acepta el formato. Sin red no se bloquea: se revisa al guardar
+				if (causa instanceof AppError && causa.status === 422) {
+					estado = 'invalido';
+					motivo = 'Usa solo minúsculas, números y guiones simples.';
+				} else {
+					estado = 'vacio';
+				}
 			}
 		}, 350);
 		return () => clearTimeout(temporizador);

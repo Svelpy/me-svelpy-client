@@ -1,29 +1,32 @@
 <script lang="ts">
 	import { PhotoIcon, WhatsappIcon } from '#lib/icons/outline/index.ts';
-	import type { TarjetaContacto, VitrinaCompleta, VitrinaItem } from '#lib/interfaces/index.ts';
+	import type {
+		TarjetaContactoPublico,
+		VitrinaItemPublico,
+		VitrinaPublica
+	} from '#lib/interfaces/index.ts';
 	import { whatsappUrl } from '#lib/utils/contacto.ts';
-	import { formatearPrecio, ordenar, whatsappPrincipal } from '#lib/utils/tarjeta.ts';
+	import { formatearPrecio, whatsappPrincipal } from '#lib/utils/tarjeta.ts';
 	import TarjetaBoton from '../ui/tarjetaBoton.svelte';
 	import TarjetaHoja from '../ui/tarjetaHoja.svelte';
 	import TarjetaSeccion from '../ui/tarjetaSeccion.svelte';
 
 	interface Props {
 		titulo: string;
-		vitrina: VitrinaCompleta;
-		contactos: TarjetaContacto[];
+		vitrina: VitrinaPublica;
+		contactos: TarjetaContactoPublico[];
 	}
 
 	let { titulo, vitrina, contactos }: Props = $props();
 
 	let categoria = $state<string | null>(null);
-	let detalle = $state<VitrinaItem | null>(null);
+	let detalle = $state<VitrinaItemPublico | null>(null);
 	let imagenActiva = $state(0);
 
-	const categorias = $derived(ordenar(vitrina.categorias).filter((c) => c.is_visible));
+	// La vitrina pública ya trae solo lo visible, en su orden
+	const categorias = $derived(vitrina.categorias);
 	const items = $derived(
-		ordenar(vitrina.items).filter(
-			(i) => i.is_visible && (!categoria || i.categoria_id === categoria)
-		)
+		categoria ? vitrina.items.filter((i) => i.categoria_id === categoria) : vitrina.items
 	);
 	const whatsapp = $derived(whatsappPrincipal(contactos));
 	const campos = $derived(
@@ -34,19 +37,19 @@
 			)
 	);
 
-	function consultarUrl(item: VitrinaItem): string | undefined {
+	function consultarUrl(item: VitrinaItemPublico): string | undefined {
 		return whatsapp
 			? whatsappUrl(whatsapp.valor, `Hola, me interesa "${item.titulo}". ¿Me das más información?`)
 			: undefined;
 	}
 
-	function abrir(item: VitrinaItem) {
+	function abrir(item: VitrinaItemPublico) {
 		imagenActiva = 0;
 		detalle = item;
 	}
 </script>
 
-{#snippet precio(item: VitrinaItem, grande = false)}
+{#snippet precio(item: VitrinaItemPublico, grande = false)}
 	{#if vitrina.mostrar_precios && item.precio !== null}
 		<span class="flex flex-wrap items-baseline gap-x-2">
 			<span class={['font-t-titulos font-bold text-t-precio', grande ? 'text-2xl' : 'text-lg']}>

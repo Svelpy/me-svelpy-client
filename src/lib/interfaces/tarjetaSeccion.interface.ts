@@ -1,10 +1,9 @@
 import type { Timestamps } from './common.interface';
 
-/** Secciones de la tarjeta pública; una fila por clave (máximo 9 por tarjeta) */
+/** Enum `ClaveSeccion`: las 8 secciones que el backend crea con cada tarjeta */
 export type SeccionClave =
 	| 'acerca'
 	| 'contacto'
-	| 'acciones'
 	| 'vitrina'
 	| 'ubicacion'
 	| 'redes'
@@ -12,36 +11,24 @@ export type SeccionClave =
 	| 'certificaciones'
 	| 'faq';
 
-export interface TarjetaSeccion extends Timestamps {
-	id: string;
-	tarjeta_id: string;
+/** `TarjetaSeccionPublic`: solo las visibles, en su orden */
+export interface TarjetaSeccionPublica {
 	clave: SeccionClave;
 	/** null = el título por defecto de la sección (`SECCIONES_TARJETA`) */
 	titulo: string | null;
+}
+
+/** `TarjetaSeccionResponse` */
+export interface TarjetaSeccion extends TarjetaSeccionPublica, Timestamps {
+	id: string;
+	tarjeta_id: string;
 	is_visible: boolean;
 	orden: number;
 }
 
-/** Sección dentro de una tarjeta nueva (`TarjetaNuevaRequest.secciones`) */
-export interface TarjetaSeccionInput {
-	clave: SeccionClave;
-	titulo?: string | null;
-	is_visible?: boolean;
-	orden?: number;
-}
-
-/** `PUT /tarjetas/{id}/secciones`: las 9 secciones con su orden, visibilidad y título */
-export interface TarjetaSeccionesUpdateRequest {
-	secciones: {
-		clave: SeccionClave;
-		titulo: string | null;
-		is_visible: boolean;
-		orden: number;
-	}[];
-}
-
-/** `PATCH /secciones/{id}` */
-export interface TarjetaSeccionUpdateRequest {
+/** `TarjetaSeccionNestedItem`: las 8 ya existen, por eso el id es obligatorio y no se envía la clave */
+export interface TarjetaSeccionNestedItem {
+	id: string;
 	titulo?: string | null;
 	is_visible?: boolean;
 	orden?: number;

@@ -2,17 +2,14 @@
 	import { untrack } from 'svelte';
 	import { AlertBox, Input, Switch, TextArea } from '#lib/components/ui/index.ts';
 	import { LinkIcon } from '#lib/icons/outline/index.ts';
-	import type {
-		TarjetaCertificacion,
-		TarjetaCertificacionCreateRequest
-	} from '#lib/interfaces/index.ts';
+	import type { TarjetaCertificacion, TarjetaCertificacionInput } from '#lib/interfaces/index.ts';
 	import { tarjetaCertificacionSchema } from '#lib/zod/tarjetaFormacion.schema.ts';
 	import { EstadoFormulario } from '../estadoFormulario.svelte.ts';
 
 	interface Props {
 		id: string;
 		inicial: TarjetaCertificacion | null;
-		guardar: (datos: TarjetaCertificacionCreateRequest) => Promise<void>;
+		guardar: (datos: TarjetaCertificacionInput) => Promise<void>;
 	}
 
 	let { id, inicial, guardar }: Props = $props();

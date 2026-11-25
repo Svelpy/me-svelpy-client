@@ -9,24 +9,31 @@ import {
 	getAssignableUserRoles,
 	getHomeRoute,
 	isRole,
-	isSafeRedirect
+	isSafeRedirect,
+	puedeGestionarCuenta
 } from './rbac.utils';
 
-const RUTAS_SUPERADMIN = [
+const RUTAS_ADMIN = [
 	'/panel',
 	'/panel/tarjetas',
 	'/panel/tarjetas/nueva',
 	'/panel/tarjetas/[id]',
 	'/panel/usuarios',
 	'/panel/usuarios/nuevo',
+	'/panel/usuarios/[id]',
+	'/panel/pagos',
+	'/panel/pagos/nuevo',
+	'/panel/planes',
 	'/panel/cuenta'
 ];
 
 describe('isRole', () => {
-	it('acepta solo los roles de ME', () => {
-		expect(isRole('SUPERADMIN')).toBe(true);
-		expect(isRole('OWNER')).toBe(true);
-		expect(isRole('CAJERO')).toBe(false);
+	it('acepta solo los roles de la API (en minúsculas)', () => {
+		expect(isRole('superadmin')).toBe(true);
+		expect(isRole('admin')).toBe(true);
+		expect(isRole('user')).toBe(true);
+		expect(isRole('SUPERADMIN')).toBe(false);
+		expect(isRole('OWNER')).toBe(false);
 		expect(isRole(undefined)).toBe(false);
 	});
 });
@@ -36,27 +43,30 @@ describe('canAccessRoute', () => {
 		expect(canAccessRoute(role, getHomeRoute(role))).toBe(true);
 	});
 
-	it('SUPERADMIN abre todo el panel salvo "Mi tarjeta" (no tiene tarjeta propia)', () => {
-		for (const ruta of RUTAS_SUPERADMIN) expect(canAccessRoute(Role.SUPERADMIN, ruta)).toBe(true);
-		expect(canAccessRoute(Role.SUPERADMIN, '/panel/mi-tarjeta')).toBe(false);
-	});
+	it.each([Role.SUPERADMIN, Role.ADMIN])(
+		'%s abre todo el panel salvo "Mi tarjeta" (no tiene tarjeta propia)',
+		(role) => {
+			for (const ruta of RUTAS_ADMIN) expect(canAccessRoute(role, ruta)).toBe(true);
+			expect(canAccessRoute(role, '/panel/mi-tarjeta')).toBe(false);
+		}
+	);
 
-	it('OWNER solo abre su tarjeta y su cuenta', () => {
-		expect(canAccessRoute(Role.OWNER, '/panel/mi-tarjeta')).toBe(true);
-		expect(canAccessRoute(Role.OWNER, '/panel/cuenta')).toBe(true);
-		for (const ruta of ['/panel', '/panel/tarjetas', '/panel/tarjetas/[id]', '/panel/usuarios']) {
-			expect(canAccessRoute(Role.OWNER, ruta)).toBe(false);
+	it('el user solo abre su tarjeta y su cuenta', () => {
+		expect(canAccessRoute(Role.USER, '/panel/mi-tarjeta')).toBe(true);
+		expect(canAccessRoute(Role.USER, '/panel/cuenta')).toBe(true);
+		for (const ruta of RUTAS_ADMIN.filter((r) => r !== '/panel/cuenta')) {
+			expect(canAccessRoute(Role.USER, ruta)).toBe(false);
 		}
 	});
 
 	it('compara por segmentos, no por prefijo de texto', () => {
-		expect(canAccessRoute(Role.OWNER, '/panel/mi-tarjeta-x')).toBe(false);
+		expect(canAccessRoute(Role.USER, '/panel/mi-tarjeta-x')).toBe(false);
 		expect(canAccessRoute(Role.SUPERADMIN, '/panelx')).toBe(false);
 	});
 
 	it('ignora los grupos de rutas', () => {
-		expect(canAccessRoute(Role.OWNER, '/(app)/panel/mi-tarjeta')).toBe(true);
-		expect(canAccessRoute(Role.SUPERADMIN, '/(app)/panel/mi-tarjeta')).toBe(false);
+		expect(canAccessRoute(Role.USER, '/(app)/panel/mi-tarjeta')).toBe(true);
+		expect(canAccessRoute(Role.ADMIN, '/(app)/panel/mi-tarjeta')).toBe(false);
 	});
 
 	it('deniega sin rol o sin ruta', () => {
@@ -66,29 +76,44 @@ describe('canAccessRoute', () => {
 });
 
 describe('can', () => {
-	it('SUPERADMIN tiene todas las acciones en todos los módulos', () => {
+	it('el superadmin tiene todas las acciones en todos los módulos', () => {
 		for (const module of Object.values(Module)) {
 			for (const action of Object.values(Action))
 				expect(can(Role.SUPERADMIN, module, action)).toBe(true);
 		}
 	});
 
-	it('OWNER no gestiona cuentas ni elimina su tarjeta', () => {
-		for (const action of Object.values(Action))
-			expect(can(Role.OWNER, Module.USUARIO, action)).toBe(false);
-		expect(can(Role.OWNER, Module.TARJETA, Action.UPDATE)).toBe(true);
-		expect(can(Role.OWNER, Module.TARJETA, Action.DELETE)).toBe(false);
+	it('el admin hace todo menos eliminar cuentas y tarjetas', () => {
+		expect(can(Role.ADMIN, Module.USUARIO, Action.DELETE)).toBe(false);
+		expect(can(Role.ADMIN, Module.TARJETA, Action.DELETE)).toBe(false);
+		for (const action of [Action.CREATE, Action.READ, Action.UPDATE]) {
+			expect(can(Role.ADMIN, Module.USUARIO, action)).toBe(true);
+			expect(can(Role.ADMIN, Module.TARJETA, action)).toBe(true);
+		}
+		// Quitar un contacto es editar la tarjeta: eso sí puede
+		expect(can(Role.ADMIN, Module.CONTACTO, Action.DELETE)).toBe(true);
+		expect(can(Role.ADMIN, Module.PAGO, Action.CREATE)).toBe(true);
+		expect(can(Role.ADMIN, Module.PLAN, Action.UPDATE)).toBe(true);
 	});
 
-	it('OWNER solo lee y edita el tema, el SEO y las secciones', () => {
+	it('el user no gestiona cuentas, pagos ni planes, ni elimina su tarjeta', () => {
+		for (const module of [Module.USUARIO, Module.PAGO, Module.PLAN, Module.MANTENIMIENTO]) {
+			for (const action of Object.values(Action))
+				expect(can(Role.USER, module, action)).toBe(false);
+		}
+		expect(can(Role.USER, Module.TARJETA, Action.UPDATE)).toBe(true);
+		expect(can(Role.USER, Module.TARJETA, Action.DELETE)).toBe(false);
+	});
+
+	it('el user solo lee y edita el tema, el SEO y las secciones', () => {
 		for (const module of [Module.TEMA, Module.SEO, Module.SECCION]) {
-			expect(can(Role.OWNER, module, Action.UPDATE)).toBe(true);
-			expect(can(Role.OWNER, module, Action.CREATE)).toBe(false);
-			expect(can(Role.OWNER, module, Action.DELETE)).toBe(false);
+			expect(can(Role.USER, module, Action.UPDATE)).toBe(true);
+			expect(can(Role.USER, module, Action.CREATE)).toBe(false);
+			expect(can(Role.USER, module, Action.DELETE)).toBe(false);
 		}
 	});
 
-	it('OWNER gestiona todo el contenido de su tarjeta', () => {
+	it('el user gestiona todo el contenido de su tarjeta', () => {
 		for (const module of [
 			Module.CONTACTO,
 			Module.UBICACION,
@@ -98,8 +123,7 @@ describe('can', () => {
 			Module.CERTIFICACION,
 			Module.FAQ
 		]) {
-			for (const action of Object.values(Action))
-				expect(can(Role.OWNER, module, action)).toBe(true);
+			for (const action of Object.values(Action)) expect(can(Role.USER, module, action)).toBe(true);
 		}
 	});
 
@@ -108,32 +132,42 @@ describe('can', () => {
 	});
 });
 
-describe('reglas especiales', () => {
-	it('solo el superadmin cambia la dirección de una tarjeta', () => {
-		expect(canCambiarSlug(Role.SUPERADMIN)).toBe(true);
-		expect(canCambiarSlug(Role.OWNER)).toBe(false);
-		expect(canCambiarSlug(null)).toBe(false);
+describe('jerarquía', () => {
+	it('cada rol asigna solo roles de rango menor', () => {
+		expect(getAssignableUserRoles(Role.SUPERADMIN)).toEqual([Role.USER, Role.ADMIN]);
+		expect(getAssignableUserRoles(Role.ADMIN)).toEqual([Role.USER]);
+		expect(getAssignableUserRoles(Role.USER)).toEqual([]);
+		expect(getAssignableUserRoles(null)).toEqual([]);
 	});
 
-	it('solo el superadmin asigna roles', () => {
-		expect(getAssignableUserRoles(Role.SUPERADMIN)).toEqual([Role.OWNER, Role.SUPERADMIN]);
-		expect(getAssignableUserRoles(Role.OWNER)).toEqual([]);
+	it('cada rol gestiona solo cuentas de rango menor', () => {
+		expect(puedeGestionarCuenta(Role.SUPERADMIN, Role.ADMIN)).toBe(true);
+		expect(puedeGestionarCuenta(Role.SUPERADMIN, Role.SUPERADMIN)).toBe(false);
+		expect(puedeGestionarCuenta(Role.ADMIN, Role.USER)).toBe(true);
+		expect(puedeGestionarCuenta(Role.ADMIN, Role.ADMIN)).toBe(false);
+		expect(puedeGestionarCuenta(Role.ADMIN, Role.SUPERADMIN)).toBe(false);
+		expect(puedeGestionarCuenta(Role.USER, Role.USER)).toBe(false);
+		expect(puedeGestionarCuenta(Role.SUPERADMIN, 'desconocido')).toBe(false);
+	});
+
+	it('solo los admins cambian la dirección de una tarjeta', () => {
+		expect(canCambiarSlug(Role.SUPERADMIN)).toBe(true);
+		expect(canCambiarSlug(Role.ADMIN)).toBe(true);
+		expect(canCambiarSlug(Role.USER)).toBe(false);
+		expect(canCambiarSlug(null)).toBe(false);
 	});
 });
 
 describe('filterNavigation', () => {
-	it('el owner ve solo su tarjeta y su cuenta', () => {
-		const items = filterNavigation(PANEL_NAVIGATION, Role.OWNER).flatMap((s) =>
-			s.items.map((i) => i.id)
-		);
-		expect(items).toEqual(['mi-tarjeta', 'cuenta']);
+	const ids = (role: Role | null) =>
+		filterNavigation(PANEL_NAVIGATION, role).flatMap((s) => s.items.map((i) => i.id));
+
+	it('el user ve solo su tarjeta y su cuenta', () => {
+		expect(ids(Role.USER)).toEqual(['mi-tarjeta', 'cuenta']);
 	});
 
-	it('el superadmin ve el inicio, tarjetas, usuarios y su cuenta', () => {
-		const items = filterNavigation(PANEL_NAVIGATION, Role.SUPERADMIN).flatMap((s) =>
-			s.items.map((i) => i.id)
-		);
-		expect(items).toEqual(['inicio', 'tarjetas', 'usuarios', 'cuenta']);
+	it.each([Role.SUPERADMIN, Role.ADMIN])('%s ve la administración y su cuenta', (role) => {
+		expect(ids(role)).toEqual(['inicio', 'tarjetas', 'usuarios', 'pagos', 'planes', 'cuenta']);
 	});
 
 	it('sin rol no hay menú', () => {

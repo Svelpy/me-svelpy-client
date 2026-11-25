@@ -4,10 +4,10 @@
 	import type {
 		VitrinaCompleta,
 		VitrinaItem,
-		VitrinaItemCreateRequest,
-		VitrinaItemImagenInput
+		VitrinaItemInput,
+		VitrinaItemImagenNestedItem
 	} from '#lib/interfaces/index.ts';
-	import { ordenar } from '#lib/utils/tarjeta.ts';
+	import { numeroDe, ordenar } from '#lib/utils/tarjeta.ts';
 	import { vitrinaItemSchema } from '#lib/zod/vitrina.schema.ts';
 	import { EstadoFormulario, numeroONull } from '../estadoFormulario.svelte.ts';
 	import ImagenesItem from './imagenesItem.svelte';
@@ -16,7 +16,7 @@
 		id: string;
 		inicial: VitrinaItem | null;
 		vitrina: VitrinaCompleta;
-		guardar: (datos: VitrinaItemCreateRequest) => Promise<void>;
+		guardar: (datos: VitrinaItemInput) => Promise<void>;
 	}
 
 	let { id, inicial, vitrina, guardar }: Props = $props();
@@ -25,8 +25,9 @@
 	let titulo = $state(base?.titulo ?? '');
 	let descripcion = $state(base?.descripcion ?? '');
 	let categoria = $state(base?.categoria_id ?? '');
-	let precio = $state(base?.precio?.toString() ?? '');
-	let precioAnterior = $state(base?.precio_anterior?.toString() ?? '');
+	// La API manda los precios como texto ("250.00"): se muestran como número ("250")
+	let precio = $state(numeroDe(base?.precio)?.toString() ?? '');
+	let precioAnterior = $state(numeroDe(base?.precio_anterior)?.toString() ?? '');
 	let precioEtiqueta = $state(base?.precio_etiqueta ?? '');
 	let campos = $state([
 		base?.campo1 ?? '',
@@ -35,8 +36,8 @@
 		base?.campo4 ?? ''
 	]);
 	let destacado = $state(base?.destacado ?? false);
-	let imagenes = $state<VitrinaItemImagenInput[]>(
-		base?.imagenes.map(({ url, alt }) => ({ url, alt })) ?? []
+	let imagenes = $state<VitrinaItemImagenNestedItem[]>(
+		ordenar(base?.imagenes ?? []).map(({ id, url, alt }) => ({ id, url, alt }))
 	);
 	const estado = new EstadoFormulario();
 	const sugerencias = $props.id();

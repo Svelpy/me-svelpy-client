@@ -1,6 +1,7 @@
 import {
 	ASSIGNABLE_USER_ROLES,
 	CAMBIAR_SLUG_ROLES,
+	RANGO_ROL,
 	ROLE_PERMISSIONS,
 	Role,
 	type Action,
@@ -17,7 +18,7 @@ export function isRole(value: unknown): value is Role {
 	return typeof value === 'string' && ROLES.has(value);
 }
 
-/** true si el rol tiene la acción habilitada en ese módulo (equivale a `has_permission` del backend) */
+/** true si el rol tiene la acción habilitada en ese módulo */
 export function can(role: Role | null, module: Module, action: Action): boolean {
 	if (!role) return false;
 	return ROLE_PERMISSIONS[role]?.[module]?.includes(action) ?? false;
@@ -28,9 +29,19 @@ export function canCambiarSlug(role: Role | null): boolean {
 	return !!role && CAMBIAR_SLUG_ROLES.includes(role);
 }
 
-/** Roles que el rol puede asignar al crear o editar un usuario (solo el SUPERADMIN gestiona usuarios) */
+/** Roles que el rol puede asignar al crear o editar un usuario: solo los de rango menor */
 export function getAssignableUserRoles(role: Role | null): AssignableUserRole[] {
-	return role === Role.SUPERADMIN ? [...ASSIGNABLE_USER_ROLES] : [];
+	if (!role) return [];
+	return ASSIGNABLE_USER_ROLES.filter((asignable) => RANGO_ROL[asignable] < RANGO_ROL[role]);
+}
+
+/**
+ * true si `actor` puede gestionar (editar, dar de baja, eliminar…) una cuenta con `rolObjetivo`:
+ * solo las de rango menor, como exige el backend. Un rol desconocido no se gestiona.
+ */
+export function puedeGestionarCuenta(actor: Role | null, rolObjetivo: string): boolean {
+	if (!actor || !isRole(rolObjetivo)) return false;
+	return RANGO_ROL[actor] > RANGO_ROL[rolObjetivo];
 }
 
 // Los grupos de rutas `(grupo)` no forman parte de la URL: '/(admin)/panel' equivale a '/panel'

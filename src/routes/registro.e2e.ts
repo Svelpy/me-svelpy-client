@@ -1,12 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
-import { CUENTAS, sinImagenesExternas } from './e2e.utils';
+import { apiFalsa, CUENTAS } from './e2e.api';
 
 // Escritorio: además del formulario se ve la tarjeta que se arma
 test.use({ viewport: { width: 1440, height: 900 } });
-
-test.beforeEach(async ({ page }) => {
-	await sinImagenesExternas(page);
-});
 
 const titulo = (page: Page, nombre: string) =>
 	page.getByRole('heading', { level: 1, name: nombre });
@@ -22,12 +18,12 @@ async function completarAcceso(page: Page, email: string) {
 
 test.describe('Registro propio', () => {
 	test('elige su enlace, crea su acceso y llega al editor con el plan Free', async ({ page }) => {
+		const api = await apiFalsa(page);
 		await page.goto('/auth/sign-in');
 		await page.getByRole('link', { name: 'Crea tu tarjeta' }).click();
 
 		// Paso 1: el enlace, con el dominio pegado y la revisión en vivo
 		await expect(titulo(page, 'Elige tu enlace')).toBeVisible();
-		await expect(page.getByText('Paso 1 de 3')).toBeVisible();
 		const enlace = page.getByLabel(/^Tu enlace/);
 		await enlace.fill('Rocío Suárez');
 		await expect(enlace).toHaveValue('rocio-suarez');
@@ -43,69 +39,77 @@ test.describe('Registro propio', () => {
 		await page.getByRole('combobox', { name: /^Rubro/ }).fill('Nutrición');
 		const vista = page.getByRole('complementary', { name: 'Tu tarjeta mientras la armas' });
 		await expect(vista.getByText('Rocío Suárez')).toBeVisible();
-		await expect(vista.getByText('me.svelpy.com/rocio-suarez')).toBeVisible();
 		await page.getByRole('button', { name: 'Crear mi tarjeta' }).click();
 
 		await expect(page).toHaveURL(/\/panel\/mi-tarjeta/);
 		await expect(titulo(page, 'Rocío Suárez')).toBeVisible();
-		await expect(page.getByText('Plan Free', { exact: true })).toBeVisible();
-		// Sin Pro, la acción principal lleva a activarlo por WhatsApp
-		const activar = page.getByRole('link', { name: 'Activar Pro para publicar' }).first();
-		await expect(activar).toHaveAttribute('href', /^https:\/\/wa\.me\/59176727537\?text=/);
-		await expect(page.getByRole('button', { name: 'Publicar tarjeta' })).toHaveCount(0);
+
+		// El registro no inicia sesión: después se entra con las mismas credenciales
+		const [registro] = api.llamadasA('POST', '/auth/register');
+		expect(registro.cuerpo).toMatchObject({
+			email: 'rocio@me.test',
+			tarjeta: {
+				slug: 'rocio-suarez',
+				nombres: 'Rocío',
+				rubro: 'Nutrición',
+				theme: { preset: expect.any(String) }
+			}
+		});
+		expect(api.llamadasA('POST', '/auth/login')[0].cuerpo).toMatchObject({
+			email: 'rocio@me.test'
+		});
+
+		// Free y sin verificar: el editor dice qué falta para publicar
+		await expect(page.getByText(/Verifica tu correo para poder publicar/)).toBeVisible();
+		await expect(page.getByText('Publicar es parte del plan Pro')).toBeVisible();
+		await expect(page.getByRole('link', { name: 'Activar Pro' })).toHaveAttribute(
+			'href',
+			/^https:\/\/wa\.me\//
+		);
+		await expect(page.getByRole('button', { name: 'Publicar tarjeta' })).toBeDisabled();
 	});
 
-	test('un enlace tomado no deja seguir y ofrece otro con un clic', async ({ page }) => {
-		await page.goto('/auth/sign-up?enlace=doctora-fabiola');
+	test('un enlace tomado no deja seguir y ofrece otro libre con un clic', async ({ page }) => {
+		await apiFalsa(page);
+		await page.goto('/auth/sign-up?enlace=dra-ana-perez');
 		const enlace = page.getByLabel(/^Tu enlace/);
-		await expect(enlace).toHaveValue('doctora-fabiola');
-		await expect(page.getByText('Ese enlace ya está en uso.')).toBeVisible();
+		await expect(enlace).toHaveValue('dra-ana-perez');
+		await expect(page.getByText('Ya está en uso.')).toBeVisible();
 
 		await continuar(page).click();
 		await expect(titulo(page, 'Elige tu enlace')).toBeVisible();
 
-		await page.getByRole('button', { name: 'Usar doctora-fabiola-2' }).click();
-		await expect(enlace).toHaveValue('doctora-fabiola-2');
-		await expect(page.getByText('Está libre: me.svelpy.com/doctora-fabiola-2')).toBeVisible();
+		await page.getByRole('button', { name: 'Usar dra-ana-perez-2' }).click();
+		await expect(enlace).toHaveValue('dra-ana-perez-2');
+		await expect(page.getByText('Está libre: me.svelpy.com/dra-ana-perez-2')).toBeVisible();
 		await continuar(page).click();
 		await expect(titulo(page, 'Crea tu acceso')).toBeVisible();
 	});
 
-	test('acepta un rubro propio que no está en la lista', async ({ page }) => {
-		await page.goto('/auth/sign-up?enlace=mateo-apicola');
-		await expect(page.getByText('Está libre: me.svelpy.com/mateo-apicola')).toBeVisible();
-		await continuar(page).click();
-		await completarAcceso(page, 'mateo@me.test');
-
-		await page.getByLabel(/^Nombres/).fill('Mateo');
-		await page.getByLabel('Apellidos').fill('Vaca Díez');
-		await page.getByRole('combobox', { name: /^Rubro/ }).fill('Apicultura orgánica');
-		await page.getByRole('option', { name: /Usar «Apicultura orgánica»/ }).click();
-		await expect(page.getByRole('combobox', { name: /^Rubro/ })).toHaveValue('Apicultura orgánica');
-		await page.getByRole('button', { name: 'Crear mi tarjeta' }).click();
-
-		await expect(titulo(page, 'Mateo Vaca Díez')).toBeVisible();
-		// El editor abre en Perfil, con su rubro propio
-		await expect(page.getByRole('combobox', { name: /^Rubro/ })).toHaveValue('Apicultura orgánica');
+	test('un enlace reservado se explica sin preguntarle al servidor', async ({ page }) => {
+		const api = await apiFalsa(page);
+		await page.goto('/auth/sign-up?enlace=panel');
+		await expect(page.getByText('Esa dirección está reservada. Prueba con otra.')).toBeVisible();
+		expect(api.llamadasA('GET', /slug-disponible/)).toHaveLength(0);
 	});
 
 	test('si el correo ya tiene cuenta, vuelve al paso del acceso', async ({ page }) => {
-		await page.goto('/auth/sign-up?enlace=fabiola-otra');
-		await expect(page.getByText('Está libre: me.svelpy.com/fabiola-otra')).toBeVisible();
+		await apiFalsa(page);
+		await page.goto('/auth/sign-up?enlace=ana-otra');
+		await expect(page.getByText('Está libre: me.svelpy.com/ana-otra')).toBeVisible();
 		await continuar(page).click();
-		await completarAcceso(page, CUENTAS.fabiola.email);
+		await completarAcceso(page, CUENTAS.ana.email);
 
-		await page.getByLabel(/^Nombres/).fill('Fabiola');
+		await page.getByLabel(/^Nombres/).fill('Ana');
 		await page.getByRole('combobox', { name: /^Rubro/ }).fill('Pediatría');
 		await page.getByRole('button', { name: 'Crear mi tarjeta' }).click();
 
 		await expect(titulo(page, 'Crea tu acceso')).toBeVisible();
-		await expect(
-			page.getByText('Ya existe una cuenta con ese correo. Inicia sesión.')
-		).toBeVisible();
+		await expect(page.getByText('Ya hay una cuenta con este correo.')).toBeVisible();
 	});
 
 	test('Atrás conserva lo escrito', async ({ page }) => {
+		await apiFalsa(page);
 		await page.goto('/auth/sign-up?enlace=lucas-perez');
 		await expect(page.getByText('Está libre: me.svelpy.com/lucas-perez')).toBeVisible();
 		await continuar(page).click();

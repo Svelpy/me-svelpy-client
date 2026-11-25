@@ -1,5 +1,5 @@
 <!--
-	Índice del editor. Arriba, las partes de la tarjeta; abajo, las 9 secciones en el orden REAL en
+	Índice del editor. Arriba, las partes de la tarjeta; abajo, las 8 secciones en el orden REAL en
 	que aparecen (por eso van numeradas), con el ojo para mostrarlas u ocultarlas; "Cambiar orden"
 	cambia el ojo por flechas para moverlas. Lo que se cambia aquí se ve al instante en el espejo.
 -->
@@ -19,7 +19,7 @@
 		WorldSearchIcon
 	} from '#lib/icons/outline/index.ts';
 	import type { TarjetaSeccion } from '#lib/interfaces/index.ts';
-	import { errorService, tarjetaSeccionService } from '#lib/services/index.ts';
+	import { errorService } from '#lib/services/index.ts';
 	import { alert } from '#lib/utils/alert.ts';
 	import { ordenar } from '#lib/utils/tarjeta.ts';
 	import { getEditor, type PanelEditor } from './estadoEditor.svelte.ts';
@@ -51,24 +51,13 @@
 		{ id: 'seo', etiqueta: 'SEO y GEO', icono: WorldSearchIcon }
 	];
 
-	/** Cambio optimista: se ve al instante y se deshace si el servidor lo rechaza */
+	/** Cambio optimista: se ve al instante y el editor lo deshace si el servidor lo rechaza */
 	async function guardar(nuevas: TarjetaSeccion[], mensaje: string) {
-		const anteriores = editor.tarjeta.secciones;
-		editor.actualizar({ secciones: nuevas });
 		guardando = true;
 		try {
-			const respuesta = await tarjetaSeccionService.actualizarTodas(editor.tarjeta.id, {
-				secciones: nuevas.map(({ clave, titulo, is_visible, orden }) => ({
-					clave,
-					titulo,
-					is_visible,
-					orden
-				}))
-			});
-			editor.actualizar({ secciones: respuesta });
+			await editor.guardarSecciones(nuevas);
 			anuncio = mensaje;
 		} catch (causa) {
-			editor.actualizar({ secciones: anteriores });
 			alert('error', errorService.getMessage(causa));
 		} finally {
 			guardando = false;

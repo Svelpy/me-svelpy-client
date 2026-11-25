@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { SLUG_MAX } from '#lib/constants/slugs.ts';
 import { slugSchema } from '#lib/zod/common.ts';
-import { limpiarSlugEscrito, slugify, sugerirSlug } from './slug.ts';
+import {
+	alternativasDeSlug,
+	limpiarSlugEscrito,
+	motivoSlugInvalido,
+	slugify,
+	sugerirSlug
+} from './slug.ts';
 
 describe('slugify', () => {
 	it('quita tildes, eñes, mayúsculas y signos', () => {
@@ -49,5 +55,28 @@ describe('limpiarSlugEscrito', () => {
 		expect(limpiarSlugEscrito('Rocío ')).toBe('rocio-');
 		expect(limpiarSlugEscrito('  -Dra. Ñuflo')).toBe('dra-nuflo');
 		expect(limpiarSlugEscrito('mi__tarjeta!!2')).toBe('mi-tarjeta-2');
+	});
+});
+
+describe('motivoSlugInvalido', () => {
+	it('explica lo que el servidor rechazaría, sin preguntarle', () => {
+		expect(motivoSlugInvalido('ab')).toMatch(/al menos 3/);
+		expect(motivoSlugInvalido('dra--ana')).toMatch(/guiones simples/);
+		expect(motivoSlugInvalido('panel')).toMatch(/reservada/);
+		expect(motivoSlugInvalido('dra-ana-perez')).toBeNull();
+	});
+});
+
+describe('alternativasDeSlug', () => {
+	it('propone variantes con las pistas y con números, válidas y sin repetir', () => {
+		const opciones = alternativasDeSlug('dra-ana', ['Pérez Quispe', 'Pediatría', null]);
+		expect(opciones.slice(0, 2)).toEqual(['dra-ana-perez-quispe', 'dra-ana-pediatria']);
+		expect(opciones).toContain('dra-ana-2');
+		expect(new Set(opciones).size).toBe(opciones.length);
+		expect(opciones.every((opcion) => motivoSlugInvalido(opcion) === null)).toBe(true);
+	});
+
+	it('no repite una pista que ya está en el enlace', () => {
+		expect(alternativasDeSlug('ana-pediatria', ['pediatría'])[0]).toBe('ana-pediatria-2');
 	});
 });

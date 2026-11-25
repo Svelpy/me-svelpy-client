@@ -1,50 +1,52 @@
 /**
- * Planes de una cuenta (enum `plan` de `database-models.md`; espejo del backend, cambiar ambos).
+ * Planes de una cuenta. El catálogo vive en la API (`GET /planes/`): cada cuenta tiene un
+ * `plan_id`, su `plan` y `plan_vence_at` (siempre con valor). Los códigos son estables:
  *
  * - free: arma y edita su tarjeta completa, pero no puede publicarla.
- * - pro: puede publicarla. Con `plan_vence_at`, al vencer la cuenta vuelve a free y su tarjeta
- *   pasa a borrador (lo hace el backend; aquí solo se lee).
+ * - pro (o cualquier plan pago): la publica mientras `plan_vence_at` no pase. Al vencer, el backend
+ *   despublica la tarjeta; aquí solo se lee.
  *
  * El plan es otra dimensión que el rol: los permisos por rol siguen en `permissions.config.ts`.
  */
-export enum Plan {
-	FREE = 'free',
-	PRO = 'pro'
-}
 
-export const PLANES = [Plan.FREE, Plan.PRO] as const;
-
-/** Lo que habilita cada plan. Los límites futuros (ítems de vitrina, dominio propio…) van aquí */
-export const PLAN_LIMITES: Record<Plan, { publicar: boolean }> = {
-	[Plan.FREE]: { publicar: false },
-	[Plan.PRO]: { publicar: true }
-};
+/** Código del plan gratuito */
+export const PLAN_FREE = 'free';
+/** Código del plan pago que se ofrece */
+export const PLAN_PRO = 'pro';
 
 /** Días antes del vencimiento en que el panel empieza a avisar */
 export const DIAS_AVISO_VENCIMIENTO = 15;
 
+/** El plan tal como llega: completo (`codigo`) o como referencia (solo `nombre`) */
+export interface PlanDeCuenta {
+	codigo?: string | null;
+	nombre: string;
+}
+
 /** Lo mínimo de una cuenta para saber su plan */
 export interface CuentaConPlan {
-	plan: string;
-	plan_vence_at: string | null;
+	plan: PlanDeCuenta;
+	plan_vence_at: string;
 }
 
-export function isPlan(valor: unknown): valor is Plan {
-	return PLANES.includes(valor as Plan);
+/** Lo mínimo para saber si el dueño de una tarjeta puede publicarla */
+export interface CuentaPublicadora extends CuentaConPlan {
+	is_active: boolean;
+	email_verified_at: string | null;
 }
 
-/**
- * El plan que rige ahora: un pro vencido cuenta como free aunque el backend todavía no lo haya
- * bajado. Lo desconocido se trata como free (no da permisos).
- */
-export function planVigente(cuenta: CuentaConPlan, ahora: Date = new Date()): Plan {
-	if (cuenta.plan !== Plan.PRO) return Plan.FREE;
-	if (cuenta.plan_vence_at && Date.parse(cuenta.plan_vence_at) <= ahora.getTime()) return Plan.FREE;
-	return Plan.PRO;
+/** Código del plan; si solo llegó la referencia, se deduce del nombre */
+export function codigoDePlan(plan: PlanDeCuenta): string {
+	return (plan.codigo ?? plan.nombre).trim().toLowerCase();
 }
 
-export function puedePublicar(cuenta: CuentaConPlan, ahora: Date = new Date()): boolean {
-	return PLAN_LIMITES[planVigente(cuenta, ahora)].publicar;
+export function esPlanFree(cuenta: CuentaConPlan): boolean {
+	return codigoDePlan(cuenta.plan) === PLAN_FREE;
+}
+
+/** El vencimiento ya pasó */
+export function planVencido(cuenta: CuentaConPlan, ahora: Date = new Date()): boolean {
+	return Date.parse(cuenta.plan_vence_at) <= ahora.getTime();
 }
 
 /** Medianoche local del día de `fecha` */
@@ -52,17 +54,48 @@ const inicioDelDia = (fecha: Date) =>
 	new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()).getTime();
 
 /**
- * Días de calendario (hora local) hasta el día en que vence un plan pro: 0 = vence hoy.
- * null si no vence o no es pro.
+ * Días de calendario (hora local) hasta el día en que vence un plan pago vigente: 0 = vence hoy.
+ * null si es free o ya venció.
  */
 export function diasParaVencer(cuenta: CuentaConPlan, ahora: Date = new Date()): number | null {
-	if (planVigente(cuenta, ahora) !== Plan.PRO || !cuenta.plan_vence_at) return null;
+	if (esPlanFree(cuenta) || planVencido(cuenta, ahora)) return null;
 	const vence = new Date(cuenta.plan_vence_at);
 	return Math.max(0, Math.round((inicioDelDia(vence) - inicioDelDia(ahora)) / 86_400_000));
 }
 
-/** Un pro que vence dentro de `DIAS_AVISO_VENCIMIENTO` días */
+/** Un plan pago que vence dentro de `DIAS_AVISO_VENCIMIENTO` días */
 export function vencePronto(cuenta: CuentaConPlan, ahora: Date = new Date()): boolean {
 	const dias = diasParaVencer(cuenta, ahora);
 	return dias !== null && dias <= DIAS_AVISO_VENCIMIENTO;
+}
+
+export type EstadoPlan =
+	{ tipo: 'free' } | { tipo: 'vigente'; dias: number; vencePronto: boolean } | { tipo: 'vencido' };
+
+/** Estado del plan para la UI: Free, vigente (y si vence pronto) o vencido */
+export function estadoPlan(cuenta: CuentaConPlan, ahora: Date = new Date()): EstadoPlan {
+	if (esPlanFree(cuenta)) return { tipo: 'free' };
+	const dias = diasParaVencer(cuenta, ahora);
+	if (dias === null) return { tipo: 'vencido' };
+	return { tipo: 'vigente', dias, vencePronto: dias <= DIAS_AVISO_VENCIMIENTO };
+}
+
+/** Por qué una tarjeta no se puede publicar (lo mismo que exige `POST /tarjetas/{id}/publicar`) */
+export type BloqueoPublicacion =
+	'cuenta-de-baja' | 'plan-free' | 'plan-vencido' | 'email-sin-verificar';
+
+/** El primer motivo que impide publicar, o null si se puede */
+export function bloqueoPublicacion(
+	cuenta: CuentaPublicadora,
+	ahora: Date = new Date()
+): BloqueoPublicacion | null {
+	if (!cuenta.is_active) return 'cuenta-de-baja';
+	if (esPlanFree(cuenta)) return 'plan-free';
+	if (planVencido(cuenta, ahora)) return 'plan-vencido';
+	if (!cuenta.email_verified_at) return 'email-sin-verificar';
+	return null;
+}
+
+export function puedePublicar(cuenta: CuentaPublicadora, ahora: Date = new Date()): boolean {
+	return bloqueoPublicacion(cuenta, ahora) === null;
 }

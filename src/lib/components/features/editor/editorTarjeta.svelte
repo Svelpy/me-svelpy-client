@@ -1,6 +1,6 @@
 <!--
 	Editor de una tarjeta: índice de partes y secciones, el formulario de la parte abierta y el espejo
-	(la tarjeta tal como la verá el cliente). Lo usan el owner (su tarjeta) y el superadmin.
+	(la tarjeta tal como la verá el cliente). Lo usan el user (su tarjeta) y los admins.
 	La parte abierta va en `?seccion=` para poder compartirla y volver con el botón atrás.
 	Es un contenedor: con espacio muestra las tres columnas; en el celular, índice → formulario.
 -->
@@ -8,27 +8,21 @@
 	import type { Snippet } from 'svelte';
 	import { untrack } from 'svelte';
 	import { beforeNavigate, goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import type { ResolvedPathname } from '$app/types';
 	import EnlacePublico from '../panel/enlacePublico.svelte';
-	import { CamposPlan, EstadoPlan } from '../planes/index.ts';
+	import { AvisoPublicacion, EstadoPlan } from '../planes/index.ts';
 	import { AlertBox, Avatar, Button, Sheet } from '#lib/components/ui/index.ts';
-	import { diasParaVencer, Plan, planVigente, vencePronto } from '#lib/config/planes.config.ts';
+	import { diasParaVencer, vencePronto } from '#lib/config/planes.config.ts';
 	import { SECCIONES_ORDEN_POR_DEFECTO } from '#lib/config/seccionesTarjeta.config.ts';
 	import { DeviceMobileIcon } from '#lib/icons/outline/index.ts';
-	import type { TarjetaCompleta } from '#lib/interfaces/index.ts';
-	import { ErrorCode } from '#lib/interfaces/error.interface.ts';
-	import { AppError, errorService, tarjetaService, usuarioService } from '#lib/services/index.ts';
-	import { usuarioUpdateSchema } from '#lib/zod/usuario.schema.ts';
+	import type { TarjetaCompleta, UsuarioDetalle } from '#lib/interfaces/index.ts';
+	import { errorService } from '#lib/services/index.ts';
 	import { alert } from '#lib/utils/alert.ts';
 	import { cn } from '#lib/utils/cn.ts';
-	import {
-		formatVencimiento,
-		planDelFormulario,
-		textoDiasRestantes,
-		urlActivarPro,
-		vencimientoAFecha
-	} from '#lib/utils/plan.ts';
+	import { formatVencimiento, textoDiasRestantes, urlActivarPro } from '#lib/utils/plan.ts';
+	import { rutaConQuery } from '#lib/utils/resolveRoute.ts';
 	import { nombreCompleto } from '#lib/utils/tarjeta.ts';
 	import {
 		EditorTarjeta,
@@ -37,8 +31,6 @@
 		type PanelEditor
 	} from './estadoEditor.svelte.ts';
 	import EspejoTelefono from './espejoTelefono.svelte';
-	import { EstadoFormulario } from './estadoFormulario.svelte.ts';
-	import AccionesPane from './panes/accionesPane.svelte';
 	import AcercaPane from './panes/acercaPane.svelte';
 	import AparienciaPane from './panes/aparienciaPane.svelte';
 	import CompartirPane from './panes/compartirPane.svelte';
@@ -53,12 +45,14 @@
 
 	interface Props {
 		tarjeta: TarjetaCompleta;
-		modo: 'owner' | 'admin';
+		/** El dueño de la tarjeta: su plan, su email verificado y si está activo deciden si se publica */
+		cuenta: UsuarioDetalle;
+		modo: 'user' | 'admin';
 		/** URL de la página (resuelta): los paneles se abren con `?seccion=` */
 		base: ResolvedPathname;
-		/** Cada vez que se guarda algo (el owner sincroniza su sesión) */
+		/** Cada vez que se guarda algo (el user sincroniza su sesión) */
 		onActualizada?: (tarjeta: TarjetaCompleta) => void;
-		/** Bajo el nombre (p. ej. el propietario, para el superadmin) */
+		/** Bajo el nombre (p. ej. la cuenta dueña, para los admins) */
 		encabezado?: Snippet;
 		/** Junto a "Publicar" (p. ej. eliminar, para el superadmin) */
 		acciones?: Snippet;
@@ -67,6 +61,7 @@
 
 	let {
 		tarjeta,
+		cuenta,
 		modo,
 		base,
 		onActualizada,
@@ -78,6 +73,7 @@
 	const editor = setEditor(
 		new EditorTarjeta(
 			untrack(() => tarjeta),
+			untrack(() => cuenta),
 			untrack(() => modo),
 			(actual) => onActualizada?.(actual)
 		)
@@ -97,55 +93,25 @@
 
 	async function alternarPublicacion() {
 		publicando = true;
+		const publicar = !editor.tarjeta.is_public;
 		try {
-			const respuesta = await tarjetaService.publicar(editor.tarjeta.id, !editor.tarjeta.is_public);
-			editor.actualizar(respuesta);
-			alert('success', respuesta.is_public ? 'Tarjeta publicada' : 'La tarjeta pasó a borrador');
+			if (publicar) await editor.publicar();
+			else await editor.despublicar();
+			alert('success', publicar ? 'Tarjeta publicada' : 'La tarjeta pasó a borrador');
 		} catch (causa) {
-			// El plan venció mientras el panel estaba abierto: se muestra como Free
-			if (causa instanceof AppError && causa.code === ErrorCode.PLAN_REQUERIDO) {
-				editor.actualizar({
-					propietario: { ...editor.tarjeta.propietario, plan: Plan.FREE, plan_vence_at: null }
-				});
-			}
+			// Un 409 trae el motivo (plan vencido, email sin verificar…) en el mensaje
 			alert('error', errorService.getMessage(causa));
 		} finally {
 			publicando = false;
 		}
 	}
 
-	// Plan del dueño: sin Pro no se publica; un Pro que vence pronto se avisa
-	const propietario = $derived(editor.tarjeta.propietario);
-	const avisarVencimiento = $derived(vencePronto(propietario));
-	const diasRestantes = $derived(diasParaVencer(propietario));
-	const proUrl = $derived(urlActivarPro(editor.tarjeta.slug));
-
-	// Superadmin: cambiar el plan de la cuenta sin salir del editor
-	let editandoPlan = $state(false);
-	let plan = $state<Plan>(Plan.FREE);
-	let vence = $state('');
-	const formPlan = new EstadoFormulario();
-
-	function abrirPlan() {
-		plan = planVigente(propietario);
-		vence = plan === Plan.PRO ? vencimientoAFecha(propietario.plan_vence_at) : '';
-		formPlan.limpiar();
-		editandoPlan = true;
-	}
-
-	function guardarPlan(event: SubmitEvent) {
-		event.preventDefault();
-		formPlan.enviar(usuarioUpdateSchema, planDelFormulario(plan, vence), async (validos) => {
-			const cuenta = await usuarioService.actualizar(propietario.id, validos);
-			// Pasar a Free despublica la tarjeta: se toma el estado que devolvió el servidor
-			editor.actualizar({
-				propietario: { ...propietario, plan: cuenta.plan, plan_vence_at: cuenta.plan_vence_at },
-				is_public: cuenta.tarjeta?.is_public ?? editor.tarjeta.is_public
-			});
-			editandoPlan = false;
-			alert('success', cuenta.plan === Plan.PRO ? 'Plan Pro guardado' : 'Plan Free guardado');
-		});
-	}
+	// Plan del dueño: lo que vence pronto se avisa antes de que la tarjeta deje de verse
+	const avisarVencimiento = $derived(vencePronto(editor.cuenta));
+	const diasRestantes = $derived(diasParaVencer(editor.cuenta));
+	const registrarPago = $derived(
+		rutaConQuery(resolve('/panel/pagos/nuevo'), { usuario: editor.cuenta.id })
+	);
 
 	// Cambiar de panel o de página con cambios sin guardar pide confirmación
 	beforeNavigate((navegacion) => {
@@ -159,30 +125,24 @@
 </script>
 
 <!--
-	El naranja de la pantalla: publicar es lo que importa mientras es borrador. Sin plan Pro, la misma
-	acción lleva a activarlo (el owner por WhatsApp; el superadmin cambia el plan aquí mismo).
+	El naranja de la pantalla: publicar es lo que importa mientras es borrador. Si algo lo impide, el
+	aviso bajo el encabezado dice qué y cómo resolverlo.
 -->
 {#snippet botonPublicar(size: 'sm' | 'md' = 'md')}
 	{#if editor.tarjeta.is_public}
 		<Button variant="secondary" {size} loading={publicando} onclick={alternarPublicacion}>
 			Pasar a borrador
 		</Button>
-	{:else if editor.conPlanPro}
-		<Button variant="accent" {size} loading={publicando} onclick={alternarPublicacion}>
-			Publicar tarjeta
-		</Button>
-	{:else if modo === 'owner'}
+	{:else}
 		<Button
 			variant="accent"
 			{size}
-			href={proUrl}
-			target="_blank"
-			rel="external noopener noreferrer"
+			loading={publicando}
+			disabled={editor.bloqueo !== null}
+			onclick={alternarPublicacion}
 		>
-			Activar Pro para publicar
+			Publicar tarjeta
 		</Button>
-	{:else}
-		<Button variant="accent" {size} onclick={abrirPlan}>Activar Pro para publicar</Button>
 	{/if}
 {/snippet}
 
@@ -204,15 +164,14 @@
 				class="mt-1.5 -ml-1.5"
 			/>
 			<p class="mt-1 flex flex-wrap items-center gap-x-2 text-sm">
-				<EstadoPlan cuenta={propietario} />
+				<EstadoPlan cuenta={editor.cuenta} />
 				{#if modo === 'admin'}
-					<button
-						type="button"
-						onclick={abrirPlan}
+					<a
+						href={registrarPago}
 						class="rounded font-semibold underline decoration-light-four underline-offset-4 hover:decoration-light-two focus-visible:outline-2 focus-visible:outline-light-three dark:decoration-dark-four dark:hover:decoration-dark-two dark:focus-visible:outline-dark-three"
 					>
-						Cambiar plan
-					</button>
+						Registrar pago
+					</a>
 				{/if}
 			</p>
 			{#if encabezado}{@render encabezado()}{/if}
@@ -223,19 +182,27 @@
 		</div>
 	</header>
 
-	{#if avisarVencimiento && diasRestantes !== null && propietario.plan_vence_at}
+	{#if !editor.tarjeta.is_public && editor.bloqueo}
+		<AvisoPublicacion
+			bloqueo={editor.bloqueo}
+			{modo}
+			cuenta={editor.cuenta}
+			slug={editor.tarjeta.slug}
+			class="mt-6"
+		/>
+	{:else if avisarVencimiento && diasRestantes !== null}
 		<AlertBox
 			variant="warning"
-			title={modo === 'owner'
-				? `Tu plan Pro vence ${textoDiasRestantes(diasRestantes)}`
-				: `El plan Pro de esta cuenta vence ${textoDiasRestantes(diasRestantes)}`}
+			title={modo === 'user'
+				? `Tu plan ${editor.cuenta.plan.nombre} vence ${textoDiasRestantes(diasRestantes)}`
+				: `El plan ${editor.cuenta.plan.nombre} de esta cuenta vence ${textoDiasRestantes(diasRestantes)}`}
 			class="mt-6"
 		>
-			El {formatVencimiento(propietario.plan_vence_at)}
-			{modo === 'owner' ? 'tu tarjeta' : 'la tarjeta'} vuelve a borrador y deja de verse hasta que
-			{modo === 'owner' ? 'lo renueves' : 'se renueve'}.
+			El {formatVencimiento(editor.cuenta.plan_vence_at)}
+			{modo === 'user' ? 'tu tarjeta' : 'la tarjeta'} vuelve a borrador y deja de verse hasta que
+			{modo === 'user' ? 'lo renueves' : 'se renueve'}.
 			{#snippet accion()}
-				{#if modo === 'owner'}
+				{#if modo === 'user'}
 					<Button
 						variant="secondary"
 						size="sm"
@@ -246,7 +213,7 @@
 						Renovar por WhatsApp
 					</Button>
 				{:else}
-					<Button variant="secondary" size="sm" onclick={abrirPlan}>Cambiar plan</Button>
+					<Button variant="secondary" size="sm" href={registrarPago}>Registrar pago</Button>
 				{/if}
 			{/snippet}
 		</AlertBox>
@@ -273,8 +240,6 @@
 					<SeoPane alVolver={volver} />
 				{:else if activo === 'acerca'}
 					<AcercaPane alVolver={volver} />
-				{:else if activo === 'acciones'}
-					<AccionesPane alVolver={volver} />
 				{:else if activo === 'contacto'}
 					<ContactoPane alVolver={volver} />
 				{:else if activo === 'vitrina'}
@@ -312,7 +277,7 @@
 		]}
 	>
 		<DeviceMobileIcon class="size-5" />
-		{modo === 'owner' ? 'Ver mi tarjeta' : 'Ver la tarjeta'}
+		{modo === 'user' ? 'Ver mi tarjeta' : 'Ver la tarjeta'}
 	</button>
 	<Sheet
 		open={verEspejo}
@@ -332,30 +297,4 @@
 			</div>
 		{/if}
 	</Sheet>
-
-	{#if modo === 'admin'}
-		<Sheet
-			open={editandoPlan}
-			title="Plan de la cuenta"
-			description={propietario.email}
-			onClose={() => (editandoPlan = false)}
-			dismissible={!formPlan.enviando}
-		>
-			<form id="form-plan-tarjeta" onsubmit={guardarPlan} novalidate class="space-y-5">
-				{#if formPlan.error}<AlertBox variant="error">{formPlan.error}</AlertBox>{/if}
-				<CamposPlan bind:plan bind:vence errores={formPlan.errores} />
-				{#if plan === Plan.FREE && editor.tarjeta.is_public}
-					<AlertBox variant="warning">Al pasar a Free, su tarjeta vuelve a borrador.</AlertBox>
-				{/if}
-			</form>
-			{#snippet footer()}
-				<div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-					<Button variant="secondary" onclick={() => (editandoPlan = false)}>Cancelar</Button>
-					<Button type="submit" form="form-plan-tarjeta" loading={formPlan.enviando}>
-						Guardar plan
-					</Button>
-				</div>
-			{/snippet}
-		</Sheet>
-	{/if}
 </div>

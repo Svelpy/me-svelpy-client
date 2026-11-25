@@ -3,22 +3,35 @@ import { AppError, authService, errorService } from '#lib/services/index.ts';
 import { API_CONFIG, defaultHeaders } from './api.config';
 
 export interface RequestOptions {
+	/**
+	 * true: exige sesión (sin token falla antes de llamar). false: nunca envía el token.
+	 * Sin definir: envía el token si hay sesión (rutas con sesión opcional).
+	 */
 	requireAuth?: boolean;
 	customHeaders?: HeadersInit;
-	// Enviar/recibir cookies (p. ej. refresh_token HttpOnly)
+	/** Enviar y recibir cookies (el refresh token HttpOnly) */
 	withCredentials?: boolean;
-	// Milisegundos de espera; por defecto API_CONFIG.TIMEOUT
+	/** Milisegundos de espera; por defecto `API_CONFIG.TIMEOUT` */
 	timeout?: number;
+	/**
+	 * El `fetch` del `load` de SvelteKit. En el servidor (SSR) permite que la respuesta viaje dentro
+	 * del HTML y que el navegador no repita la petición al hidratar.
+	 */
+	fetch?: typeof fetch;
+	/**
+	 * Con un 401, renovar el token y reintentar una vez (por defecto true). Se apaga donde un 401
+	 * significa otra cosa, como una contraseña actual incorrecta.
+	 */
+	reintentar401?: boolean;
 }
 
 class ApiMeSvelpy {
-	// Token a enviar en la petición. Por defecto requiere auth (se envía si existe)
+	// Token a enviar en la petición. Por defecto se envía si existe
 	private resolveToken(options: RequestOptions): string | null {
 		if (options.requireAuth === false) return null;
 
 		const token = authService.getToken();
 		if (!token && options.requireAuth === true) {
-			// Si explícitamente requiere auth y no hay token, lanzar error
 			throw new AppError({
 				message: 'Debes iniciar sesión para continuar.',
 				code: ErrorCode.TOKEN_REQUIRED,
@@ -28,23 +41,13 @@ class ApiMeSvelpy {
 		return token;
 	}
 
-	// Método para construir headers con autenticación
-	private buildHeaders(options: RequestOptions, token: string | null): HeadersInit {
-		const headers: HeadersInit = { ...defaultHeaders };
-
-		// Agregar headers customizados si existen
-		if (options.customHeaders) {
-			Object.assign(headers, options.customHeaders);
-		}
-
-		if (token) {
-			(headers as Record<string, string>).Authorization = `Bearer ${token}`;
-		}
-
+	private buildHeaders(options: RequestOptions, token: string | null): Record<string, string> {
+		const headers: Record<string, string> = { ...(defaultHeaders as Record<string, string>) };
+		if (options.customHeaders) Object.assign(headers, options.customHeaders);
+		if (token) headers.Authorization = `Bearer ${token}`;
 		return headers;
 	}
 
-	// Ejecuta el fetch con timeout. No interpreta la respuesta
 	private async send(
 		endpoint: string,
 		method: string,
@@ -57,17 +60,17 @@ class ApiMeSvelpy {
 
 		try {
 			const headers = this.buildHeaders(options, token);
+			// FormData y URLSearchParams: el navegador pone el Content-Type (con su boundary)
 			const isRawBody = data instanceof FormData || data instanceof URLSearchParams;
+			if (isRawBody) delete headers['Content-Type'];
+			const body =
+				data === undefined ? undefined : isRawBody ? (data as BodyInit) : JSON.stringify(data);
 
-			// Si es FormData o URLSearchParams, dejar que el navegador establezca el Content-Type
-			if (isRawBody) {
-				delete (headers as Record<string, string>)['Content-Type'];
-			}
-
-			return await fetch(`${API_CONFIG.BASE_URL}${endpoint}`, {
+			const fetcher = options.fetch ?? fetch;
+			return await fetcher(`${API_CONFIG.BASE_URL}${endpoint}`, {
 				method,
 				headers,
-				body: isRawBody ? (data as BodyInit) : data ? JSON.stringify(data) : undefined,
+				body,
 				credentials: options.withCredentials ? 'include' : 'same-origin',
 				signal: controller.signal
 			});
@@ -76,38 +79,33 @@ class ApiMeSvelpy {
 		}
 	}
 
-	// Método genérico para solicitudes. Siempre lanza AppError.
-	// `parse` lee el cuerpo de una respuesta exitosa (JSON por defecto; Blob para archivos)
+	/** Cuerpo JSON de una respuesta exitosa; `undefined` si no trae (201 del registro, 204) */
+	private async leerJson<T>(response: Response): Promise<T> {
+		const texto = await response.text();
+		return (texto ? JSON.parse(texto) : undefined) as T;
+	}
+
 	private async request<T>(
 		endpoint: string,
 		method: string,
 		data?: unknown,
 		options: RequestOptions = {},
-		parse: (response: Response) => Promise<T> = (response) => response.json()
+		parse?: (response: Response) => Promise<T>
 	): Promise<T> {
 		try {
 			const token = this.resolveToken(options);
 			let response = await this.send(endpoint, method, data, options, token);
 
 			// Access token vencido: se renueva (una sola vez) y se reintenta la petición
-			if (response.status === 401 && token) {
+			if (response.status === 401 && token && options.reintentar401 !== false) {
 				const newToken = await authService.refreshToken(token);
 				response = await this.send(endpoint, method, data, options, newToken);
-
-				// Rechazado incluso con un token recién emitido: la sesión ya no es válida
 				if (response.status === 401) authService.expireSession();
 			}
 
-			// Manejar respuestas sin cuerpo: 204 (No Content) y 202 (Accepted, p. ej. forgot-password)
-			if (response.status === 204 || response.status === 202) {
-				return {} as T;
-			}
+			if (!response.ok) throw await errorService.fromResponse(response);
 
-			if (!response.ok) {
-				throw await errorService.fromResponse(response);
-			}
-
-			return await parse(response);
+			return parse ? await parse(response) : await this.leerJson<T>(response);
 		} catch (error) {
 			const appError = errorService.fromUnknown(error);
 			errorService.log(appError);
@@ -115,17 +113,16 @@ class ApiMeSvelpy {
 		}
 	}
 
-	// Métodos para diferentes tipos de solicitudes
 	async get<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
 		return this.request<T>(endpoint, 'GET', undefined, options);
 	}
 
-	/** GET de un archivo (p. ej. un Excel): devuelve el cuerpo como Blob. Los errores llegan en JSON */
+	/** GET de un archivo: devuelve el cuerpo como Blob. Los errores llegan en JSON */
 	async getBlob(endpoint: string, options: RequestOptions = {}): Promise<Blob> {
 		return this.request<Blob>(endpoint, 'GET', undefined, options, (response) => response.blob());
 	}
 
-	async post<T>(endpoint: string, data: unknown, options: RequestOptions = {}): Promise<T> {
+	async post<T>(endpoint: string, data?: unknown, options: RequestOptions = {}): Promise<T> {
 		return this.request<T>(endpoint, 'POST', data, options);
 	}
 
@@ -137,23 +134,23 @@ class ApiMeSvelpy {
 		return this.request<T>(endpoint, 'PATCH', data, options);
 	}
 
-	async delete<T>(endpoint: string, data?: unknown, options: RequestOptions = {}): Promise<T> {
-		return this.request<T>(endpoint, 'DELETE', data, options);
+	async delete<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+		return this.request<T>(endpoint, 'DELETE', undefined, options);
 	}
 
-	// Métodos específicos para endpoints que no requieren autenticación
-	async getPublic<T>(endpoint: string): Promise<T> {
-		return this.get<T>(endpoint, { requireAuth: false });
+	/** GET sin token (perfil público, planes visibles) */
+	async getPublic<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+		return this.get<T>(endpoint, { ...options, requireAuth: false });
 	}
 
-	async postPublic<T>(endpoint: string, data: unknown, options: RequestOptions = {}): Promise<T> {
+	/** POST sin token (login, registro, recuperar contraseña…) */
+	async postPublic<T>(endpoint: string, data?: unknown, options: RequestOptions = {}): Promise<T> {
 		return this.post<T>(endpoint, data, { ...options, requireAuth: false });
 	}
 }
 
 export const apiMeSvelpy = new ApiMeSvelpy();
 
-/** Lo que usan los servicios: el cliente real o el de los datos de prueba (`src/lib/mocks`) */
 export type HttpClient = Pick<
 	ApiMeSvelpy,
 	'get' | 'getBlob' | 'post' | 'put' | 'patch' | 'delete' | 'getPublic' | 'postPublic'

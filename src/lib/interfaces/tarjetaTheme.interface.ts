@@ -1,6 +1,7 @@
-// Tema visual de una tarjeta ME (tabla `tarjeta_theme`). Los nombres de campo siguen a la base de datos.
+// Tema visual de una tarjeta ME. Los nombres de campo siguen a la API (`TarjetaTheme*`).
 import type { Timestamps } from './common.interface';
 
+/** Enum `PresetTheme` */
 export type TemaPreset =
 	| 'claro'
 	| 'oscuro'
@@ -12,10 +13,12 @@ export type TemaPreset =
 	| 'belleza'
 	| 'creativo'
 	| 'energia';
+/** Enum `FormaIcono` */
 export type IconoForma = 'circulo' | 'redondeado' | 'cuadrado' | 'ninguno';
+/** Enum `PosicionFab` */
 export type FabPosicion = 'derecha' | 'izquierda';
 
-/** Colores (hex #RRGGBB) y estilo editables de una tarjeta: lo que define cada preset. */
+/** Colores (hex #RRGGBB) y estilo de una tarjeta: lo que define cada preset */
 export interface TarjetaThemeColores {
 	color_fondo: string;
 	color_superficie: string;
@@ -28,7 +31,7 @@ export interface TarjetaThemeColores {
 	color_secundario: string;
 	color_texto_sobre_secundario: string;
 	color_overlay_portada: string;
-	/** 0 a 100. */
+	/** 0 a 100 */
 	overlay_opacidad: number;
 	color_precio: string;
 	color_destacado: string;
@@ -43,17 +46,29 @@ export interface TarjetaThemeColores {
 	fab_posicion: FabPosicion;
 }
 
-export interface TarjetaTheme extends TarjetaThemeColores, Timestamps {
-	id: string;
-	tarjeta_id: string;
-	/** Preset con el que se creó; los colores pueden haberse editado después. */
-	preset: TemaPreset | null;
-	/** Id de `TIPOGRAFIAS_TARJETA` (par de fuentes locales del frontend). */
+/** `TarjetaThemePublic` */
+export interface TarjetaThemePublico extends TarjetaThemeColores {
+	/** Id de `TIPOGRAFIAS_TARJETA` (par de fuentes locales del frontend) */
 	tipografia: number;
 }
 
-/** `PUT /tarjetas/{id}/theme`: el tema completo */
-export interface TarjetaThemeUpdateRequest extends TarjetaThemeColores {
+/** `TarjetaThemeResponse`. Su id es el de la tarjeta */
+export interface TarjetaTheme extends TarjetaThemePublico, Timestamps {
+	id: string;
+	/**
+	 * Preset aplicado. El backend lo deja en null en cuanto se edita un valor del preset (colores,
+	 * forma de ícono, botón flotante, overlay); el preset se reconoce entonces con `presetCoincidente()`.
+	 */
 	preset: TemaPreset | null;
-	tipografia: number;
+}
+
+/**
+ * `PATCH /tarjeta-themes/{id}` (`TarjetaThemeUpdate`): lo que no se envía no cambia. No acepta
+ * `preset`; cambiar solo la tipografía no toca los colores.
+ */
+export type TarjetaThemeUpdateRequest = Partial<TarjetaThemePublico>;
+
+/** `TarjetaThemeCreate`: solo el preset; el backend copia sus valores y la tipografía es 1 */
+export interface TarjetaThemeCreateRequest {
+	preset?: TemaPreset;
 }

@@ -5,15 +5,10 @@
 	import { BuildindStoreIcon, PhotoIcon, TagIcon } from '#lib/icons/outline/index.ts';
 	import type {
 		VitrinaCategoria,
-		VitrinaCategoriaCreateRequest,
+		VitrinaCategoriaInput,
 		VitrinaItem,
-		VitrinaItemCreateRequest
+		VitrinaItemInput
 	} from '#lib/interfaces/index.ts';
-	import {
-		vitrinaCategoriaService,
-		vitrinaItemService,
-		vitrinaService
-	} from '#lib/services/index.ts';
 	import { alert } from '#lib/utils/alert.ts';
 	import { formatearPrecio, ordenar } from '#lib/utils/tarjeta.ts';
 	import { vitrinaSchema } from '#lib/zod/vitrina.schema.ts';
@@ -33,6 +28,8 @@
 
 	const editor = getEditor();
 	const vitrina = $derived(editor.tarjeta.vitrina);
+	const items = editor.servicioVitrina<'items', VitrinaItemInput>('items');
+	const categorias = editor.servicioVitrina<'categorias', VitrinaCategoriaInput>('categorias');
 
 	function desdeTarjeta() {
 		const v = editor.tarjeta.vitrina;
@@ -74,17 +71,11 @@
 	function enviar(event: SubmitEvent) {
 		event.preventDefault();
 		estado.enviar(vitrinaSchema, datos, async (validos) => {
-			const respuesta = await vitrinaService.actualizar(editor.tarjeta.id, validos);
-			editor.guardado({ vitrina: { ...editor.tarjeta.vitrina, ...respuesta } });
+			await editor.guardarVitrina(validos);
+			editor.previsualizar(null, false);
 			config = desdeTarjeta();
 			alert('success', 'Vitrina guardada');
 		});
-	}
-
-	/** Al borrar una categoría sus ítems quedan sin categoría: se recarga la vitrina completa */
-	async function aplicarCategorias(categorias: VitrinaCategoria[]) {
-		editor.actualizar({ vitrina: { ...editor.tarjeta.vitrina, categorias } });
-		editor.actualizar({ vitrina: await vitrinaService.obtener(editor.tarjeta.id) });
 	}
 
 	const nombreCategoria = (id: string | null) =>
@@ -103,12 +94,10 @@
 		<div class="mt-3">
 			<PanelLista
 				items={ordenar(vitrina.items)}
-				padreId={vitrina.id}
-				servicio={vitrinaItemService}
-				aplicar={(items: VitrinaItem[]) =>
-					editor.actualizar({ vitrina: { ...editor.tarjeta.vitrina, items } })}
+				servicio={items}
 				nombre={(i) => i.titulo}
 				singular="ítem"
+				plural="ítems"
 				agregarLabel="Agregar a la vitrina"
 				vacio={{
 					titulo: 'Tu vitrina está vacía',
@@ -153,7 +142,7 @@
 				}: {
 					inicial: VitrinaItem | null;
 					id: string;
-					guardar: (datos: VitrinaItemCreateRequest) => Promise<void>;
+					guardar: (datos: VitrinaItemInput) => Promise<void>;
 				})}
 					<VitrinaItemForm {inicial} {id} {guardar} {vitrina} />
 				{/snippet}
@@ -169,11 +158,10 @@
 		<div class="mt-3">
 			<PanelLista
 				items={ordenar(vitrina.categorias)}
-				padreId={vitrina.id}
-				servicio={vitrinaCategoriaService}
-				aplicar={aplicarCategorias}
+				servicio={categorias}
 				nombre={(c) => c.nombre}
 				singular="categoría"
+				plural="categorías"
 				agregarLabel="Agregar categoría"
 				femenino
 				vacio={{
@@ -195,7 +183,7 @@
 				}: {
 					inicial: VitrinaCategoria | null;
 					id: string;
-					guardar: (datos: VitrinaCategoriaCreateRequest) => Promise<void>;
+					guardar: (datos: VitrinaCategoriaInput) => Promise<void>;
 				})}
 					<CategoriaForm {inicial} {id} {guardar} />
 				{/snippet}

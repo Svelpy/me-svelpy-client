@@ -1,6 +1,6 @@
 import type { Timestamps } from './common.interface';
 
-/** Enum `red_social` de la base de datos */
+/** Enum `RedSocial` de la API */
 export type RedSocial =
 	| 'facebook'
 	| 'instagram'
@@ -27,24 +27,32 @@ export type RedSocial =
 	| 'doctoralia'
 	| 'otro';
 
-export interface TarjetaSocial extends Timestamps {
+/** `TarjetaSocialPublic` */
+export interface TarjetaSocialPublica {
 	id: string;
-	tarjeta_id: string;
 	red: RedSocial;
 	/** https */
 	url: string;
 	username: string | null;
+}
+
+/** `TarjetaSocialResponse` */
+export interface TarjetaSocial extends TarjetaSocialPublica, Timestamps {
+	tarjeta_id: string;
 	is_visible: boolean;
 	orden: number;
 }
 
-/** `POST /tarjetas/{id}/redes` */
-export interface TarjetaSocialCreateRequest {
+/** `TarjetaSocialCreate` */
+export interface TarjetaSocialInput {
 	red: RedSocial;
 	url: string;
 	username?: string | null;
 	is_visible?: boolean;
+	orden?: number;
 }
 
-/** `PATCH /redes/{id}` */
-export type TarjetaSocialUpdateRequest = Partial<TarjetaSocialCreateRequest>;
+/** `TarjetaSocialNestedItem` */
+export interface TarjetaSocialNestedItem extends TarjetaSocialInput {
+	id?: string | null;
+}

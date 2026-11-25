@@ -54,12 +54,8 @@ export const urlHttpsOpcional = (etiqueta: string) =>
 			})
 	);
 
-/**
- * Imagen: URL https. También acepta `data:image/…` porque es lo que devuelven las subidas de los
- * datos de prueba; la API real siempre devuelve https.
- */
-const esUrlImagen = (valor: string) =>
-	esUrlHttps(valor) || /^data:image\/(png|jpe?g|webp|gif|avif);base64,/i.test(valor);
+/** Imagen: la URL https que devolvió `POST /imagenes/uploads` */
+const esUrlImagen = (valor: string) => esUrlHttps(valor);
 
 export const urlImagen = (etiqueta: string) =>
 	z

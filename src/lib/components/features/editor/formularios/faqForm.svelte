@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { AlertBox, Input, TextArea } from '#lib/components/ui/index.ts';
-	import type { TarjetaFaq, TarjetaFaqCreateRequest } from '#lib/interfaces/index.ts';
+	import type { TarjetaFaq, TarjetaFaqInput } from '#lib/interfaces/index.ts';
 	import { tarjetaFaqSchema } from '#lib/zod/tarjetaFormacion.schema.ts';
 	import { EstadoFormulario } from '../estadoFormulario.svelte.ts';
 
 	interface Props {
 		id: string;
 		inicial: TarjetaFaq | null;
-		guardar: (datos: TarjetaFaqCreateRequest) => Promise<void>;
+		guardar: (datos: TarjetaFaqInput) => Promise<void>;
 	}
 
 	let { id, inicial, guardar }: Props = $props();

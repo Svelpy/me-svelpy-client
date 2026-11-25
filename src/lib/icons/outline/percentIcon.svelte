@@ -13,7 +13,8 @@
 	stroke-linecap="round"
 	stroke-linejoin="round"
 	class="icon {className} icon-tabler icons-tabler-outline icon-tabler-percentage"
-	><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path
-		d="M16 17a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"
-	/><path d="M6 7a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M6 18l12 -12" /></svg
 >
+	<path stroke="none" d="M0 0h24v24H0z" fill="none" /><path
+		d="M16 17a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"
+	/><path d="M6 7a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M6 18l12 -12" />
+</svg>

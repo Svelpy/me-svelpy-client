@@ -11,14 +11,10 @@
 	import { TEMA_PRESETS, TEMAS_TARJETA } from '#lib/config/temasTarjeta.config.ts';
 	import { familiaCss, TIPOGRAFIAS_TARJETA } from '#lib/config/tipografiasTarjeta.config.ts';
 	import { FAB_POSICION_LABEL, ICONO_FORMA_LABEL } from '#lib/constants/data.ts';
-	import type {
-		TarjetaThemeColores,
-		TarjetaThemeUpdateRequest,
-		TemaPreset
-	} from '#lib/interfaces/index.ts';
-	import { tarjetaThemeService } from '#lib/services/index.ts';
+	import type { TarjetaThemePublico, TemaPreset } from '#lib/interfaces/index.ts';
 	import { alert } from '#lib/utils/alert.ts';
 	import type { CampoColor } from '#lib/utils/color.ts';
+	import { CAMPOS_PRESET, cambiosDeTema, presetCoincidente } from '#lib/utils/temaTarjeta.ts';
 	import { tarjetaThemeSchema } from '#lib/zod/tarjetaTheme.schema.ts';
 	import AvisoContraste from '../avisoContraste.svelte';
 	import EditorPanel from '../editorPanel.svelte';
@@ -33,21 +29,24 @@
 
 	const editor = getEditor();
 
-	function desdeTarjeta(): TarjetaThemeUpdateRequest {
-		const {
-			id: _id,
-			tarjeta_id: _t,
-			created_at: _c,
-			updated_at: _u,
-			...tema
-		} = editor.tarjeta.theme;
+	/** Lo editable del tema guardado: valores del preset y tipografía */
+	function desdeTarjeta(): TarjetaThemePublico {
+		const guardado = editor.tarjeta.theme;
+		const tema = { tipografia: guardado.tipografia } as TarjetaThemePublico;
+		for (const campo of CAMPOS_PRESET) {
+			(tema as unknown as Record<string, unknown>)[campo] = guardado[campo];
+		}
 		return tema;
 	}
 
-	let tema = $state<TarjetaThemeUpdateRequest>(untrack(desdeTarjeta));
+	let tema = $state<TarjetaThemePublico>(untrack(desdeTarjeta));
 	const estado = new EstadoFormulario();
 
-	const cambiado = $derived(JSON.stringify(tema) !== JSON.stringify(desdeTarjeta()));
+	/** Solo esto se envía: elegir un preset manda sus colores; cambiar la tipografía, solo ella */
+	const cambios = $derived(cambiosDeTema(editor.tarjeta.theme, tema));
+	const cambiado = $derived(Object.keys(cambios).length > 0);
+	/** El tema que coincide con los colores; null = personalizado */
+	const presetActual = $derived(presetCoincidente(tema));
 
 	$effect(() => {
 		editor.previsualizar(
@@ -57,9 +56,9 @@
 	});
 	$effect(() => () => editor.previsualizar(null, false));
 
-	/** Un preset reemplaza los colores; la tipografía elegida se conserva */
+	/** Un preset reemplaza los colores en la vista previa; la tipografía elegida se conserva */
 	function aplicarPreset(preset: TemaPreset) {
-		tema = { ...TEMAS_TARJETA[preset].colores, preset, tipografia: tema.tipografia };
+		tema = { ...TEMAS_TARJETA[preset].colores, tipografia: tema.tipografia };
 	}
 
 	const grupos: { titulo: string; campos: [CampoColor, string][] }[] = [
@@ -117,14 +116,13 @@
 	function enviar(event: SubmitEvent) {
 		event.preventDefault();
 		estado.enviar(tarjetaThemeSchema, tema, async (validos) => {
-			const respuesta = await tarjetaThemeService.actualizar(editor.tarjeta.id, validos);
-			editor.guardado({ theme: respuesta });
+			await editor.guardarTheme(cambiosDeTema(editor.tarjeta.theme, validos));
 			tema = desdeTarjeta();
 			alert('success', 'Apariencia guardada');
 		});
 	}
 
-	const colores = $derived<TarjetaThemeColores>(tema);
+	const colores = $derived(tema);
 </script>
 
 <TarjetaFuentes tipografias={TIPOGRAFIAS_TARJETA} precargar={false} />
@@ -139,6 +137,11 @@
 
 		<fieldset>
 			<legend class="font-display text-base font-semibold">Tema de partida</legend>
+			<p class="mt-1 text-sm text-light-two_d dark:text-dark-two_d">
+				{presetActual
+					? `Usas el tema ${TEMAS_TARJETA[presetActual].nombre}. Si cambias un color, pasa a ser tu tema personalizado.`
+					: 'Tema personalizado: tus colores no coinciden con ningún tema. Elige uno para volver a empezar.'}
+			</p>
 			<div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 2xl:grid-cols-5">
 				{#each TEMA_PRESETS as preset (preset)}
 					{@const c = TEMAS_TARJETA[preset].colores}
@@ -147,7 +150,7 @@
 							type="radio"
 							name="preset"
 							value={preset}
-							checked={tema.preset === preset}
+							checked={presetActual === preset}
 							onchange={() => aplicarPreset(preset)}
 							class="peer sr-only"
 						/>

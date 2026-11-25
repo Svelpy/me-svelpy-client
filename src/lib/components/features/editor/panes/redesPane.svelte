@@ -2,8 +2,7 @@
 	import { ICONOS_RED } from '../../tarjeta/iconosRed';
 	import { RED_SOCIAL_LABEL } from '#lib/constants/data.ts';
 	import { ShareIcon } from '#lib/icons/outline/index.ts';
-	import type { TarjetaSocial, TarjetaSocialCreateRequest } from '#lib/interfaces/index.ts';
-	import { tarjetaSocialService } from '#lib/services/index.ts';
+	import type { TarjetaSocial, TarjetaSocialInput } from '#lib/interfaces/index.ts';
 	import { urlSinProtocolo } from '#lib/utils/contacto.ts';
 	import { ordenar } from '#lib/utils/tarjeta.ts';
 	import EditorPanel from '../editorPanel.svelte';
@@ -19,6 +18,7 @@
 	let { alVolver }: Props = $props();
 
 	const editor = getEditor();
+	const servicio = editor.servicioLista<'redes', TarjetaSocialInput>('redes');
 </script>
 
 <EditorPanel
@@ -29,12 +29,11 @@
 	<TituloSeccion clave="redes" />
 	<div class="mt-6">
 		<PanelLista
-			items={ordenar(editor.tarjeta.sociales)}
-			padreId={editor.tarjeta.id}
-			servicio={tarjetaSocialService}
-			aplicar={(sociales: TarjetaSocial[]) => editor.actualizar({ sociales })}
+			items={ordenar(editor.tarjeta.redes)}
+			{servicio}
 			nombre={(s) => RED_SOCIAL_LABEL[s.red]}
 			singular="red"
+			plural="redes"
 			agregarLabel="Agregar red"
 			femenino
 			vacio={{
@@ -62,7 +61,7 @@
 			}: {
 				inicial: TarjetaSocial | null;
 				id: string;
-				guardar: (datos: TarjetaSocialCreateRequest) => Promise<void>;
+				guardar: (datos: TarjetaSocialInput) => Promise<void>;
 			})}
 				<RedForm {inicial} {id} {guardar} />
 			{/snippet}

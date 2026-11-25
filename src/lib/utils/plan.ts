@@ -1,32 +1,24 @@
-import { Plan, planVigente, type CuentaConPlan } from '#lib/config/planes.config.ts';
+import { estadoPlan, type CuentaConPlan } from '#lib/config/planes.config.ts';
 import { APP_SITE_CONFIG } from '#lib/constants/assets.ts';
 import { whatsappUrl } from './contacto';
-import { finDelDia } from './date';
 import { urlPublicaTarjeta } from './urlPublica';
 
-/** Fechas y textos del plan de una cuenta para el panel */
-
-/** `AAAA-MM-DD` de un `<input type="date">` → vence al final de ese día (hora local) */
-export function fechaAVencimiento(fecha: string): string | null {
-	const [anio, mes, dia] = fecha.split('-').map(Number);
-	if (!anio || !mes || !dia) return null;
-	return finDelDia(new Date(anio, mes - 1, dia));
-}
-
-/** Vencimiento ISO → `AAAA-MM-DD` en hora local, para un `<input type="date">` */
-export function vencimientoAFecha(iso: string | null): string {
-	if (!iso) return '';
-	const fecha = new Date(iso);
-	if (Number.isNaN(fecha.getTime())) return '';
-	const dos = (n: number) => String(n).padStart(2, '0');
-	return `${fecha.getFullYear()}-${dos(fecha.getMonth() + 1)}-${dos(fecha.getDate())}`;
-}
+/** Fechas, montos y textos del plan de una cuenta para el panel */
 
 /** "12 de diciembre de 2026" (en hora local, no en UTC) */
 export function formatVencimiento(iso: string): string {
 	return new Date(iso).toLocaleDateString('es-ES', {
 		day: 'numeric',
 		month: 'long',
+		year: 'numeric'
+	});
+}
+
+/** "12 dic 2026": para tablas */
+export function formatFechaCorta(iso: string): string {
+	return new Date(iso).toLocaleDateString('es-ES', {
+		day: 'numeric',
+		month: 'short',
 		year: 'numeric'
 	});
 }
@@ -38,12 +30,37 @@ export function textoDiasRestantes(dias: number): string {
 	return `en ${dias} días`;
 }
 
-/** "Pro hasta el 12 de diciembre de 2026", "Pro, sin vencimiento" o "Free" */
+/** "Pro hasta el 12 de diciembre de 2026", "Pro, venció el …" o "Free" */
 export function descripcionPlan(cuenta: CuentaConPlan, ahora: Date = new Date()): string {
-	if (planVigente(cuenta, ahora) !== Plan.PRO) return 'Free';
-	return cuenta.plan_vence_at
-		? `Pro hasta el ${formatVencimiento(cuenta.plan_vence_at)}`
-		: 'Pro, sin vencimiento';
+	const estado = estadoPlan(cuenta, ahora);
+	if (estado.tipo === 'free') return cuenta.plan.nombre;
+	const fecha = formatVencimiento(cuenta.plan_vence_at);
+	return estado.tipo === 'vencido'
+		? `${cuenta.plan.nombre}, venció el ${fecha}`
+		: `${cuenta.plan.nombre} hasta el ${fecha}`;
+}
+
+/** "80 USD", "Bs 250", "1.200,50 USD": el monto decimal que manda la API con su moneda */
+export function formatearMonto(monto: string | number, moneda: string): string {
+	const valor = typeof monto === 'number' ? monto : Number(monto);
+	if (!Number.isFinite(valor)) return `${monto} ${moneda}`;
+	try {
+		return new Intl.NumberFormat('es-BO', {
+			style: 'currency',
+			currency: moneda,
+			minimumFractionDigits: Number.isInteger(valor) ? 0 : 2,
+			maximumFractionDigits: 2
+		}).format(valor);
+	} catch {
+		return `${valor} ${moneda}`;
+	}
+}
+
+/** "1 año", "6 meses", "30 días" */
+export function formatDuracion(dias: number): string {
+	if (dias % 365 === 0) return dias === 365 ? '1 año' : `${dias / 365} años`;
+	if (dias % 30 === 0) return dias === 30 ? '1 mes' : `${dias / 30} meses`;
+	return dias === 1 ? '1 día' : `${dias} días`;
 }
 
 /** WhatsApp de ventas con el mensaje para activar (o renovar) el plan Pro */
@@ -54,15 +71,4 @@ export function urlActivarPro(slug?: string | null, renovar = false): string {
 		APP_SITE_CONFIG.VENTAS_WHATSAPP,
 		`Hola, quiero ${accion} el plan Pro de ME${tarjeta}.`
 	);
-}
-
-/** Los campos del formulario de plan → cuerpo de la API (free nunca lleva vencimiento) */
-export function planDelFormulario(
-	plan: Plan,
-	vence: string
-): { plan: Plan; plan_vence_at: string | null } {
-	return {
-		plan,
-		plan_vence_at: plan === Plan.PRO && vence ? fechaAVencimiento(vence) : null
-	};
 }

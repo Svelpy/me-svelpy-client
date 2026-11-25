@@ -1,19 +1,25 @@
+<!--
+	Crear una tarjeta con lo mínimo: el user, la suya (si su cuenta la creó un admin y no tiene);
+	un admin, la de una cuenta. Nace en borrador con el tema que sugiere su rubro.
+-->
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { resolve } from '$app/paths';
 	import { AlertBox, Button, Select } from '#lib/components/ui/index.ts';
-	import type { TarjetaCompleta, UsuarioListItem } from '#lib/interfaces/index.ts';
+	import type { TarjetaDetalle, UsuarioListItem } from '#lib/interfaces/index.ts';
 	import { tarjetaService } from '#lib/services/index.ts';
-	import { tarjetaCreateSchema, tarjetaNuevaSchema } from '#lib/zod/tarjeta.schema.ts';
+	import { aplicarTipografiaDeRubro, temaDeRubro } from '#lib/utils/temaInicial.ts';
+	import { tarjetaCreateSchema, tarjetaMinimaSchema } from '#lib/zod/tarjeta.schema.ts';
 	import CamposTarjeta from './camposTarjeta.svelte';
 	import { EstadoFormulario } from './estadoFormulario.svelte.ts';
 
 	interface Props {
-		/** owner: crea la suya; admin: para una cuenta sin tarjeta */
-		modo: 'owner' | 'admin';
-		/** Cuentas de propietario sin tarjeta (modo admin) */
+		/** user: crea la suya; admin: la de una cuenta */
+		modo: 'user' | 'admin';
+		/** Cuentas de usuario activas (modo admin) */
 		cuentas?: UsuarioListItem[];
 		cuentaInicial?: string;
-		onCreada: (tarjeta: TarjetaCompleta) => void;
+		onCreada: (tarjeta: TarjetaDetalle) => void | Promise<void>;
 	}
 
 	let { modo, cuentas = [], cuentaInicial = '', onCreada }: Props = $props();
@@ -28,17 +34,47 @@
 	let slug = $state('');
 	const estado = new EstadoFormulario();
 
+	/** La tarjeta que ya tiene la cuenta elegida (cada cuenta tiene una sola) */
+	let existente = $state<{ id: string; slug: string } | null>(null);
+	$effect(() => {
+		const id = userId;
+		existente = null;
+		if (modo !== 'admin' || !id) return;
+		let vigente = true;
+		tarjetaService
+			.listar({ user_id: id, per_page: 1 })
+			.then(({ data }) => {
+				if (vigente && data[0]) existente = { id: data[0].id, slug: data[0].slug };
+			})
+			.catch(() => {
+				// Si no se puede revisar, el backend responde 409 al crear
+			});
+		return () => {
+			vigente = false;
+		};
+	});
+
+	async function crear(datos: Parameters<typeof tarjetaService.crear>[0]) {
+		const tarjeta = await tarjetaService.crear(datos);
+		await aplicarTipografiaDeRubro(tarjeta.id, tarjeta.rubro);
+		await onCreada(tarjeta);
+	}
+
 	function enviar(event: SubmitEvent) {
 		event.preventDefault();
-		const datos = { prefijo, nombres, apellidos, cargo, rubro, slug };
+		const datos = {
+			prefijo,
+			nombres,
+			apellidos,
+			cargo,
+			rubro,
+			slug,
+			theme: temaDeRubro(rubro)
+		};
 		if (modo === 'admin') {
-			estado.enviar(tarjetaCreateSchema, { ...datos, user_id: userId }, async (validos) => {
-				onCreada(await tarjetaService.crear(validos));
-			});
+			estado.enviar(tarjetaCreateSchema, { ...datos, user_id: userId }, crear);
 		} else {
-			estado.enviar(tarjetaNuevaSchema, datos, async (validos) => {
-				onCreada(await tarjetaService.crearMia(validos));
-			});
+			estado.enviar(tarjetaMinimaSchema, datos, crear);
 		}
 	}
 </script>
@@ -51,11 +87,25 @@
 			required
 			bind:value={userId}
 			error={estado.errores.user_id}
-			hint="Solo cuentas de propietario que aún no tienen tarjeta."
+			hint="Cuentas de usuario activas. Cada una tiene una sola tarjeta."
 		>
 			<option value="" disabled>Elige una cuenta</option>
 			{#each cuentas as cuenta (cuenta.id)}<option value={cuenta.id}>{cuenta.email}</option>{/each}
 		</Select>
+		{#if existente}
+			<AlertBox variant="info" title="Esta cuenta ya tiene su tarjeta">
+				Está en /{existente.slug}.
+				{#snippet accion()}
+					<Button
+						variant="secondary"
+						size="sm"
+						href={resolve('/panel/tarjetas/[id]', { id: existente!.id })}
+					>
+						Abrir el editor
+					</Button>
+				{/snippet}
+			</AlertBox>
+		{/if}
 	{/if}
 	<CamposTarjeta
 		bind:prefijo
@@ -67,7 +117,13 @@
 		errores={estado.errores}
 	/>
 	<div class="flex justify-end">
-		<Button type="submit" variant="accent" size="lg" loading={estado.enviando}>
+		<Button
+			type="submit"
+			variant="accent"
+			size="lg"
+			loading={estado.enviando}
+			disabled={!!existente}
+		>
 			Crear tarjeta
 		</Button>
 	</div>

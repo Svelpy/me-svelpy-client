@@ -1,9 +1,7 @@
 import type { Timestamps } from './common.interface';
 
-/** Configuración de la vitrina (una por tarjeta) */
-export interface Vitrina extends Timestamps {
-	id: string;
-	tarjeta_id: string;
+/** Configuración de la vitrina (una por tarjeta, con el mismo id) */
+export interface VitrinaConfig {
 	mostrar_precios: boolean;
 	/** ISO 4217, por defecto BOB */
 	moneda: string;
@@ -14,35 +12,44 @@ export interface Vitrina extends Timestamps {
 	campo4_nombre: string | null;
 }
 
-export interface VitrinaCategoria extends Timestamps {
+/** `VitrinaCategoriaPublic` */
+export interface VitrinaCategoriaPublica {
 	id: string;
-	vitrina_id: string;
 	nombre: string;
+}
+
+/** `VitrinaCategoriaResponse` */
+export interface VitrinaCategoria extends VitrinaCategoriaPublica, Timestamps {
+	vitrina_id: string;
 	is_visible: boolean;
 	orden: number;
 }
 
-export interface VitrinaItemImagen {
+/** `VitrinaItemImagenPublic` */
+export interface VitrinaItemImagenPublica {
 	id: string;
-	item_id: string;
 	url: string;
 	alt: string | null;
 	/** 0 = imagen principal */
 	orden: number;
-	created_at: string;
 }
 
-export interface VitrinaItem extends Timestamps {
+/** `VitrinaItemImagenResponse` */
+export interface VitrinaItemImagen extends VitrinaItemImagenPublica, Timestamps {
+	item_id: string;
+}
+
+/** `VitrinaItemPublic`. Si la vitrina oculta precios, llegan en null */
+export interface VitrinaItemPublico {
 	id: string;
-	vitrina_id: string;
-	/** De la misma vitrina; null = sin categoría */
+	/** null = sin categoría */
 	categoria_id: string | null;
 	titulo: string;
 	descripcion: string | null;
-	/** null = "Consultar". Mayor o igual a 0 */
-	precio: number | null;
+	/** Decimal como texto ("250.00"); null = "Consultar" */
+	precio: string | null;
 	/** Precio tachado; mayor que `precio` */
-	precio_anterior: number | null;
+	precio_anterior: string | null;
 	/** Desde, por sesión… */
 	precio_etiqueta: string | null;
 	campo1: string | null;
@@ -50,49 +57,63 @@ export interface VitrinaItem extends Timestamps {
 	campo3: string | null;
 	campo4: string | null;
 	destacado: boolean;
+	/** Ordenadas; la primera es la principal. Máximo 3 */
+	imagenes: VitrinaItemImagenPublica[];
+}
+
+/** `VitrinaItemResponseDetail` */
+export interface VitrinaItem extends Omit<VitrinaItemPublico, 'imagenes'>, Timestamps {
+	vitrina_id: string;
 	is_visible: boolean;
 	orden: number;
-	/** Ordenadas; la primera es la principal */
+	categoria: VitrinaCategoria | null;
 	imagenes: VitrinaItemImagen[];
 }
 
-/** `GET /tarjetas/{id}/vitrina` y parte de `TarjetaCompleta` */
-export interface VitrinaCompleta extends Vitrina {
+/** `VitrinaPublic`: categorías visibles e ítems visibles (sin los de una categoría oculta) */
+export interface VitrinaPublica extends VitrinaConfig {
+	categorias: VitrinaCategoriaPublica[];
+	items: VitrinaItemPublico[];
+}
+
+/** `VitrinaResponseDetail` */
+export interface VitrinaCompleta extends VitrinaConfig, Timestamps {
+	id: string;
 	categorias: VitrinaCategoria[];
 	items: VitrinaItem[];
 }
 
-/** `PUT /tarjetas/{id}/vitrina` */
-export interface VitrinaUpdateRequest {
-	mostrar_precios?: boolean;
-	moneda?: string;
-	campo1_nombre?: string | null;
-	campo2_nombre?: string | null;
-	campo3_nombre?: string | null;
-	campo4_nombre?: string | null;
-}
-
-/** `POST /vitrinas/{id}/categorias` */
-export interface VitrinaCategoriaCreateRequest {
+/** `VitrinaCategoriaCreate` */
+export interface VitrinaCategoriaInput {
 	nombre: string;
 	is_visible?: boolean;
+	orden?: number;
 }
 
-/** `PATCH /vitrina-categorias/{id}` */
-export type VitrinaCategoriaUpdateRequest = Partial<VitrinaCategoriaCreateRequest>;
+/** `VitrinaCategoriaNestedItem` */
+export interface VitrinaCategoriaNestedItem extends VitrinaCategoriaInput {
+	id?: string | null;
+}
 
+/** `VitrinaItemImagenCreate`: la URL es la que devolvió `POST /imagenes/uploads` */
 export interface VitrinaItemImagenInput {
 	url: string;
 	alt?: string | null;
+	orden?: number;
 }
 
-/** `POST /vitrinas/{id}/items`, con sus imágenes en la misma petición */
-export interface VitrinaItemCreateRequest {
+/** `VitrinaItemImagenNestedItem` */
+export interface VitrinaItemImagenNestedItem extends VitrinaItemImagenInput {
+	id?: string | null;
+}
+
+/** `VitrinaItemCreateNested` */
+export interface VitrinaItemInput {
+	categoria_id?: string | null;
 	titulo: string;
 	descripcion?: string | null;
-	categoria_id?: string | null;
-	precio?: number | null;
-	precio_anterior?: number | null;
+	precio?: number | string | null;
+	precio_anterior?: number | string | null;
 	precio_etiqueta?: string | null;
 	campo1?: string | null;
 	campo2?: string | null;
@@ -100,21 +121,28 @@ export interface VitrinaItemCreateRequest {
 	campo4?: string | null;
 	destacado?: boolean;
 	is_visible?: boolean;
-	/** En orden: la primera es la principal */
+	orden?: number;
 	imagenes?: VitrinaItemImagenInput[];
 }
 
-/** `PATCH /vitrina-items/{id}`. Si trae `imagenes`, reemplazan a las anteriores en ese orden */
-export type VitrinaItemUpdateRequest = Partial<VitrinaItemCreateRequest>;
+/** `VitrinaItemNestedItem`: `imagenes` es el estado final; ausente o null no se toca */
+export interface VitrinaItemNestedItem extends Omit<VitrinaItemInput, 'imagenes'> {
+	id?: string | null;
+	imagenes?: VitrinaItemImagenNestedItem[] | null;
+}
 
-/** `POST /vitrina-items/{id}/imagenes`: se agrega al final */
-export type VitrinaItemImagenCreateRequest = VitrinaItemImagenInput;
+/** `VitrinaCreateNested` (dentro de `POST /tarjetas/`): los ítems todavía no tienen categoría */
+export interface VitrinaCreateRequest extends Partial<VitrinaConfig> {
+	categorias?: VitrinaCategoriaInput[];
+	items?: VitrinaItemInput[];
+}
 
 /**
- * Vitrina dentro de una tarjeta nueva. Los ítems apuntan a una categoría de la misma petición
- * por su nombre (todavía no tiene id).
+ * `PATCH /vitrinas/{id}` (`VitrinaUpdateNested`). `categorias` e `items` son el estado final:
+ * ausente o null no se toca, [] los elimina. Un ítem solo usa una categoría que ya existe y se
+ * conserva; una categoría con ítems no se puede eliminar (409).
  */
-export interface VitrinaNuevaRequest extends VitrinaUpdateRequest {
-	categorias?: VitrinaCategoriaCreateRequest[];
-	items?: (Omit<VitrinaItemCreateRequest, 'categoria_id'> & { categoria_nombre?: string | null })[];
+export interface VitrinaUpdateRequest extends Partial<VitrinaConfig> {
+	categorias?: VitrinaCategoriaNestedItem[] | null;
+	items?: VitrinaItemNestedItem[] | null;
 }

@@ -1,10 +1,10 @@
 import type { Role } from '#lib/config/permissions.config.ts';
-import type { Plan } from '#lib/config/planes.config.ts';
 import type {
 	ContactoTipo,
 	DiaSemana,
 	FabPosicion,
 	IconoForma,
+	MetodoPago,
 	NombreEmpresaPosicion,
 	RedSocial
 } from '#lib/interfaces/index.ts';
@@ -21,14 +21,18 @@ export const PAGINATION = {
 
 /** Etiquetas de rol de usuario (valores que devuelve la API) */
 export const ROLE_LABEL: Record<Role, string> = {
-	SUPERADMIN: 'Superadministrador',
-	OWNER: 'Propietario'
+	superadmin: 'Superadministrador',
+	admin: 'Administrador',
+	user: 'Usuario'
 };
 
-/** Nombre visible de cada plan (enum `plan`) */
-export const PLAN_LABEL: Record<Plan, string> = {
-	free: 'Free',
-	pro: 'Pro'
+/** Nombre visible de cada método de pago (enum `MetodoPago`) */
+export const METODO_PAGO_LABEL: Record<MetodoPago, string> = {
+	qr: 'QR',
+	transferencia: 'Transferencia',
+	tarjeta: 'Tarjeta',
+	efectivo: 'Efectivo',
+	otro: 'Otro'
 };
 
 export const CONTACTO_TIPO_LABEL: Record<ContactoTipo, string> = {

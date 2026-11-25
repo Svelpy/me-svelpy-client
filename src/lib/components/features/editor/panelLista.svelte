@@ -1,7 +1,7 @@
 <!--
 	Panel de una lista de la tarjeta: muestra los elementos (ordenables, con visibilidad), abre el
 	formulario en una hoja para crear o editar y confirma antes de eliminar. Cada sección le pasa su
-	servicio, cómo se ve cada fila y su formulario.
+	servicio (`editor.servicioLista` / `servicioVitrina`), cómo se ve cada fila y su formulario.
 -->
 <script lang="ts" generics="T extends { id: string; is_visible?: boolean }, D">
 	import type { Component, Snippet } from 'svelte';
@@ -9,25 +9,17 @@
 	import { PlusIcon } from '#lib/icons/outline/index.ts';
 	import { errorService } from '#lib/services/index.ts';
 	import { alert } from '#lib/utils/alert.ts';
+	import type { ServicioLista } from './estadoEditor.svelte.ts';
 	import ListaOrdenable from './listaOrdenable.svelte';
-
-	interface Servicio {
-		crear(padreId: string, datos: D): Promise<T>;
-		actualizar(id: string, datos: Partial<D>): Promise<T>;
-		eliminar(id: string): Promise<void>;
-		reordenar(padreId: string, ids: string[]): Promise<T[]>;
-	}
 
 	interface Props {
 		items: T[];
-		/** Tarjeta, vitrina o ubicación a la que pertenecen */
-		padreId: string;
-		servicio: Servicio;
-		/** Guarda la lista nueva en el editor (y así en el espejo) */
-		aplicar: (items: T[]) => void;
+		servicio: ServicioLista<T, D>;
 		nombre: (item: T) => string;
 		/** "contacto", "pregunta" */
 		singular: string;
+		/** "contactos", "preguntas": para el aviso del máximo */
+		plural: string;
 		agregarLabel: string;
 		fila: Snippet<[T]>;
 		formulario: Snippet<[{ inicial: T | null; id: string; guardar: (datos: D) => Promise<void> }]>;
@@ -40,11 +32,10 @@
 
 	let {
 		items,
-		padreId,
 		servicio,
-		aplicar,
 		nombre,
 		singular,
+		plural,
 		agregarLabel,
 		fila,
 		formulario,
@@ -54,6 +45,7 @@
 	}: Props = $props();
 
 	const sufijo = $derived(femenino ? 'a' : 'o');
+	const lleno = $derived(items.length >= servicio.maximo);
 
 	const formId = $props.id();
 	let editando = $state<T | 'nuevo' | null>(null);
@@ -65,12 +57,10 @@
 		enviando = true;
 		try {
 			if (editando === 'nuevo') {
-				const nuevo = await servicio.crear(padreId, datos);
-				aplicar([...items, nuevo]);
+				await servicio.crear(datos);
 				alert('success', `${mayuscula(singular)} agregad${sufijo}`);
 			} else if (editando) {
-				const actualizado = await servicio.actualizar(editando.id, datos);
-				aplicar(items.map((item) => (item.id === actualizado.id ? actualizado : item)));
+				await servicio.actualizar(editando, datos);
 				alert('success', 'Cambios guardados');
 			}
 			editando = null;
@@ -79,26 +69,19 @@
 		}
 	}
 
+	// Mover y ocultar se ven al instante; si el servidor falla, el editor lo revierte
 	async function mover(ids: string[]) {
 		try {
-			aplicar(await servicio.reordenar(padreId, ids));
+			await servicio.reordenar(ids);
 		} catch (causa) {
 			alert('error', errorService.getMessage(causa));
 		}
 	}
 
 	async function cambiarVisible(item: T, visible: boolean) {
-		const anteriores = items;
-		aplicar(
-			items.map((actual) => (actual.id === item.id ? { ...actual, is_visible: visible } : actual))
-		);
 		try {
-			const actualizado = await servicio.actualizar(item.id, {
-				is_visible: visible
-			} as unknown as Partial<D>);
-			aplicar(anteriores.map((actual) => (actual.id === actualizado.id ? actualizado : actual)));
+			await servicio.cambiarVisible(item, visible);
 		} catch (causa) {
-			aplicar(anteriores);
 			alert('error', errorService.getMessage(causa));
 		}
 	}
@@ -106,12 +89,11 @@
 	async function eliminar() {
 		if (!porEliminar) return;
 		eliminando = true;
+		const item = porEliminar;
+		porEliminar = null;
 		try {
-			await servicio.eliminar(porEliminar.id);
-			const id = porEliminar.id;
-			aplicar(items.filter((item) => item.id !== id));
+			await servicio.eliminar(item);
 			alert('success', `${mayuscula(singular)} eliminad${sufijo}`);
-			porEliminar = null;
 		} catch (causa) {
 			alert('error', errorService.getMessage(causa));
 		} finally {
@@ -146,10 +128,18 @@
 		onEliminar={(item) => (porEliminar = item)}
 		onVisible={sinVisibilidad ? undefined : cambiarVisible}
 	/>
-	<Button variant="secondary" class="mt-4" onclick={() => (editando = 'nuevo')}>
-		{#snippet leftIcon()}<PlusIcon class="size-4" />{/snippet}
-		{agregarLabel}
-	</Button>
+	<div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+		<Button variant="secondary" onclick={() => (editando = 'nuevo')} disabled={lleno}>
+			{#snippet leftIcon()}<PlusIcon class="size-4" />{/snippet}
+			{agregarLabel}
+		</Button>
+		{#if lleno}
+			<p class="text-sm text-light-two_d dark:text-dark-two_d">
+				Llegaste al máximo de {servicio.maximo}
+				{plural}. Quita uno para agregar otro.
+			</p>
+		{/if}
+	</div>
 {/if}
 
 <Sheet

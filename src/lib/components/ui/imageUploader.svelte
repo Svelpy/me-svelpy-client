@@ -82,9 +82,13 @@
 
 <div class={className}>
 	{#if label}
-		<p class="mb-1 text-sm leading-6 font-medium text-light-black sm:text-base dark:text-dark-two">
+		<!-- Asociada al input de archivo: los lectores de pantalla lo anuncian con este nombre -->
+		<label
+			for={id}
+			class="mb-1 block text-sm leading-6 font-medium text-light-black sm:text-base dark:text-dark-two"
+		>
 			{label}
-		</p>
+		</label>
 	{/if}
 
 	<input

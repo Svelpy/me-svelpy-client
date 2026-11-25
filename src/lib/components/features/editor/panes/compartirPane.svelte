@@ -2,6 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import { resolve } from '$app/paths';
 	import EnlacePublico from '../../panel/enlacePublico.svelte';
+	import AvisoPublicacion from '../../planes/avisoPublicacion.svelte';
 	import { AlertBox, Button, QrCode } from '#lib/components/ui/index.ts';
 	import {
 		AddressBookIcon,
@@ -11,7 +12,7 @@
 	} from '#lib/icons/outline/index.ts';
 	import { downloadBlob } from '#lib/utils/download.ts';
 	import { nombreCompleto } from '#lib/utils/tarjeta.ts';
-	import { urlPublicaTarjeta } from '#lib/utils/urlPublica.ts';
+	import { urlPublicaTarjeta, urlQrTarjeta } from '#lib/utils/urlPublica.ts';
 	import {
 		fotoDeContacto,
 		fotoParaVCard,
@@ -23,7 +24,7 @@
 
 	interface Props {
 		alVolver?: () => void;
-		/** El botón de publicar del editor (o el de activar Pro, si la cuenta es Free) */
+		/** El botón de publicar del editor */
 		publicar: Snippet<['sm' | 'md']>;
 	}
 
@@ -32,6 +33,8 @@
 	const editor = getEditor();
 	const tarjeta = $derived(editor.tarjeta);
 	const url = $derived(urlPublicaTarjeta(tarjeta.slug));
+	// El QR abre /t/{id}: sigue funcionando impreso aunque cambie el enlace
+	const urlQr = $derived(urlQrTarjeta(tarjeta.id));
 	let qr = $state<HTMLDivElement>();
 
 	function marcadoQr(): string | null {
@@ -68,7 +71,9 @@
 	async function descargarContacto() {
 		const foto = await fotoParaVCard(fotoDeContacto(tarjeta));
 		downloadBlob(
-			new Blob([generarVCard(tarjeta, url, foto)], { type: 'text/vcard;charset=utf-8' }),
+			new Blob([generarVCard(editor.vistaPrevia, url, foto)], {
+				type: 'text/vcard;charset=utf-8'
+			}),
 			nombreArchivoVcf(tarjeta)
 		);
 	}
@@ -84,18 +89,18 @@
 	{alVolver}
 >
 	<div class="space-y-8">
-		{#if !tarjeta.is_public && editor.conPlanPro}
+		{#if !tarjeta.is_public && !editor.bloqueo}
 			<AlertBox variant="warning" title="Tu tarjeta está en borrador">
 				Solo tú la ves. Publícala para que el enlace y el QR funcionen para tus clientes.
 				{#snippet accion()}{@render publicar('sm')}{/snippet}
 			</AlertBox>
-		{:else if !tarjeta.is_public}
-			<AlertBox variant="info" title="Publicar es parte del plan Pro">
-				{editor.modo === 'owner'
-					? 'Con el plan Free armas tu tarjeta completa y la ves en el espejo. El enlace y el QR empiezan a funcionar cuando la publicas con Pro.'
-					: 'Esta cuenta tiene el plan Free: puede armar su tarjeta, pero publicarla pide Pro.'}
-				{#snippet accion()}{@render publicar('sm')}{/snippet}
-			</AlertBox>
+		{:else if !tarjeta.is_public && editor.bloqueo}
+			<AvisoPublicacion
+				bloqueo={editor.bloqueo}
+				modo={editor.modo}
+				cuenta={editor.cuenta}
+				slug={tarjeta.slug}
+			/>
 		{/if}
 
 		<section aria-labelledby="enlace-titulo">
@@ -132,7 +137,7 @@
 			class="grid gap-6 sm:grid-cols-[13rem_1fr] sm:items-center"
 		>
 			<div bind:this={qr} class="rounded-2xl bg-white p-3 ring-1 ring-light-four/40">
-				<QrCode value={url} label="Código QR de {url}" class="w-full" />
+				<QrCode value={urlQr} label="Código QR que abre {url}" class="w-full" />
 			</div>
 			<div>
 				<h3 id="qr-titulo" class="font-display text-base font-semibold">Código QR</h3>

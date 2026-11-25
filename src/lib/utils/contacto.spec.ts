@@ -68,7 +68,7 @@ describe('mapas', () => {
 	});
 
 	it('si no, busca por coordenadas o por la dirección completa', () => {
-		expect(mapsUrl({ ...ubicacion, lat: -17.78, lng: -63.18 })).toBe(
+		expect(mapsUrl({ ...ubicacion, lat: '-17.78', lng: '-63.18' })).toBe(
 			'https://www.google.com/maps/search/?api=1&query=-17.78%2C-63.18'
 		);
 		expect(comoLlegarUrl(ubicacion)).toBe(

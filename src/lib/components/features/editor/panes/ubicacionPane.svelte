@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { MapPinIcon } from '#lib/icons/outline/index.ts';
-	import type { TarjetaUbicacion, TarjetaUbicacionCreateRequest } from '#lib/interfaces/index.ts';
-	import { tarjetaUbicacionService } from '#lib/services/index.ts';
+	import type { TarjetaUbicacion, TarjetaUbicacionInput } from '#lib/interfaces/index.ts';
 	import { resumenSemanal } from '#lib/utils/horarios.ts';
 	import { ordenar } from '#lib/utils/tarjeta.ts';
 	import EditorPanel from '../editorPanel.svelte';
@@ -17,6 +16,7 @@
 	let { alVolver }: Props = $props();
 
 	const editor = getEditor();
+	const servicio = editor.servicioLista<'ubicaciones', TarjetaUbicacionInput>('ubicaciones');
 
 	function resumenHorario(ubicacion: TarjetaUbicacion): string {
 		if (ubicacion.horarios.length === 0) return 'Sin horarios';
@@ -36,11 +36,10 @@
 	<div class="mt-6">
 		<PanelLista
 			items={ordenar(editor.tarjeta.ubicaciones)}
-			padreId={editor.tarjeta.id}
-			servicio={tarjetaUbicacionService}
-			aplicar={(ubicaciones: TarjetaUbicacion[]) => editor.actualizar({ ubicaciones })}
+			{servicio}
 			nombre={(u) => u.nombre ?? u.direccion}
 			singular="ubicación"
+			plural="ubicaciones"
 			agregarLabel="Agregar ubicación"
 			femenino
 			vacio={{
@@ -62,7 +61,7 @@
 			}: {
 				inicial: TarjetaUbicacion | null;
 				id: string;
-				guardar: (datos: TarjetaUbicacionCreateRequest) => Promise<void>;
+				guardar: (datos: TarjetaUbicacionInput) => Promise<void>;
 			})}
 				<UbicacionForm {inicial} {id} {guardar} />
 			{/snippet}

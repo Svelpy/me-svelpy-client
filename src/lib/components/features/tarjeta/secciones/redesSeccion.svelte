@@ -1,25 +1,22 @@
 <script lang="ts">
 	import { RED_SOCIAL_LABEL } from '#lib/constants/data.ts';
-	import type { IconoForma, TarjetaSocial } from '#lib/interfaces/index.ts';
-	import { ordenar } from '#lib/utils/tarjeta.ts';
+	import type { IconoForma, TarjetaSocialPublica } from '#lib/interfaces/index.ts';
 	import { ICONOS_RED } from '../iconosRed';
 	import TarjetaIcono from '../ui/tarjetaIcono.svelte';
 	import TarjetaSeccion from '../ui/tarjetaSeccion.svelte';
 
 	interface Props {
 		titulo: string;
-		sociales: TarjetaSocial[];
+		redes: TarjetaSocialPublica[];
 		forma: IconoForma;
 	}
 
-	let { titulo, sociales, forma }: Props = $props();
-
-	const visibles = $derived(ordenar(sociales).filter((s) => s.is_visible));
+	let { titulo, redes, forma }: Props = $props();
 </script>
 
 <TarjetaSeccion id="redes" {titulo}>
 	<ul class="grid grid-cols-1 gap-2 @sm:grid-cols-2">
-		{#each visibles as social (social.id)}
+		{#each redes as social (social.id)}
 			<li>
 				<a
 					href={social.url}

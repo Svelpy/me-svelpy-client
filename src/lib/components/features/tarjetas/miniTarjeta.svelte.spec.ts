@@ -32,14 +32,13 @@ describe('MiniTarjeta', () => {
 		await expect.element(enlace.getByText('Borrador', { exact: true })).toBeVisible();
 	});
 
-	it('usa los colores de su tema, no los del panel', async () => {
+	it('sin el tema en el listado, usa la paleta neutra (no la del panel)', async () => {
 		const screen = await render(MiniTarjeta, {
 			tarjeta: tarjetaListItemDePrueba(),
 			href: '/panel/tarjetas/tarjeta-1'
 		});
-		// El nombre va con el color de títulos del tema Salud
 		await expect
 			.element(screen.getByText('Dra. Lucía Prueba'))
-			.toHaveStyle({ color: hexARgb(TEMAS_TARJETA.salud.colores.color_titulo) });
+			.toHaveStyle({ color: hexARgb(TEMAS_TARJETA.claro.colores.color_titulo) });
 	});
 });

@@ -23,20 +23,24 @@ export interface RoleAccess {
 	exactRoutes?: readonly RouteId[];
 	/**
 	 * Se deniegan aunque `routes` las cubra (también sus subrutas). Para quitar una página puntual
-	 * a un rol que abre todo un área (p. ej. "Mi tarjeta" al SUPERADMIN, que no tiene tarjeta propia).
+	 * a un rol que abre todo un área (p. ej. "Mi tarjeta" a los admins, que no tienen tarjeta propia).
 	 */
 	excludedRoutes?: readonly RouteId[];
 }
 
+/** El panel de administración completo, sin "Mi tarjeta" */
+const PANEL_ADMIN: RoleAccess = {
+	home: '/panel',
+	routes: ['/panel'],
+	excludedRoutes: ['/panel/mi-tarjeta']
+};
+
 /** `Record<Role, ...>` obliga a configurar aquí cualquier rol nuevo. Lo no listado se deniega. */
 export const ROLE_ACCESS: Record<Role, RoleAccess> = {
-	[Role.SUPERADMIN]: {
-		home: '/panel',
-		routes: ['/panel'],
-		excludedRoutes: ['/panel/mi-tarjeta']
-	},
-	// El owner solo gestiona su tarjeta: su inicio es el editor
-	[Role.OWNER]: {
+	[Role.SUPERADMIN]: PANEL_ADMIN,
+	[Role.ADMIN]: PANEL_ADMIN,
+	// El user solo gestiona su tarjeta: su inicio es el editor
+	[Role.USER]: {
 		home: '/panel/mi-tarjeta',
 		routes: ['/panel/mi-tarjeta', '/panel/cuenta']
 	}

@@ -16,8 +16,7 @@ export enum ErrorCode {
 	REFRESH_FAILED = 'REFRESH_FAILED',
 	RESOURCE_NOT_FOUND = 'RESOURCE_NOT_FOUND',
 	CONFLICT = 'CONFLICT',
-	/** La acción pide el plan Pro (p. ej. publicar la tarjeta) */
-	PLAN_REQUERIDO = 'PLAN_REQUERIDO',
+	RATE_LIMITED = 'RATE_LIMITED',
 
 	// Cliente
 	NETWORK_ERROR = 'NETWORK_ERROR',
@@ -28,11 +27,15 @@ export enum ErrorCode {
 /** Admite códigos nuevos del backend sin romper el tipado */
 export type AnyErrorCode = ErrorCode | (string & {});
 
-/** Cuerpo de error que devuelve la API */
+/** Cuerpo de error que devuelve la API (`ErrorResponse`) */
 export interface ApiErrorResponse {
 	/** `fail` = error del cliente (4xx), `error` = error del servidor (5xx) */
 	status: 'fail' | 'error';
 	code: AnyErrorCode;
 	message: string;
-	details: Record<string, unknown>;
+	/**
+	 * Errores por campo. La API usa rutas con flechas (`"contactos -> 0 -> valor"`); el cliente las
+	 * normaliza a puntos (`contactos.0.valor`) al construir el `AppError`.
+	 */
+	details?: Record<string, unknown>;
 }

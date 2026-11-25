@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { CONTACTO_TIPO_LABEL } from '#lib/constants/data.ts';
 	import { MailIcon, PhoneIcon, WorldWwwIcon } from '#lib/icons/outline/index.ts';
-	import type { TarjetaContacto, TarjetaContactoCreateRequest } from '#lib/interfaces/index.ts';
-	import { tarjetaContactoService } from '#lib/services/index.ts';
+	import type { TarjetaContacto, TarjetaContactoInput } from '#lib/interfaces/index.ts';
+	import { errorService } from '#lib/services/index.ts';
+	import { alert } from '#lib/utils/alert.ts';
 	import { ordenar } from '#lib/utils/tarjeta.ts';
+	import CampoImagen from '../campoImagen.svelte';
 	import EditorPanel from '../editorPanel.svelte';
 	import { getEditor } from '../estadoEditor.svelte.ts';
 	import ContactoForm from '../formularios/contactoForm.svelte';
@@ -17,23 +19,45 @@
 	let { alVolver }: Props = $props();
 
 	const editor = getEditor();
+	// Un solo principal por tipo: al marcar uno, los demás de su tipo dejan de serlo
+	const servicio = editor.servicioLista<'contactos', TarjetaContactoInput>(
+		'contactos',
+		(lista, cambiado) => {
+			const elegido = lista[cambiado];
+			if (!elegido?.is_primary) return lista;
+			return lista.map((contacto, indice) =>
+				indice !== cambiado && contacto.tipo === elegido.tipo && contacto.is_primary
+					? { ...contacto, is_primary: false }
+					: contacto
+			);
+		}
+	);
 	const iconos = { phone: PhoneIcon, email: MailIcon, website: WorldWwwIcon };
+
+	/** El QR se guarda en cuanto se elige (o se quita) */
+	async function guardarQr(url: string | null) {
+		try {
+			await editor.guardarDatos({ qr_pago_url: url });
+			alert('success', url ? 'QR de pago guardado' : 'QR de pago quitado');
+		} catch (causa) {
+			alert('error', errorService.getMessage(causa));
+		}
+	}
 </script>
 
 <EditorPanel
 	titulo="Contacto"
-	descripcion="Teléfonos, correos y sitios web. El principal de cada tipo va primero en todo."
+	descripcion="Teléfonos, correos y sitios web. El principal de cada tipo va primero en todo y es el que usa el botón flotante."
 	{alVolver}
 >
 	<TituloSeccion clave="contacto" />
 	<div class="mt-6">
 		<PanelLista
 			items={ordenar(editor.tarjeta.contactos)}
-			padreId={editor.tarjeta.id}
-			servicio={tarjetaContactoService}
-			aplicar={(contactos: TarjetaContacto[]) => editor.actualizar({ contactos })}
+			{servicio}
 			nombre={(c) => c.etiqueta ?? c.valor}
 			singular="contacto"
+			plural="contactos"
 			agregarLabel="Agregar contacto"
 			vacio={{
 				titulo: 'Sin datos de contacto',
@@ -62,10 +86,19 @@
 			}: {
 				inicial: TarjetaContacto | null;
 				id: string;
-				guardar: (datos: TarjetaContactoCreateRequest) => Promise<void>;
+				guardar: (datos: TarjetaContactoInput) => Promise<void>;
 			})}
 				<ContactoForm {inicial} {id} {guardar} />
 			{/snippet}
 		</PanelLista>
 	</div>
+	<CampoImagen
+		id="qr-pago"
+		label="QR de pago"
+		tipo="qr_pago"
+		hint="El QR de cobro de tu banco. Suma el botón «Pagar con QR» a esta sección y se guarda al elegirlo."
+		value={editor.tarjeta.qr_pago_url}
+		onchange={guardarQr}
+		class="mt-10 border-t border-light-four/40 pt-8 dark:border-dark-one_d"
+	/>
 </EditorPanel>

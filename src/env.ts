@@ -16,7 +16,8 @@ export const variables = defineEnvVars({
 	PUBLIC_GA_ID: {
 		public: true,
 		static: true,
-		description: 'ID de medición de Google Analytics 4 (G-XXXXXXXXXX). Opcional: sin él no se carga GA.',
+		description:
+			'ID de medición de Google Analytics 4 (G-XXXXXXXXXX). Opcional: sin él no se carga GA.',
 		schema: (valor) => {
 			const id = valor?.trim();
 			if (!id) return undefined;

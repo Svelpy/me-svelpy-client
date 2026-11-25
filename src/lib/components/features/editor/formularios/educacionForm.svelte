@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { AlertBox, Input, Switch, TextArea } from '#lib/components/ui/index.ts';
-	import type { TarjetaEducacion, TarjetaEducacionCreateRequest } from '#lib/interfaces/index.ts';
+	import type { TarjetaEducacion, TarjetaEducacionInput } from '#lib/interfaces/index.ts';
 	import { tarjetaEducacionSchema } from '#lib/zod/tarjetaFormacion.schema.ts';
 	import { EstadoFormulario } from '../estadoFormulario.svelte.ts';
 
 	interface Props {
 		id: string;
 		inicial: TarjetaEducacion | null;
-		guardar: (datos: TarjetaEducacionCreateRequest) => Promise<void>;
+		guardar: (datos: TarjetaEducacionInput) => Promise<void>;
 	}
 
 	let { id, inicial, guardar }: Props = $props();

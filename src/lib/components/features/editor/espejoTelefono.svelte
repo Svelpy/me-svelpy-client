@@ -4,12 +4,13 @@
 -->
 <script lang="ts">
 	import TarjetaVista from '../tarjeta/tarjetaVista.svelte';
-	import type { TarjetaCompleta } from '#lib/interfaces/index.ts';
+	import type { TarjetaPublica } from '#lib/interfaces/index.ts';
 	import { cn } from '#lib/utils/cn.ts';
 	import { DOMINIO_PUBLICO } from '#lib/utils/urlPublica.ts';
 
 	interface Props {
-		tarjeta: TarjetaCompleta;
+		/** La forma pública (`aPublica`): lo que se publicaría tal cual */
+		tarjeta: TarjetaPublica;
 		/** Hay cambios que aún no se guardaron */
 		sinGuardar?: boolean;
 		class?: string;

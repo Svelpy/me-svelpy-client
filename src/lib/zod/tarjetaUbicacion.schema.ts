@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { LIMITES_TARJETA } from '#lib/constants/limites.ts';
 import { aMinutos, buscarSolape } from '#lib/utils/horarios.ts';
 import { booleanoOpcional, texto, textoOpcional, urlHttpsOpcional } from './common';
 
@@ -17,7 +18,9 @@ export const ubicacionHorarioSchema = z
 
 export const ubicacionHorariosSchema = z
 	.array(ubicacionHorarioSchema)
-	.max(42, { message: 'Hasta 6 horarios por día.' })
+	.max(LIMITES_TARJETA.horarios, {
+		message: `Hasta ${LIMITES_TARJETA.horarios} horarios por ubicación.`
+	})
 	.superRefine((horarios, ctx) => {
 		const solape = buscarSolape(horarios);
 		if (solape) {
@@ -58,6 +61,3 @@ export const tarjetaUbicacionSchema = z
 			ctx.addIssue({ code: 'custom', path: [path], message: 'Ingresa latitud y longitud juntas.' });
 		}
 	});
-
-/** Cuerpo de `PUT /ubicaciones/{id}/horarios` */
-export const ubicacionHorariosUpdateSchema = z.object({ horarios: ubicacionHorariosSchema });

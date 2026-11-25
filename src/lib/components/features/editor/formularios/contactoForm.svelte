@@ -5,7 +5,7 @@
 	import type {
 		ContactoTipo,
 		TarjetaContacto,
-		TarjetaContactoCreateRequest
+		TarjetaContactoInput
 	} from '#lib/interfaces/index.ts';
 	import { tarjetaContactoSchema } from '#lib/zod/tarjetaContacto.schema.ts';
 	import { EstadoFormulario } from '../estadoFormulario.svelte.ts';
@@ -13,7 +13,7 @@
 	interface Props {
 		id: string;
 		inicial: TarjetaContacto | null;
-		guardar: (datos: TarjetaContactoCreateRequest) => Promise<void>;
+		guardar: (datos: TarjetaContactoInput) => Promise<void>;
 	}
 
 	let { id, inicial, guardar }: Props = $props();

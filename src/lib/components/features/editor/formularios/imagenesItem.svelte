@@ -6,15 +6,17 @@
 		PhotoPlusIcon,
 		XIcon
 	} from '#lib/icons/outline/index.ts';
-	import type { VitrinaItemImagenInput } from '#lib/interfaces/index.ts';
-	import { errorService, uploadService } from '#lib/services/index.ts';
+	import { LIMITES_TARJETA } from '#lib/constants/limites.ts';
+	import type { VitrinaItemImagenNestedItem } from '#lib/interfaces/index.ts';
+	import { errorService, imagenService } from '#lib/services/index.ts';
+	import { FORMATOS_IMAGEN } from '#lib/utils/imagen.ts';
 
 	interface Props {
-		imagenes: VitrinaItemImagenInput[];
+		imagenes: VitrinaItemImagenNestedItem[];
 		maximo?: number;
 	}
 
-	let { imagenes = $bindable(), maximo = 10 }: Props = $props();
+	let { imagenes = $bindable(), maximo = LIMITES_TARJETA.imagenes }: Props = $props();
 
 	let subiendo = $state(false);
 	let error = $state('');
@@ -29,7 +31,7 @@
 		error = '';
 		try {
 			for (const archivo of archivos) {
-				const { url } = await uploadService.subir(archivo, 'vitrina');
+				const { url } = await imagenService.subir(archivo, 'vitrina');
 				imagenes = [...imagenes, { url, alt: null }];
 			}
 		} catch (causa) {
@@ -120,7 +122,7 @@
 					bind:this={entrada}
 					{id}
 					type="file"
-					accept="image/*"
+					accept={FORMATOS_IMAGEN}
 					multiple
 					class="sr-only"
 					disabled={subiendo}

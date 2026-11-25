@@ -3,11 +3,7 @@
 	import { AlertBox, Input, Select } from '#lib/components/ui/index.ts';
 	import { LinkIcon } from '#lib/icons/outline/index.ts';
 	import { RED_SOCIAL_LABEL, REDES_SOCIALES } from '#lib/constants/data.ts';
-	import type {
-		RedSocial,
-		TarjetaSocial,
-		TarjetaSocialCreateRequest
-	} from '#lib/interfaces/index.ts';
+	import type { RedSocial, TarjetaSocial, TarjetaSocialInput } from '#lib/interfaces/index.ts';
 	import { detectarRedSocial, usuarioDesdeUrl, websiteUrl } from '#lib/utils/contacto.ts';
 	import { tarjetaSocialSchema } from '#lib/zod/tarjetaSocial.schema.ts';
 	import { EstadoFormulario } from '../estadoFormulario.svelte.ts';
@@ -15,7 +11,7 @@
 	interface Props {
 		id: string;
 		inicial: TarjetaSocial | null;
-		guardar: (datos: TarjetaSocialCreateRequest) => Promise<void>;
+		guardar: (datos: TarjetaSocialInput) => Promise<void>;
 	}
 
 	let { id, inicial, guardar }: Props = $props();

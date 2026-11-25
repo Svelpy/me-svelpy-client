@@ -1,5 +1,9 @@
 import { CODIGO_PAIS_POR_DEFECTO } from '#lib/constants/data.ts';
-import type { RedSocial, TarjetaContacto, TarjetaUbicacion } from '#lib/interfaces/index.ts';
+import type {
+	RedSocial,
+	TarjetaContactoPublico,
+	TarjetaUbicacionPublica
+} from '#lib/interfaces/index.ts';
 
 /** Enlaces de contacto (WhatsApp, teléfono, correo, mapas) a partir de los datos de la tarjeta */
 
@@ -44,7 +48,7 @@ export function urlSinProtocolo(url: string): string {
 }
 
 /** Enlace que abre cada tipo de contacto */
-export function hrefContacto(contacto: Pick<TarjetaContacto, 'tipo' | 'valor'>): string {
+export function hrefContacto(contacto: Pick<TarjetaContactoPublico, 'tipo' | 'valor'>): string {
 	switch (contacto.tipo) {
 		case 'phone':
 			return telUrl(contacto.valor);
@@ -56,7 +60,7 @@ export function hrefContacto(contacto: Pick<TarjetaContacto, 'tipo' | 'valor'>):
 }
 
 type UbicacionMapa = Pick<
-	TarjetaUbicacion,
+	TarjetaUbicacionPublica,
 	'maps_url' | 'lat' | 'lng' | 'direccion' | 'ciudad' | 'departamento' | 'pais'
 >;
 

@@ -1,38 +1,65 @@
 import { describe, expect, it } from 'vitest';
 import {
+	bloqueoPublicacion,
+	codigoDePlan,
 	diasParaVencer,
-	isPlan,
-	Plan,
-	planVigente,
+	estadoPlan,
+	esPlanFree,
 	puedePublicar,
-	vencePronto
+	vencePronto,
+	type CuentaPublicadora
 } from './planes.config.ts';
 
 const AHORA = new Date('2026-11-19T12:00:00Z');
 const enDias = (dias: number) => new Date(AHORA.getTime() + dias * 86_400_000).toISOString();
 
-describe('planVigente', () => {
-	it('un pro sin vencimiento o con fecha futura sigue siendo pro', () => {
-		expect(planVigente({ plan: 'pro', plan_vence_at: null }, AHORA)).toBe(Plan.PRO);
-		expect(planVigente({ plan: 'pro', plan_vence_at: enDias(3) }, AHORA)).toBe(Plan.PRO);
-	});
+const PRO = { codigo: 'pro', nombre: 'Pro' };
+const FREE = { codigo: 'free', nombre: 'Free' };
 
-	it('un pro vencido cuenta como free aunque el backend no lo haya bajado todavía', () => {
-		expect(planVigente({ plan: 'pro', plan_vence_at: enDias(-1) }, AHORA)).toBe(Plan.FREE);
-		expect(planVigente({ plan: 'pro', plan_vence_at: AHORA.toISOString() }, AHORA)).toBe(Plan.FREE);
-	});
+const cuenta = (cambios: Partial<CuentaPublicadora> = {}): CuentaPublicadora => ({
+	plan: PRO,
+	plan_vence_at: enDias(30),
+	is_active: true,
+	email_verified_at: AHORA.toISOString(),
+	...cambios
+});
 
-	it('free y los planes desconocidos no dan permisos', () => {
-		expect(planVigente({ plan: 'free', plan_vence_at: null }, AHORA)).toBe(Plan.FREE);
-		expect(planVigente({ plan: 'premium', plan_vence_at: null }, AHORA)).toBe(Plan.FREE);
+describe('código del plan', () => {
+	it('usa el código; si solo llegó la referencia, lo deduce del nombre', () => {
+		expect(codigoDePlan(PRO)).toBe('pro');
+		expect(codigoDePlan({ nombre: 'Free' })).toBe('free');
+		expect(esPlanFree({ plan: FREE, plan_vence_at: enDias(10) })).toBe(true);
+		expect(esPlanFree({ plan: { nombre: 'Pro' }, plan_vence_at: enDias(10) })).toBe(false);
 	});
 });
 
-describe('puedePublicar', () => {
-	it('solo con pro vigente', () => {
-		expect(puedePublicar({ plan: 'pro', plan_vence_at: enDias(30) }, AHORA)).toBe(true);
-		expect(puedePublicar({ plan: 'pro', plan_vence_at: enDias(-30) }, AHORA)).toBe(false);
-		expect(puedePublicar({ plan: 'free', plan_vence_at: null }, AHORA)).toBe(false);
+describe('bloqueoPublicacion', () => {
+	it('con plan pago vigente, email verificado y cuenta activa, se publica', () => {
+		expect(bloqueoPublicacion(cuenta(), AHORA)).toBeNull();
+		expect(puedePublicar(cuenta(), AHORA)).toBe(true);
+	});
+
+	it('Free nunca publica, aunque su fecha no haya pasado', () => {
+		expect(bloqueoPublicacion(cuenta({ plan: FREE }), AHORA)).toBe('plan-free');
+	});
+
+	it('un plan pago vencido no publica', () => {
+		expect(bloqueoPublicacion(cuenta({ plan_vence_at: enDias(-1) }), AHORA)).toBe('plan-vencido');
+		expect(bloqueoPublicacion(cuenta({ plan_vence_at: AHORA.toISOString() }), AHORA)).toBe(
+			'plan-vencido'
+		);
+	});
+
+	it('sin el email verificado no publica', () => {
+		expect(bloqueoPublicacion(cuenta({ email_verified_at: null }), AHORA)).toBe(
+			'email-sin-verificar'
+		);
+	});
+
+	it('una cuenta de baja no publica (es lo primero que se dice)', () => {
+		expect(
+			bloqueoPublicacion(cuenta({ is_active: false, plan: FREE, email_verified_at: null }), AHORA)
+		).toBe('cuenta-de-baja');
 	});
 });
 
@@ -41,26 +68,29 @@ describe('vencimiento', () => {
 		// En hora local: hoy 10:00 y vence el 28 a las 23:59 → 9 días, aunque sean casi 10 × 24 h
 		const hoy = new Date(2026, 10, 19, 10, 0);
 		const vence = (dia: number) => new Date(2026, 10, dia, 23, 59, 59).toISOString();
-		expect(diasParaVencer({ plan: 'pro', plan_vence_at: vence(28) }, hoy)).toBe(9);
-		expect(diasParaVencer({ plan: 'pro', plan_vence_at: vence(20) }, hoy)).toBe(1);
-		expect(diasParaVencer({ plan: 'pro', plan_vence_at: vence(19) }, hoy)).toBe(0);
-		expect(diasParaVencer({ plan: 'pro', plan_vence_at: enDias(9) }, AHORA)).toBe(9);
-		expect(diasParaVencer({ plan: 'pro', plan_vence_at: null }, AHORA)).toBeNull();
-		expect(diasParaVencer({ plan: 'free', plan_vence_at: null }, AHORA)).toBeNull();
+		expect(diasParaVencer({ plan: PRO, plan_vence_at: vence(28) }, hoy)).toBe(9);
+		expect(diasParaVencer({ plan: PRO, plan_vence_at: vence(20) }, hoy)).toBe(1);
+		expect(diasParaVencer({ plan: PRO, plan_vence_at: vence(19) }, hoy)).toBe(0);
+		expect(diasParaVencer({ plan: PRO, plan_vence_at: enDias(9) }, AHORA)).toBe(9);
+		expect(diasParaVencer({ plan: PRO, plan_vence_at: enDias(-2) }, AHORA)).toBeNull();
+		expect(diasParaVencer({ plan: FREE, plan_vence_at: enDias(9) }, AHORA)).toBeNull();
 	});
 
 	it('avisa desde 15 días antes', () => {
-		expect(vencePronto({ plan: 'pro', plan_vence_at: enDias(15) }, AHORA)).toBe(true);
-		expect(vencePronto({ plan: 'pro', plan_vence_at: enDias(16) }, AHORA)).toBe(false);
-		expect(vencePronto({ plan: 'pro', plan_vence_at: null }, AHORA)).toBe(false);
+		expect(vencePronto({ plan: PRO, plan_vence_at: enDias(15) }, AHORA)).toBe(true);
+		expect(vencePronto({ plan: PRO, plan_vence_at: enDias(16) }, AHORA)).toBe(false);
+		expect(vencePronto({ plan: FREE, plan_vence_at: enDias(3) }, AHORA)).toBe(false);
 	});
-});
 
-describe('isPlan', () => {
-	it('reconoce solo los planes del enum', () => {
-		expect(isPlan('free')).toBe(true);
-		expect(isPlan('pro')).toBe(true);
-		expect(isPlan('PRO')).toBe(false);
-		expect(isPlan(null)).toBe(false);
+	it('resume el estado para la UI', () => {
+		expect(estadoPlan({ plan: FREE, plan_vence_at: enDias(3) }, AHORA)).toEqual({ tipo: 'free' });
+		expect(estadoPlan({ plan: PRO, plan_vence_at: enDias(-1) }, AHORA)).toEqual({
+			tipo: 'vencido'
+		});
+		expect(estadoPlan({ plan: PRO, plan_vence_at: enDias(9) }, AHORA)).toEqual({
+			tipo: 'vigente',
+			dias: 9,
+			vencePronto: true
+		});
 	});
 });

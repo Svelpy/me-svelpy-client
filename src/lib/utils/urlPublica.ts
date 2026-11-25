@@ -12,6 +12,14 @@ export function urlPublicaTarjeta(slug: string): string {
 	return `${ORIGEN_PUBLICO}/${slug}`;
 }
 
+/**
+ * URL que va en el QR: `/t/{id}` redirige al slug actual, así un QR impreso sigue funcionando
+ * aunque la tarjeta cambie de enlace.
+ */
+export function urlQrTarjeta(id: string): string {
+	return `${ORIGEN_PUBLICO}/t/${id}`;
+}
+
 /** Ruta relativa → URL absoluta del sitio; las URLs absolutas (y data:) quedan igual */
 export function urlAbsoluta(ruta: string): string {
 	return /^(https?:|data:)/i.test(ruta)

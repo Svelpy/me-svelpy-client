@@ -1,9 +1,15 @@
 <!--
-	Una tarjeta del directorio: arriba, la tarjeta con SUS colores y su fuente de títulos (lo que el
-	profesional eligió); abajo, en la tinta del panel, los datos de administración.
+	Una tarjeta del directorio: arriba, su portada, su foto y su nombre; abajo, en la tinta del panel,
+	los datos de administración. El listado de la API no trae el tema, así que todas usan la misma
+	paleta clara y neutra; los colores propios se ven al abrirla.
 -->
 <script lang="ts">
-	import { familiaCss, tipografiaPorId } from '#lib/config/tipografiasTarjeta.config.ts';
+	import { TEMA_PRESET_POR_DEFECTO, TEMAS_TARJETA } from '#lib/config/temasTarjeta.config.ts';
+	import {
+		familiaCss,
+		TIPOGRAFIA_POR_DEFECTO,
+		tipografiaPorId
+	} from '#lib/config/tipografiasTarjeta.config.ts';
 	import type { ResolvedPathname } from '$app/types';
 	import type { TarjetaListItem } from '#lib/interfaces/index.ts';
 	import { iniciales, nombreCompleto } from '#lib/utils/tarjeta.ts';
@@ -17,8 +23,8 @@
 
 	let { tarjeta, href }: Props = $props();
 
-	const tema = $derived(tarjeta.tema);
-	const tipografia = $derived(tipografiaPorId(tema.tipografia));
+	const tema = TEMAS_TARJETA[TEMA_PRESET_POR_DEFECTO].colores;
+	const tipografia = tipografiaPorId(TIPOGRAFIA_POR_DEFECTO);
 	const nombre = $derived(nombreCompleto(tarjeta));
 </script>
 

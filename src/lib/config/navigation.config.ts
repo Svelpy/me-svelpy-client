@@ -1,5 +1,12 @@
 import { resolveStaticRoute } from '#lib/utils/resolveRoute.ts';
-import { HomeDotIcon, IdIcon, UserIcon, UsersIcon } from '#lib/icons/outline/index.ts';
+import {
+	HomeDotIcon,
+	IdIcon,
+	TicketIcon,
+	UserIcon,
+	UsersIcon,
+	WalletIcon
+} from '#lib/icons/outline/index.ts';
 import type { NavItem, NavSection } from '#lib/interfaces/index.ts';
 import { Role } from './permissions.config';
 
@@ -23,6 +30,14 @@ export const PANEL_NAVIGATION: NavSection[] = [
 		]
 	},
 	{
+		id: 'cobros',
+		label: 'Cobros',
+		items: [
+			navItem({ id: 'pagos', label: 'Pagos', route: '/panel/pagos', icon: WalletIcon }),
+			navItem({ id: 'planes', label: 'Planes', route: '/panel/planes', icon: TicketIcon })
+		]
+	},
+	{
 		id: 'mi-tarjeta',
 		label: 'Mi tarjeta',
 		items: [
@@ -37,11 +52,12 @@ export const PANEL_NAVIGATION: NavSection[] = [
 ];
 
 /**
- * Carcasa del panel por rol. El superadmin recorre varias áreas: menú lateral. El owner gestiona
- * una sola cosa (su tarjeta): barra superior, para que el editor y su vista previa ocupen el ancho.
+ * Carcasa del panel por rol. Los admins recorren varias áreas: menú lateral. El user gestiona una
+ * sola cosa (su tarjeta): barra superior, para que el editor y su vista previa ocupen el ancho.
  * `Record<Role, ...>` obliga a decidirlo para cualquier rol nuevo.
  */
 export const PANEL_DISENO: Record<Role, 'lateral' | 'superior'> = {
 	[Role.SUPERADMIN]: 'lateral',
-	[Role.OWNER]: 'superior'
+	[Role.ADMIN]: 'lateral',
+	[Role.USER]: 'superior'
 };

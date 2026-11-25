@@ -1,16 +1,15 @@
 <script lang="ts">
 	import { ClockIcon, NavigationIcon } from '#lib/icons/outline/index.ts';
-	import type { TarjetaUbicacion } from '#lib/interfaces/index.ts';
+	import type { TarjetaUbicacionPublica } from '#lib/interfaces/index.ts';
 	import { comoLlegarUrl, mapsUrl } from '#lib/utils/contacto.ts';
 	import { diaSemanaDe, estadoApertura, resumenSemanal } from '#lib/utils/horarios.ts';
-	import { ordenar } from '#lib/utils/tarjeta.ts';
 	import MapaIlustrado from '../mapaIlustrado.svelte';
 	import TarjetaBoton from '../ui/tarjetaBoton.svelte';
 	import TarjetaSeccion from '../ui/tarjetaSeccion.svelte';
 
 	interface Props {
 		titulo: string;
-		ubicaciones: TarjetaUbicacion[];
+		ubicaciones: TarjetaUbicacionPublica[];
 	}
 
 	let { titulo, ubicaciones }: Props = $props();
@@ -22,13 +21,12 @@
 		return () => clearInterval(intervalo);
 	});
 
-	const visibles = $derived(ordenar(ubicaciones).filter((u) => u.is_visible));
 	const hoy = $derived(diaSemanaDe(ahora));
 </script>
 
 <TarjetaSeccion id="ubicacion" {titulo}>
 	<ul class="space-y-4">
-		{#each visibles as ubicacion (ubicacion.id)}
+		{#each ubicaciones as ubicacion (ubicacion.id)}
 			{@const estado = estadoApertura(ubicacion.horarios, ahora)}
 			{@const lugar = ubicacion.nombre ?? ubicacion.direccion}
 			<li class="overflow-hidden rounded-2xl border border-t-borde bg-t-superficie">

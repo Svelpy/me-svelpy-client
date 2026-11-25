@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { CamposTarjeta, EstadoFormulario } from '#lib/components/features/editor/index.ts';
-	import { CamposPlan } from '#lib/components/features/planes/index.ts';
 	import { generarPassword } from '#lib/components/features/usuarios/password.ts';
 	import { MainLayout } from '#lib/components/layout/index.ts';
 	import {
@@ -15,23 +14,34 @@
 		Switch
 	} from '#lib/components/ui/index.ts';
 	import { Role, type AssignableUserRole } from '#lib/config/permissions.config.ts';
-	import { Plan } from '#lib/config/planes.config.ts';
-	import { CONTACTO_TIPO_LABEL, ROLE_LABEL } from '#lib/constants/index.ts';
+	import { CONTACTO_TIPO_LABEL, LIMITES_TARJETA, ROLE_LABEL } from '#lib/constants/index.ts';
 	import { LinkIcon, MailIcon, PlusIcon, XIcon } from '#lib/icons/outline/index.ts';
-	import type { ContactoTipo, TarjetaContactoCreateRequest } from '#lib/interfaces/index.ts';
-	import { usuarioService } from '#lib/services/index.ts';
+	import type {
+		ContactoTipo,
+		TarjetaContactoInput,
+		UsuarioDetalle
+	} from '#lib/interfaces/index.ts';
+	import { AppError, tarjetaService, usuarioService } from '#lib/services/index.ts';
+	import { currentRole } from '#lib/stores/index.ts';
 	import { alert } from '#lib/utils/alert.ts';
 	import { detectarRedSocial, usuarioDesdeUrl, websiteUrl } from '#lib/utils/contacto.ts';
-	import { planDelFormulario } from '#lib/utils/plan.ts';
+	import { getAssignableUserRoles } from '#lib/utils/rbac.utils.ts';
+	import { aplicarTipografiaDeRubro, temaDeRubro } from '#lib/utils/temaInicial.ts';
+	import { tarjetaNuevaSchema } from '#lib/zod/tarjeta.schema.ts';
 	import { usuarioCreateSchema } from '#lib/zod/usuario.schema.ts';
+
+	/** Toda el alta se valida antes de enviar nada: así no queda una cuenta a medias por un typo */
+	const altaSchema = usuarioCreateSchema.extend({ tarjeta: tarjetaNuevaSchema.optional() });
+
+	// Solo roles de rango menor: el superadmin crea admins y users; el admin, users
+	const rolesAsignables = $derived(getAssignableUserRoles($currentRole));
 
 	let email = $state('');
 	let password = $state(generarPassword());
-	let rol = $state<AssignableUserRole>(Role.OWNER);
-	let activa = $state(true);
+	let rol = $state<AssignableUserRole>(Role.USER);
 	let conTarjeta = $state(true);
-	let plan = $state<Plan>(Plan.FREE);
-	let vence = $state('');
+	/** Si la tarjeta falla, la cuenta ya existe: el siguiente intento solo crea la tarjeta */
+	let cuentaCreada = $state<UsuarioDetalle | null>(null);
 
 	let prefijo = $state('');
 	let nombres = $state('');
@@ -48,10 +58,10 @@
 	let redes = $state<string[]>(['']);
 	const estado = new EstadoFormulario();
 
-	const armaTarjeta = $derived(conTarjeta && rol === Role.OWNER);
+	const armaTarjeta = $derived(conTarjeta && rol === Role.USER);
 
 	/** El primero de cada tipo queda como principal */
-	function contactosAEnviar(): TarjetaContactoCreateRequest[] {
+	function contactosAEnviar(): TarjetaContactoInput[] {
 		const llenos = contactos.filter((contacto) => contacto.valor.trim());
 		return llenos.map((contacto, indice) => ({
 			...contacto,
@@ -60,14 +70,27 @@
 		}));
 	}
 
+	/** Los errores de la tarjeta (`slug`, `contactos.0.valor`) bajo `tarjeta.` para sus campos */
+	function errorDeTarjeta(causa: unknown): unknown {
+		if (!(causa instanceof AppError)) return causa;
+		const details = Object.fromEntries(
+			Object.entries(causa.details).map(([campo, valor]) => [`tarjeta.${campo}`, valor])
+		);
+		return new AppError({
+			message: causa.message,
+			code: causa.code,
+			status: causa.status,
+			details,
+			cause: causa
+		});
+	}
+
 	function enviar(event: SubmitEvent) {
 		event.preventDefault();
 		const cuerpo = {
 			email,
 			password,
 			rol,
-			is_active: activa,
-			...(rol === Role.OWNER && planDelFormulario(plan, vence)),
 			...(armaTarjeta && {
 				tarjeta: {
 					prefijo,
@@ -76,8 +99,9 @@
 					cargo,
 					rubro,
 					slug,
+					theme: temaDeRubro(rubro),
 					contactos: contactosAEnviar(),
-					sociales: redes
+					redes: redes
 						.filter((url) => url.trim())
 						.map((url) => ({
 							red: detectarRedSocial(url) ?? 'otro',
@@ -87,77 +111,94 @@
 				}
 			})
 		};
-		// Una sola petición: la cuenta, su tarjeta, sus contactos y sus redes
-		estado.enviar(usuarioCreateSchema, cuerpo, async (validos) => {
-			const respuesta = await usuarioService.crear(validos);
-			alert('success', respuesta.tarjeta ? 'Cuenta y tarjeta creadas' : 'Cuenta creada');
-			await goto(
-				respuesta.tarjeta
-					? resolve('/panel/tarjetas/[id]', { id: respuesta.tarjeta.id })
-					: resolve('/panel/usuarios'),
-				{ replace: true }
-			);
+		estado.enviar(altaSchema, cuerpo, async ({ tarjeta, ...acceso }) => {
+			const cuenta = cuentaCreada ?? (await usuarioService.crear(acceso));
+			if (!tarjeta) {
+				alert('success', 'Cuenta creada');
+				await goto(resolve('/panel/usuarios/[id]', { id: cuenta.id }), { replace: true });
+				return;
+			}
+			cuentaCreada = cuenta;
+			let creada;
+			try {
+				creada = await tarjetaService.crear({ ...tarjeta, user_id: cuenta.id });
+			} catch (causa) {
+				throw errorDeTarjeta(causa);
+			}
+			await aplicarTipografiaDeRubro(creada.id, creada.rubro);
+			alert('success', 'Cuenta y tarjeta creadas');
+			await goto(resolve('/panel/tarjetas/[id]', { id: creada.id }), { replace: true });
 		});
 	}
 
 	const error = (campo: string) => estado.errores[campo];
+	const masContactos = $derived(contactos.length < LIMITES_TARJETA.contactos);
+	const masRedes = $derived(redes.length < LIMITES_TARJETA.redes);
 </script>
 
 <MainLayout title="Nueva cuenta | Panel ME" noIndex>
 	<div class="max-w-3xl">
 		<PageHeader
 			title="Nueva cuenta"
-			description="Crea el acceso al panel y, si es un propietario, su tarjeta en el mismo paso."
+			description="Crea el acceso al panel y, si es para una persona con tarjeta, su tarjeta en el mismo paso."
 			volver={{ href: resolve('/panel/usuarios'), label: 'Usuarios' }}
 		/>
 
 		<form onsubmit={enviar} novalidate class="mt-8 space-y-10">
-			{#if estado.error}<AlertBox variant="error">{estado.error}</AlertBox>{/if}
+			{#if cuentaCreada}
+				<AlertBox variant="success" title="La cuenta {cuentaCreada.email} ya quedó creada">
+					Falta su tarjeta: corrige lo marcado y vuelve a intentarlo.
+				</AlertBox>
+			{/if}
+			{#if estado.error && Object.keys(estado.errores).length === 0}
+				<AlertBox variant="error">{estado.error}</AlertBox>
+			{/if}
 
-			<section aria-labelledby="cuenta-titulo" class="space-y-5">
-				<h2 id="cuenta-titulo" class="font-display text-lg font-semibold">Acceso</h2>
-				<Input
-					label="Correo"
-					type="email"
-					icon={MailIcon}
-					required
-					autocomplete="off"
-					bind:value={email}
-					error={error('email')}
-				/>
-				<div class="flex flex-col gap-2 sm:flex-row sm:items-end">
+			<fieldset disabled={!!cuentaCreada} class="space-y-5">
+				<section aria-labelledby="cuenta-titulo" class="space-y-5">
+					<h2 id="cuenta-titulo" class="font-display text-lg font-semibold">Acceso</h2>
 					<Input
-						label="Contraseña inicial"
+						label="Correo"
+						type="email"
+						icon={MailIcon}
 						required
-						bind:value={password}
-						error={error('password')}
-						hint="Compártela por un canal privado."
-						class="flex-1"
-						mono
+						autocomplete="off"
+						bind:value={email}
+						error={error('email')}
 					/>
-					<Button
-						variant="secondary"
-						onclick={() => (password = generarPassword())}
-						class="sm:mb-[1.375rem]"
-					>
-						Generar otra
-					</Button>
-				</div>
-				<SegmentedControl
-					label="Rol"
-					bind:value={rol}
-					options={[
-						{ value: Role.OWNER, label: ROLE_LABEL.OWNER },
-						{ value: Role.SUPERADMIN, label: ROLE_LABEL.SUPERADMIN }
-					]}
-				/>
-				<Switch label="Cuenta activa" bind:checked={activa} />
-				{#if rol === Role.OWNER}
-					<CamposPlan bind:plan bind:vence errores={estado.errores} />
-				{/if}
-			</section>
+					<div class="flex flex-col gap-2 sm:flex-row sm:items-end">
+						<Input
+							label="Contraseña inicial"
+							required
+							bind:value={password}
+							error={error('password')}
+							hint="Compártela por un canal privado."
+							class="flex-1"
+							mono
+						/>
+						<Button
+							variant="secondary"
+							onclick={() => (password = generarPassword())}
+							class="sm:mb-[1.375rem]"
+						>
+							Generar otra
+						</Button>
+					</div>
+					{#if rolesAsignables.length > 1}
+						<SegmentedControl
+							label="Rol"
+							bind:value={rol}
+							options={rolesAsignables.map((valor) => ({ value: valor, label: ROLE_LABEL[valor] }))}
+						/>
+					{/if}
+					<p class="text-sm text-light-two_d dark:text-dark-two_d">
+						Empieza con el plan Free y el correo sin verificar: le enviaremos el enlace.
+						{rol === Role.USER ? 'Para publicar, registra el pago de un plan desde su cuenta.' : ''}
+					</p>
+				</section>
+			</fieldset>
 
-			{#if rol === Role.OWNER}
+			{#if rol === Role.USER}
 				<section
 					aria-labelledby="tarjeta-titulo"
 					class="space-y-5 border-t border-light-four/40 pt-8 dark:border-dark-one_d"
@@ -166,9 +207,8 @@
 						<div>
 							<h2 id="tarjeta-titulo" class="font-display text-lg font-semibold">Su tarjeta</h2>
 							<p class="mt-1 text-sm text-light-two_d dark:text-dark-two_d">
-								Nace en borrador; el resto se completa en el editor.{plan === Plan.PRO
-									? ' Con Pro se puede publicar desde ahí.'
-									: ''}
+								Nace en borrador con el tema que sugiere su rubro; el resto se completa en el
+								editor.
 							</p>
 						</div>
 						<Switch label="Crear su tarjeta ahora" etiquetaOculta bind:checked={conTarjeta} />
@@ -245,6 +285,7 @@
 							<Button
 								variant="ghost"
 								size="sm"
+								disabled={!masContactos}
 								onclick={() =>
 									(contactos = [
 										...contactos,
@@ -269,7 +310,7 @@
 										icon={LinkIcon}
 										placeholder="https://instagram.com/usuario"
 										bind:value={redes[indice]}
-										error={error(`tarjeta.sociales.${indice}.url`)}
+										error={error(`tarjeta.redes.${indice}.url`)}
 										class="flex-1"
 									/>
 									<button
@@ -282,7 +323,12 @@
 									</button>
 								</div>
 							{/each}
-							<Button variant="ghost" size="sm" onclick={() => (redes = [...redes, ''])}>
+							<Button
+								variant="ghost"
+								size="sm"
+								disabled={!masRedes}
+								onclick={() => (redes = [...redes, ''])}
+							>
 								{#snippet leftIcon()}<PlusIcon class="size-4" />{/snippet}
 								Otra red
 							</Button>
@@ -293,7 +339,11 @@
 
 			<div class="flex justify-end border-t border-light-four/40 pt-6 dark:border-dark-one_d">
 				<Button type="submit" variant="accent" size="lg" loading={estado.enviando}>
-					{armaTarjeta ? 'Crear cuenta y tarjeta' : 'Crear cuenta'}
+					{cuentaCreada
+						? 'Crear su tarjeta'
+						: armaTarjeta
+							? 'Crear cuenta y tarjeta'
+							: 'Crear cuenta'}
 				</Button>
 			</div>
 		</form>

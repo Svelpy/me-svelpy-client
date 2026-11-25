@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { LIMITES_TARJETA } from '#lib/constants/limites.ts';
 import { booleanoOpcional, precioOpcional, texto, textoOpcional, urlImagen } from './common';
 
 export const vitrinaSchema = z.object({
@@ -21,6 +22,8 @@ export const vitrinaCategoriaSchema = z.object({
 });
 
 export const vitrinaItemImagenSchema = z.object({
+	/** La imagen que ya tenía el ítem (sin id = nueva) */
+	id: z.string().nullish(),
 	url: urlImagen('La imagen'),
 	alt: textoOpcional('La descripción de la imagen', 150)
 });
@@ -43,7 +46,9 @@ const itemBase = z.object({
 	is_visible: booleanoOpcional(),
 	imagenes: z
 		.array(vitrinaItemImagenSchema)
-		.max(10, { message: 'Hasta 10 imágenes por ítem.' })
+		.max(LIMITES_TARJETA.imagenes, {
+			message: `Hasta ${LIMITES_TARJETA.imagenes} imágenes por ítem.`
+		})
 		.optional()
 });
 
@@ -68,28 +73,3 @@ function validarPrecios(
 }
 
 export const vitrinaItemSchema = itemBase.superRefine(validarPrecios);
-
-/** Ítem dentro de una tarjeta nueva: apunta a su categoría por nombre */
-export const vitrinaItemNuevoSchema = itemBase
-	.omit({ categoria_id: true })
-	.extend({ categoria_nombre: textoOpcional('La categoría', 60) })
-	.superRefine(validarPrecios);
-
-/** Vitrina dentro de una tarjeta nueva, con sus categorías e ítems */
-export const vitrinaNuevaSchema = vitrinaSchema
-	.extend({
-		categorias: z.array(vitrinaCategoriaSchema).max(30).optional(),
-		items: z.array(vitrinaItemNuevoSchema).max(100).optional()
-	})
-	.superRefine((vitrina, ctx) => {
-		const nombres = new Set((vitrina.categorias ?? []).map((c) => c.nombre.toLowerCase()));
-		vitrina.items?.forEach((item, indice) => {
-			if (item.categoria_nombre && !nombres.has(item.categoria_nombre.toLowerCase())) {
-				ctx.addIssue({
-					code: 'custom',
-					path: ['items', indice, 'categoria_nombre'],
-					message: 'Esa categoría no está en la vitrina.'
-				});
-			}
-		});
-	});

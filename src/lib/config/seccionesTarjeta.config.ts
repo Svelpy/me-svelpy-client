@@ -1,6 +1,5 @@
 import type { Component } from 'svelte';
 import {
-	BoltIcon,
 	BuildindStoreIcon,
 	CertificateIcon,
 	HelpCircleIcon,
@@ -25,15 +24,8 @@ export interface SeccionTarjetaConfig {
 	module: Module;
 }
 
-/** Las 9 secciones de una tarjeta (`tarjeta_seccion.clave`) */
+/** Las 8 secciones de una tarjeta (enum `ClaveSeccion`; el backend las crea con cada tarjeta) */
 export const SECCIONES_TARJETA: Record<SeccionClave, SeccionTarjetaConfig> = {
-	acciones: {
-		titulo: 'Accesos rápidos',
-		etiqueta: 'Accesos rápidos',
-		descripcion: 'Botones para llamar, escribir, ubicarte, compartir y pagar.',
-		icono: BoltIcon,
-		module: Module.TARJETA
-	},
 	acerca: {
 		titulo: 'Acerca de mí',
 		etiqueta: 'Acerca de mí',
@@ -58,7 +50,7 @@ export const SECCIONES_TARJETA: Record<SeccionClave, SeccionTarjetaConfig> = {
 	contacto: {
 		titulo: 'Contacto',
 		etiqueta: 'Contacto',
-		descripcion: 'Teléfonos, correos y sitios web.',
+		descripcion: 'Teléfonos, correos, sitios web y tu QR de pago.',
 		icono: PhoneIcon,
 		module: Module.CONTACTO
 	},
@@ -92,9 +84,8 @@ export const SECCIONES_TARJETA: Record<SeccionClave, SeccionTarjetaConfig> = {
 	}
 };
 
-/** Orden de las secciones en una tarjeta nueva (como los perfiles de ejemplo de la landing) */
+/** Orden de referencia de las secciones (el de los perfiles de ejemplo de la landing) */
 export const SECCIONES_ORDEN_POR_DEFECTO: SeccionClave[] = [
-	'acciones',
 	'acerca',
 	'vitrina',
 	'ubicacion',

@@ -1,8 +1,8 @@
 import type { Timestamps } from './common.interface';
 
-export interface TarjetaCertificacion extends Timestamps {
+/** `TarjetaCertificacionPublic` */
+export interface TarjetaCertificacionPublica {
 	id: string;
-	tarjeta_id: string;
 	nombre: string;
 	entidad_emisora: string | null;
 	codigo_credencial: string | null;
@@ -14,12 +14,17 @@ export interface TarjetaCertificacion extends Timestamps {
 	fecha_expiracion: string | null;
 	no_expira: boolean;
 	descripcion: string | null;
+}
+
+/** `TarjetaCertificacionResponse` */
+export interface TarjetaCertificacion extends TarjetaCertificacionPublica, Timestamps {
+	tarjeta_id: string;
 	is_visible: boolean;
 	orden: number;
 }
 
-/** `POST /tarjetas/{id}/certificaciones` */
-export interface TarjetaCertificacionCreateRequest {
+/** `TarjetaCertificacionCreate` */
+export interface TarjetaCertificacionInput {
 	nombre: string;
 	entidad_emisora?: string | null;
 	codigo_credencial?: string | null;
@@ -29,7 +34,10 @@ export interface TarjetaCertificacionCreateRequest {
 	no_expira?: boolean;
 	descripcion?: string | null;
 	is_visible?: boolean;
+	orden?: number;
 }
 
-/** `PATCH /certificaciones/{id}` */
-export type TarjetaCertificacionUpdateRequest = Partial<TarjetaCertificacionCreateRequest>;
+/** `TarjetaCertificacionNestedItem` */
+export interface TarjetaCertificacionNestedItem extends TarjetaCertificacionInput {
+	id?: string | null;
+}

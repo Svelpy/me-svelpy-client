@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { tarjetaDePrueba } from '#lib/components/features/tarjeta/tarjetaDePrueba.ts';
+import {
+	tarjetaCompletaDePrueba,
+	tarjetaDePrueba
+} from '#lib/components/features/tarjeta/tarjetaDePrueba.ts';
 import type { TarjetaPublica } from '#lib/interfaces/index.ts';
 import { construirJsonLd } from './jsonLdTarjeta.ts';
+import { aPublica } from './tarjeta.ts';
 
 const URL_TARJETA = 'https://me.svelpy.com/doctora-prueba';
 type Nodo = Record<string, unknown> & { '@type': string };
@@ -41,16 +45,17 @@ describe('construirJsonLd', () => {
 	});
 
 	it('lo que la tarjeta oculta tampoco va a los buscadores', () => {
-		const base = tarjetaDePrueba();
-		const secciones = base.secciones.map((s) =>
+		const completa = tarjetaCompletaDePrueba();
+		const secciones = completa.secciones.map((s) =>
 			s.clave === 'faq' || s.clave === 'acerca' ? { ...s, is_visible: false } : s
 		);
-		const nodos = grafo({ ...base, secciones });
+		// Como la publica la API: sin las secciones ocultas
+		const nodos = grafo(aPublica({ ...completa, secciones }));
 		expect(nodos.map((n) => n['@type'])).toEqual(['Person', 'Physician']);
 		expect(nodos[0]).not.toHaveProperty('description');
 	});
 
-	it('no publica imágenes subidas como data: (no sirven fuera de la página)', () => {
+	it('solo publica imágenes con su URL https', () => {
 		const nodos = grafo(tarjetaDePrueba({ profile_url: 'data:image/png;base64,AAAA' }));
 		expect(nodos[0]).not.toHaveProperty('image');
 	});

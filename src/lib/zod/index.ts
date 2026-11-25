@@ -8,3 +8,4 @@ export * from './tarjetaUbicacion.schema';
 export * from './tarjetaSocial.schema';
 export * from './vitrina.schema';
 export * from './tarjetaFormacion.schema';
+export * from './pago.schema';

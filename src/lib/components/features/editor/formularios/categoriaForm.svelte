@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { AlertBox, Input } from '#lib/components/ui/index.ts';
-	import type { VitrinaCategoria, VitrinaCategoriaCreateRequest } from '#lib/interfaces/index.ts';
+	import type { VitrinaCategoria, VitrinaCategoriaInput } from '#lib/interfaces/index.ts';
 	import { vitrinaCategoriaSchema } from '#lib/zod/vitrina.schema.ts';
 	import { EstadoFormulario } from '../estadoFormulario.svelte.ts';
 
 	interface Props {
 		id: string;
 		inicial: VitrinaCategoria | null;
-		guardar: (datos: VitrinaCategoriaCreateRequest) => Promise<void>;
+		guardar: (datos: VitrinaCategoriaInput) => Promise<void>;
 	}
 
 	let { id, inicial, guardar }: Props = $props();

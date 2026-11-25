@@ -1,18 +1,16 @@
 <script lang="ts">
-	import type { TarjetaEducacion } from '#lib/interfaces/index.ts';
-	import { anioDe, ordenar } from '#lib/utils/tarjeta.ts';
+	import type { TarjetaEducacionPublica } from '#lib/interfaces/index.ts';
+	import { anioDe } from '#lib/utils/tarjeta.ts';
 	import TarjetaSeccion from '../ui/tarjetaSeccion.svelte';
 
 	interface Props {
 		titulo: string;
-		educacion: TarjetaEducacion[];
+		educaciones: TarjetaEducacionPublica[];
 	}
 
-	let { titulo, educacion }: Props = $props();
+	let { titulo, educaciones }: Props = $props();
 
-	const visibles = $derived(ordenar(educacion).filter((e) => e.is_visible));
-
-	function periodo(estudio: TarjetaEducacion): string | null {
+	function periodo(estudio: TarjetaEducacionPublica): string | null {
 		const inicio = anioDe(estudio.fecha_inicio);
 		const fin = estudio.is_actual ? 'actualidad' : anioDe(estudio.fecha_fin);
 		if (inicio && fin) return inicio === fin ? inicio : `${inicio}–${fin}`;
@@ -23,7 +21,7 @@
 <TarjetaSeccion id="educacion" {titulo}>
 	<!-- Línea de tiempo: el orden es el que eligió el profesional -->
 	<ol class="space-y-5 border-l-2 border-t-borde pl-5">
-		{#each visibles as estudio (estudio.id)}
+		{#each educaciones as estudio (estudio.id)}
 			<li class="relative">
 				<span
 					class="absolute top-1.5 -left-[1.6rem] size-2.5 rounded-full bg-t-primario"

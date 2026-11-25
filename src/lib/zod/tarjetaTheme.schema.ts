@@ -1,14 +1,14 @@
 import { z } from 'zod';
-import { TEMA_PRESETS } from '#lib/config/temasTarjeta.config.ts';
 import { esTipografiaValida } from '#lib/config/tipografiasTarjeta.config.ts';
-import type { TemaPreset } from '#lib/interfaces/index.ts';
-import { SECCIONES_ORDEN_POR_DEFECTO } from '#lib/config/seccionesTarjeta.config.ts';
-import { booleanoOpcional, colorHex, textoOpcional, urlImagenOpcional } from './common';
+import { colorHex, textoOpcional, urlImagenOpcional } from './common';
 
-/** Tema, SEO y secciones: lo que nace con cada tarjeta y solo se edita */
+/** Tema y SEO: nacen con cada tarjeta y solo se editan (`PATCH` por su id) */
 
+/**
+ * El tema editado en el panel. Se valida completo, pero a la API se envía solo lo que cambió
+ * (`cambiosDeTema`). La API no recibe `preset`: lo reconoce el panel comparando colores.
+ */
 export const tarjetaThemeSchema = z.object({
-	preset: z.enum(TEMA_PRESETS as [TemaPreset, ...TemaPreset[]]).nullable(),
 	tipografia: z
 		.number({ message: 'Elige una tipografía.' })
 		.int()
@@ -49,31 +49,7 @@ export const tarjetaSeoSchema = z.object({
 	robots_index: z.boolean({ message: 'Indica si Google puede mostrar la tarjeta.' })
 });
 
-export const SECCION_CLAVES = SECCIONES_ORDEN_POR_DEFECTO as [
-	(typeof SECCIONES_ORDEN_POR_DEFECTO)[number],
-	...(typeof SECCIONES_ORDEN_POR_DEFECTO)[number][]
-];
-
-export const tarjetaSeccionInputSchema = z.object({
-	clave: z.enum(SECCION_CLAVES, { message: 'Sección desconocida.' }),
-	titulo: textoOpcional('El título de la sección', 80),
-	is_visible: booleanoOpcional(),
-	orden: z.number().int().min(0).optional()
-});
-
-/** Cuerpo de `PUT /tarjetas/{id}/secciones`: las 9, sin repetir */
-export const tarjetaSeccionesUpdateSchema = z.object({
-	secciones: z
-		.array(
-			z.object({
-				clave: z.enum(SECCION_CLAVES),
-				titulo: textoOpcional('El título de la sección', 80),
-				is_visible: z.boolean(),
-				orden: z.number().int().min(0)
-			})
-		)
-		.length(SECCION_CLAVES.length, { message: 'Envía las 9 secciones.' })
-		.refine((secciones) => new Set(secciones.map((s) => s.clave)).size === secciones.length, {
-			message: 'Hay secciones repetidas.'
-		})
+/** Título propio de una sección (null = el título por defecto) */
+export const tituloSeccionSchema = z.object({
+	titulo: textoOpcional('El título de la sección', 80)
 });

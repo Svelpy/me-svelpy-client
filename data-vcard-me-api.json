@@ -3475,7 +3475,8 @@
                     }
                 }
             }
-        },
+        }
+    },
     "components": {
         "schemas": {
             "Body_login_oauth2_api_v1_auth_token_post": {

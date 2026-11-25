@@ -1,24 +1,21 @@
 <script lang="ts">
 	import { ChevronDownIcon } from '#lib/icons/outline/index.ts';
-	import type { TarjetaFaq } from '#lib/interfaces/index.ts';
-	import { ordenar } from '#lib/utils/tarjeta.ts';
+	import type { TarjetaFaqPublica } from '#lib/interfaces/index.ts';
 	import TarjetaSeccion from '../ui/tarjetaSeccion.svelte';
 
 	interface Props {
 		titulo: string;
-		faq: TarjetaFaq[];
+		faqs: TarjetaFaqPublica[];
 	}
 
-	let { titulo, faq }: Props = $props();
-
-	const visibles = $derived(ordenar(faq).filter((f) => f.is_visible));
+	let { titulo, faqs }: Props = $props();
 	const grupo = $props.id();
 </script>
 
 <TarjetaSeccion id="faq" {titulo}>
 	<!-- <details name> abre una pregunta a la vez sin JavaScript -->
 	<div class="space-y-2">
-		{#each visibles as pregunta (pregunta.id)}
+		{#each faqs as pregunta (pregunta.id)}
 			<details name={grupo} class="group rounded-2xl border border-t-borde bg-t-superficie">
 				<summary
 					class="flex cursor-pointer items-center justify-between gap-3 rounded-2xl px-4 py-3.5 font-semibold text-t-titulo marker:content-none focus-visible:outline-2 focus-visible:outline-t-primario [&::-webkit-details-marker]:hidden"

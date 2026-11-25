@@ -5,7 +5,7 @@
 	import { LinkIcon, MapPinIcon } from '#lib/icons/outline/index.ts';
 	import type {
 		TarjetaUbicacion,
-		TarjetaUbicacionCreateRequest,
+		TarjetaUbicacionInput,
 		UbicacionHorarioInput
 	} from '#lib/interfaces/index.ts';
 	import { extraerCoordenadas } from '#lib/utils/extraerCoordenadas.ts';
@@ -16,7 +16,7 @@
 	interface Props {
 		id: string;
 		inicial: TarjetaUbicacion | null;
-		guardar: (datos: TarjetaUbicacionCreateRequest) => Promise<void>;
+		guardar: (datos: TarjetaUbicacionInput) => Promise<void>;
 	}
 
 	let { id, inicial, guardar }: Props = $props();

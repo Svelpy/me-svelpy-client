@@ -53,7 +53,8 @@ const DEFAULT_MESSAGES: Record<ErrorCode, string> = {
 	[ErrorCode.REFRESH_FAILED]: 'Tu sesión expiró. Inicia sesión nuevamente.',
 	[ErrorCode.RESOURCE_NOT_FOUND]: 'El recurso solicitado no existe.',
 	[ErrorCode.CONFLICT]: 'El registro ya existe o entra en conflicto con otro.',
-	[ErrorCode.PLAN_REQUERIDO]: 'Esta acción necesita el plan Pro.',
+	[ErrorCode.RATE_LIMITED]:
+		'Hiciste demasiados intentos seguidos. Espera un momento y vuelve a probar.',
 	[ErrorCode.NETWORK_ERROR]: 'Problema de conexión. Verifica tu internet.',
 	[ErrorCode.TIMEOUT]: 'El servidor tardó demasiado en responder. Inténtalo nuevamente.',
 	[ErrorCode.UNKNOWN_ERROR]: 'Ocurrió un error inesperado. Inténtalo más tarde.'
@@ -81,6 +82,8 @@ function codeFromStatus(status: number): ErrorCode {
 			return ErrorCode.CONFLICT;
 		case 422:
 			return ErrorCode.VALIDATION_ERROR;
+		case 429:
+			return ErrorCode.RATE_LIMITED;
 		default:
 			return ErrorCode.APP_ERROR;
 	}
@@ -98,6 +101,39 @@ function isDefaultCode(code: AnyErrorCode): code is ErrorCode {
 	return code in DEFAULT_MESSAGES;
 }
 
+/** `"contactos -> 0 -> valor"` (formato de la API) → `"contactos.0.valor"` (formato de los formularios) */
+export function normalizarRutaCampo(ruta: string): string {
+	return ruta
+		.split(/\s*->\s*|\./)
+		.map((parte) => parte.trim())
+		.filter(Boolean)
+		.join('.');
+}
+
+/** `details` con sus claves normalizadas (los objetos anidados se conservan tal cual) */
+function normalizarDetalles(details: Record<string, unknown>): Record<string, unknown> {
+	const resultado: Record<string, unknown> = {};
+	for (const [clave, valor] of Object.entries(details)) {
+		resultado[normalizarRutaCampo(clave)] = valor;
+	}
+	return resultado;
+}
+
+/** Errores de validación de FastAPI (`{ detail: [{ loc, msg }] }`) como `details` por campo */
+function detallesDeFastApi(detail: unknown[]): Record<string, string> {
+	const resultado: Record<string, string> = {};
+	for (const item of detail) {
+		if (!isRecord(item) || !Array.isArray(item.loc) || typeof item.msg !== 'string') continue;
+		// loc empieza con el origen: body, query, path, header
+		const ruta = item.loc
+			.slice(1)
+			.map((parte) => String(parte))
+			.join('.');
+		if (ruta) resultado[ruta] ??= item.msg;
+	}
+	return resultado;
+}
+
 class ErrorService {
 	/** Construye un AppError a partir de una respuesta HTTP no exitosa */
 	async fromResponse(response: Response): Promise<AppError> {
@@ -108,7 +144,7 @@ class ErrorService {
 				message: body.message,
 				code: body.code,
 				status: response.status,
-				details: isRecord(body.details) ? body.details : {}
+				details: isRecord(body.details) ? normalizarDetalles(body.details) : {}
 			});
 		}
 
@@ -119,7 +155,7 @@ class ErrorService {
 			message: typeof detail === 'string' ? detail : DEFAULT_MESSAGES[code],
 			code,
 			status: response.status,
-			details: Array.isArray(detail) ? { detail } : {}
+			details: Array.isArray(detail) ? detallesDeFastApi(detail) : {}
 		});
 	}
 
@@ -172,8 +208,8 @@ class ErrorService {
 	}
 
 	/**
-	 * Errores por campo que la API envía en `details` (p. ej. `{ total_compra: "..." }`), para
-	 * mostrarlos debajo de cada input. Los objetos anidados se aplanan (`receptor_data.nombre` → `nombre`).
+	 * Errores por campo que la API envía en `details`, con la ruta en puntos (`slug`,
+	 * `contactos.0.valor`), para mostrarlos debajo de cada input. Los objetos anidados se aplanan.
 	 */
 	getFieldErrors(error: unknown): Record<string, string> {
 		const errors: Record<string, string> = {};

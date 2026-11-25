@@ -2,7 +2,6 @@
 	import { untrack } from 'svelte';
 	import { AlertBox, Button, Input, Switch, TextArea } from '#lib/components/ui/index.ts';
 	import { schemaDeRubro } from '#lib/config/rubros.config.ts';
-	import { tarjetaSeoService } from '#lib/services/index.ts';
 	import { alert } from '#lib/utils/alert.ts';
 	import { construirJsonLd } from '#lib/utils/jsonLdTarjeta.ts';
 	import { descripcionSeoTarjeta, tituloSeoTarjeta } from '#lib/utils/seoTarjeta.ts';
@@ -60,8 +59,9 @@
 	const url = $derived(urlPublicaTarjeta(editor.tarjeta.slug));
 	const jsonLd = $derived(JSON.stringify(construirJsonLd(editor.vistaPrevia, url), null, 2));
 	const geo = $derived.by(() => {
-		const t = editor.tarjeta;
-		const ubicacion = t.ubicaciones.find((u) => u.is_visible);
+		// Lo que leen Google y las IAs: solo lo visible
+		const t = editor.vistaPrevia;
+		const [ubicacion] = t.ubicaciones;
 		return [
 			['Tipo de negocio', schemaDeRubro(t.rubro)],
 			[
@@ -77,16 +77,15 @@
 					: 'Faltan: pega el enlace de Google Maps en tu ubicación'
 			],
 			['Horarios', ubicacion?.horarios.length ? 'Sí' : 'Sin horarios'],
-			['Servicios con precio', String(t.vitrina.items.filter((i) => i.is_visible).length)],
-			['Preguntas frecuentes', String(t.faq.filter((f) => f.is_visible).length)]
+			['Servicios en la vitrina', String(t.vitrina.items.length)],
+			['Preguntas frecuentes', String(t.faqs.length)]
 		];
 	});
 
 	function enviar(event: SubmitEvent) {
 		event.preventDefault();
 		estado.enviar(tarjetaSeoSchema, seo, async (validos) => {
-			const respuesta = await tarjetaSeoService.actualizar(editor.tarjeta.id, validos);
-			editor.guardado({ seo: respuesta });
+			await editor.guardarSeo(validos);
 			alert('success', 'SEO guardado');
 		});
 	}

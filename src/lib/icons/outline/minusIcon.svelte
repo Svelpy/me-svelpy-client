@@ -13,5 +13,6 @@
 	stroke-linecap="round"
 	stroke-linejoin="round"
 	class="icon {className} icon-tabler icons-tabler-outline icon-tabler-minus"
-	><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 12l14 0" /></svg
 >
+	<path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 12l14 0" />
+</svg>

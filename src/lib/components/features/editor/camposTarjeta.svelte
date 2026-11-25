@@ -86,6 +86,7 @@
 			bind:value={slug}
 			required
 			hint="Así la abrirán tus clientes. Se sugiere desde el nombre."
+			pistas={[apellidos, rubro, cargo]}
 			error={error('slug')}
 			oneditar={() => (slugEditado = true)}
 		/>

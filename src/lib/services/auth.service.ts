@@ -1,3 +1,4 @@
+import { browser } from '$app/env';
 import { http } from '#lib/config/http.config.ts';
 import type {
 	AuthTokens,
@@ -5,16 +6,26 @@ import type {
 	CurrentUser,
 	LoginCredentials,
 	RegistroRequest,
-	LoginResponse
+	TokenResponse
 } from '#lib/interfaces/index.ts';
 import { ErrorCode } from '#lib/interfaces/index.ts';
 import {
 	ACCESS_TOKEN_KEY,
+	CSRF_TOKEN_KEY,
 	REFRESH_LOCK_KEY,
-	REFRESH_TOKEN_KEY,
 	USER_DATA_KEY
 } from '#lib/constants/index.ts';
 import { AppError } from './error.service';
+
+/** localStorage solo existe en el navegador: en el servidor (SSR del perfil público) no hay sesión */
+function almacen(): Storage | null {
+	if (!browser) return null;
+	try {
+		return localStorage;
+	} catch {
+		return null;
+	}
+}
 
 class AuthService {
 	// Refresh en curso, compartido por todas las peticiones que recibieron 401 a la vez
@@ -22,90 +33,62 @@ class AuthService {
 	private sessionExpiredListeners = new Set<() => void>();
 
 	public static getTokens(): AuthTokens | null {
-		try {
-			if (typeof localStorage === 'undefined') return null;
-			const accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
-			const csrfToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-
-			if (accessToken && csrfToken) {
-				return { accessToken, csrfToken };
-			}
-			return null;
-		} catch (error) {
-			console.warn('Error accessing localStorage for tokens:', error);
-			return null;
-		}
+		const storage = almacen();
+		const accessToken = storage?.getItem(ACCESS_TOKEN_KEY);
+		const csrfToken = storage?.getItem(CSRF_TOKEN_KEY);
+		return accessToken && csrfToken ? { accessToken, csrfToken } : null;
 	}
 
 	public static setTokens(tokens: AuthTokens): void {
-		try {
-			if (typeof localStorage === 'undefined') return;
-			localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
-			// El refresh_token llega como cookie HttpOnly; se guarda el csrf_token que lo acompaña
-			localStorage.setItem(REFRESH_TOKEN_KEY, tokens.csrfToken);
-		} catch (error) {
-			console.warn('Error saving tokens to localStorage:', error);
-		}
+		const storage = almacen();
+		storage?.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
+		storage?.setItem(CSRF_TOKEN_KEY, tokens.csrfToken);
+	}
+
+	private static guardarRespuesta(response: TokenResponse): void {
+		AuthService.setTokens({
+			accessToken: response.access_token,
+			csrfToken: response.csrf_token
+		});
 	}
 
 	/** Usuario de la sesión y el resumen de su tarjeta, guardados en localStorage */
 	getCurrentUser(): CurrentUser | null {
 		try {
-			if (typeof localStorage === 'undefined') return null;
-			const data = localStorage.getItem(USER_DATA_KEY);
-			return data ? JSON.parse(data) : null;
-		} catch (error) {
-			console.warn('Error accessing localStorage for user data:', error);
+			const data = almacen()?.getItem(USER_DATA_KEY);
+			return data ? (JSON.parse(data) as CurrentUser) : null;
+		} catch {
 			return null;
 		}
 	}
 
 	setCurrentUser(user: CurrentUser): void {
-		try {
-			if (typeof localStorage === 'undefined') return;
-			localStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
-		} catch (error) {
-			console.warn('Error saving user data to localStorage:', error);
-		}
+		almacen()?.setItem(USER_DATA_KEY, JSON.stringify(user));
 	}
 
 	public static clearAuth(): void {
-		try {
-			if (typeof localStorage === 'undefined') return;
-			localStorage.removeItem(ACCESS_TOKEN_KEY);
-			localStorage.removeItem(REFRESH_TOKEN_KEY);
-			localStorage.removeItem(USER_DATA_KEY);
-		} catch (error) {
-			console.warn('Error clearing auth data:', error);
-		}
+		const storage = almacen();
+		storage?.removeItem(ACCESS_TOKEN_KEY);
+		storage?.removeItem(CSRF_TOKEN_KEY);
+		storage?.removeItem(USER_DATA_KEY);
 	}
 
 	public static isAuthenticated(): boolean {
 		return !!this.getTokens()?.accessToken;
 	}
 
-	async login(credentials: LoginCredentials): Promise<LoginResponse> {
+	/**
+	 * `POST /auth/login`: guarda el access token y el CSRF; el refresh token queda en una cookie
+	 * HttpOnly. Los datos del usuario se piden después con `GET /usuarios/me` (`authStore`).
+	 */
+	async login(credentials: LoginCredentials): Promise<void> {
 		try {
-			// OAuth2 password flow (application/x-www-form-urlencoded): el correo va en `username`
-			const body = new URLSearchParams({
-				grant_type: 'password',
-				username: credentials.email.trim().toLowerCase(),
-				password: credentials.password
-			});
-
-			const response = await http.postPublic<LoginResponse>('/auth/login', body, {
-				withCredentials: true
-			});
-
-			AuthService.setTokens({
-				accessToken: response.access_token,
-				csrfToken: response.csrf_token
-			});
-
-			// La información completa del usuario se pide justo después del login
-			await this.getMe();
-
-			return response;
+			const response = await http.postPublic<TokenResponse>(
+				'/auth/login',
+				{ email: credentials.email.trim().toLowerCase(), password: credentials.password },
+				{ withCredentials: true }
+			);
+			AuthService.guardarRespuesta(response);
 		} catch (error) {
 			AuthService.clearAuth();
 			throw error;
@@ -113,39 +96,50 @@ class AuthService {
 	}
 
 	/**
-	 * `POST /auth/registro`: crea la cuenta (propietario, plan free) con su tarjeta en borrador y deja
-	 * la sesión iniciada, igual que el login.
+	 * `POST /auth/register`: crea la cuenta (rol user, plan free, email sin verificar) con su
+	 * tarjeta y envía el enlace de verificación. No inicia sesión: eso lo hace `authStore.registrar`.
 	 */
-	async registrar(datos: RegistroRequest): Promise<LoginResponse> {
-		try {
-			const response = await http.postPublic<LoginResponse>('/auth/registro', datos, {
-				withCredentials: true
-			});
-			AuthService.setTokens({
-				accessToken: response.access_token,
-				csrfToken: response.csrf_token
-			});
-			await this.getMe();
-			return response;
-		} catch (error) {
-			AuthService.clearAuth();
-			throw error;
-		}
+	async registrar(datos: RegistroRequest): Promise<void> {
+		await http.postPublic('/auth/register', {
+			...datos,
+			email: datos.email.trim().toLowerCase()
+		});
 	}
 
-	/** `GET /users/me`: el usuario y el resumen de su tarjeta */
-	async getMe(): Promise<CurrentUser> {
-		const currentUser = await http.get<CurrentUser>('/users/me', { requireAuth: true });
-		this.setCurrentUser(currentUser);
-		return currentUser;
-	}
-
-	/** `PATCH /users/me/password`. Cierra las demás sesiones del usuario */
+	/**
+	 * `POST /auth/change-password`: cierra las demás sesiones y devuelve tokens nuevos para este
+	 * dispositivo, así que la sesión sigue abierta. Un 401 aquí es la contraseña actual incorrecta.
+	 */
 	async cambiarPassword(datos: CambiarPasswordRequest): Promise<void> {
-		await http.patch('/users/me/password', datos, { requireAuth: true });
+		const response = await http.post<TokenResponse>('/auth/change-password', datos, {
+			requireAuth: true,
+			withCredentials: true,
+			reintentar401: false
+		});
+		AuthService.guardarRespuesta(response);
 	}
 
-	/** Cierra la sesión en el servidor (invalida el refresh) y borra la local, aunque falle la red */
+	/** `POST /auth/forgot-password`: responde igual exista o no la cuenta */
+	async olvidePassword(email: string): Promise<void> {
+		await http.postPublic('/auth/forgot-password', { email: email.trim().toLowerCase() });
+	}
+
+	/** `POST /auth/reset-password`: usa el token del correo (una vez) y cierra todas las sesiones */
+	async restablecerPassword(token: string, nuevaPassword: string): Promise<void> {
+		await http.postPublic('/auth/reset-password', { token, new_password: nuevaPassword });
+	}
+
+	/** `POST /auth/verify-email`: usa el token del correo, una sola vez */
+	async verificarEmail(token: string): Promise<void> {
+		await http.postPublic('/auth/verify-email', { token });
+	}
+
+	/** `POST /auth/resend-verification`: un enlace nuevo al email actual (el anterior deja de servir) */
+	async reenviarVerificacion(): Promise<void> {
+		await http.post('/auth/resend-verification', undefined, { requireAuth: true });
+	}
+
+	/** Cierra la sesión en el servidor (revoca el refresh) y borra la local, aunque falle la red */
 	async logout(): Promise<void> {
 		try {
 			await http.postPublic('/auth/logout', undefined, { withCredentials: true });
@@ -214,7 +208,7 @@ class AuthService {
 		try {
 			// postPublic no envía el access token, así que un 401 aquí no dispara otro refresh.
 			// El refresh_token viaja en la cookie HttpOnly.
-			const response = await http.postPublic<LoginResponse>('/auth/refresh', undefined, {
+			const response = await http.postPublic<TokenResponse>('/auth/refresh', undefined, {
 				withCredentials: true,
 				customHeaders: { 'X-CSRF-Token': csrfToken }
 			});

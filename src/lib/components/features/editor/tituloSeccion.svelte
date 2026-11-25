@@ -3,7 +3,8 @@
 	import { Button, Input } from '#lib/components/ui/index.ts';
 	import { SECCIONES_TARJETA } from '#lib/config/seccionesTarjeta.config.ts';
 	import type { SeccionClave } from '#lib/interfaces/index.ts';
-	import { errorService, tarjetaSeccionService } from '#lib/services/index.ts';
+	import { errorService } from '#lib/services/index.ts';
+	import { ordenar } from '#lib/utils/tarjeta.ts';
 	import { alert } from '#lib/utils/alert.ts';
 	import { getEditor } from './estadoEditor.svelte.ts';
 
@@ -26,15 +27,18 @@
 		guardando = true;
 		error = '';
 		try {
-			const actualizada = await tarjetaSeccionService.actualizar(seccion.id, {
-				titulo: titulo.trim() || null
-			});
-			editor.actualizar({
-				secciones: editor.tarjeta.secciones.map((s) => (s.id === actualizada.id ? actualizada : s))
-			});
+			// La API recibe siempre las 8 secciones juntas
+			const nuevo = titulo.trim() || null;
+			await editor.guardarSecciones(
+				ordenar(editor.tarjeta.secciones).map((s) =>
+					s.id === seccion.id ? { ...s, titulo: nuevo } : s
+				)
+			);
 			alert('success', 'Título guardado');
 		} catch (causa) {
-			error = errorService.getFieldErrors(causa).titulo ?? errorService.getMessage(causa);
+			const errores = errorService.getFieldErrors(causa);
+			const propio = Object.entries(errores).find(([campo]) => campo.endsWith('titulo'));
+			error = propio?.[1] ?? errorService.getMessage(causa);
 		} finally {
 			guardando = false;
 		}

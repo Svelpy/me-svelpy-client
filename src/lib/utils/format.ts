@@ -155,7 +155,7 @@ export function formatFullName(
 }
 
 /**
- * Rol de usuario legible (p. ej. "OWNER" → "Propietario"); un rol desconocido se muestra tal cual
+ * Rol de usuario legible (p. ej. "user" → "Usuario"); un rol desconocido se muestra tal cual
  */
 export function formatRole(value: string | null | undefined, options?: BaseOptions): string {
 	const fallback = options?.fallback ?? NO_DATA_LABEL;

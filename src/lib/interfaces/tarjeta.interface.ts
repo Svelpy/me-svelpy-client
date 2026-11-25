@@ -2,31 +2,68 @@ import type { Timestamps } from './common.interface';
 import type { PaginationParams } from './pagination.interface';
 import type {
 	TarjetaCertificacion,
-	TarjetaCertificacionCreateRequest
+	TarjetaCertificacionInput,
+	TarjetaCertificacionNestedItem,
+	TarjetaCertificacionPublica
 } from './tarjetaCertificacion.interface';
-import type { TarjetaContacto, TarjetaContactoCreateRequest } from './tarjetaContacto.interface';
-import type { TarjetaEducacion, TarjetaEducacionCreateRequest } from './tarjetaEducacion.interface';
-import type { TarjetaFaq, TarjetaFaqCreateRequest } from './tarjetaFaq.interface';
-import type { TarjetaSeccion, TarjetaSeccionInput } from './tarjetaSeccion.interface';
-import type { TarjetaSeo, TarjetaSeoUpdateRequest } from './tarjetaSeo.interface';
-import type { TarjetaSocial, TarjetaSocialCreateRequest } from './tarjetaSocial.interface';
-import type { TarjetaTheme, TarjetaThemeUpdateRequest } from './tarjetaTheme.interface';
-import type { TarjetaUbicacion, TarjetaUbicacionCreateRequest } from './tarjetaUbicacion.interface';
-import type { UsuarioPlan } from './usuario.interface';
-import type { VitrinaCompleta, VitrinaNuevaRequest } from './vitrina.interface';
+import type {
+	TarjetaContacto,
+	TarjetaContactoInput,
+	TarjetaContactoNestedItem,
+	TarjetaContactoPublico
+} from './tarjetaContacto.interface';
+import type {
+	TarjetaEducacion,
+	TarjetaEducacionInput,
+	TarjetaEducacionNestedItem,
+	TarjetaEducacionPublica
+} from './tarjetaEducacion.interface';
+import type {
+	TarjetaFaq,
+	TarjetaFaqInput,
+	TarjetaFaqNestedItem,
+	TarjetaFaqPublica
+} from './tarjetaFaq.interface';
+import type {
+	TarjetaSeccion,
+	TarjetaSeccionNestedItem,
+	TarjetaSeccionPublica
+} from './tarjetaSeccion.interface';
+import type {
+	TarjetaSeo,
+	TarjetaSeoPublico,
+	TarjetaSeoUpdateRequest
+} from './tarjetaSeo.interface';
+import type {
+	TarjetaSocial,
+	TarjetaSocialInput,
+	TarjetaSocialNestedItem,
+	TarjetaSocialPublica
+} from './tarjetaSocial.interface';
+import type {
+	TarjetaTheme,
+	TarjetaThemeCreateRequest,
+	TarjetaThemePublico
+} from './tarjetaTheme.interface';
+import type {
+	TarjetaUbicacion,
+	TarjetaUbicacionInput,
+	TarjetaUbicacionNestedItem,
+	TarjetaUbicacionPublica
+} from './tarjetaUbicacion.interface';
+import type { Usuario, UsuarioRef } from './usuario.interface';
+import type { VitrinaCompleta, VitrinaCreateRequest, VitrinaPublica } from './vitrina.interface';
 
 /**
- * Dónde se muestra la empresa (logo + nombre) en la cabecera de la tarjeta:
+ * Enum `PosicionNombreEmpresa`: dónde se muestra la empresa (logo + nombre) en la cabecera.
  * arriba = franja superior de la portada; abajo = bajo el cargo;
  * izquierda / derecha = insignia junto a la foto (el nombre va bajo el cargo); oculto = no se muestra.
  */
 export type NombreEmpresaPosicion = 'arriba' | 'abajo' | 'izquierda' | 'derecha' | 'oculto';
 
-/** Fila de `tarjeta` tal como la devuelve la API */
-export interface Tarjeta extends Timestamps {
-	id: string;
-	user_id: string;
-	/** Dirección pública: me.svelpy.com/{slug} */
+/** Campos propios de la tarjeta que se editan con `PATCH /tarjetas/{id}` */
+export interface TarjetaDatos {
+	/** Dirección pública: me.svelpy.com/{slug}. 3 a 80: minúsculas, dígitos y guiones simples */
 	slug: string;
 	/** Texto libre; `rubros.config.ts` sugiere valores y deriva el tipo Schema.org */
 	rubro: string;
@@ -44,91 +81,95 @@ export interface Tarjeta extends Timestamps {
 	logo_empresa_url: string | null;
 	nombre_empresa_posicion: NombreEmpresaPosicion;
 	cover_url: string | null;
-	qr_tarjeta_url: string | null;
 	qr_pago_url: string | null;
+}
+
+/** Columnas de `tarjeta` que llegan en todas las respuestas del panel */
+export interface Tarjeta extends TarjetaDatos, Timestamps {
+	id: string;
+	user_id: string;
 	is_public: boolean;
 	published_at: string | null;
 }
 
-/** Datos mínimos de una tarjeta: sesión, header, listados */
-export interface TarjetaResumen {
-	id: string;
-	slug: string;
-	prefijo: string | null;
-	nombres: string;
-	apellidos: string | null;
-	cargo: string | null;
-	rubro: string;
-	profile_url: string | null;
-	is_public: boolean;
-	published_at: string | null;
-	updated_at: string;
-}
-
-/** Colores y tipografía que necesita una mini-tarjeta del directorio */
-export type TarjetaTemaMini = Pick<
-	TarjetaTheme,
-	| 'color_fondo'
-	| 'color_superficie'
-	| 'color_borde'
-	| 'color_titulo'
-	| 'color_texto_secundario'
-	| 'color_primario'
-	| 'color_texto_sobre_primario'
-	| 'color_overlay_portada'
-	| 'overlay_opacidad'
-	| 'tipografia'
->;
-
-/** Cuenta dueña de la tarjeta (solo en respuestas para el panel) */
-export interface TarjetaPropietario {
-	id: string;
-	email: string;
-	is_active: boolean;
-	/** Con free la tarjeta no se puede publicar */
-	plan: UsuarioPlan;
-	plan_vence_at: string | null;
-}
-
-/** Item del directorio de tarjetas (`GET /tarjetas`, superadmin) */
-export interface TarjetaListItem extends TarjetaResumen {
-	nombre_empresa: string | null;
-	cover_url: string | null;
-	created_at: string;
-	tema: TarjetaTemaMini;
-	propietario: TarjetaPropietario;
+/** Item de `GET /tarjetas/` (`TarjetaResponseItemList`) */
+export interface TarjetaListItem extends Tarjeta {
+	user: UsuarioRef;
 }
 
 /**
- * La tarjeta con todo su contenido, en una sola respuesta: `GET /tarjetas/mia` (owner, justo
- * después del login) y `GET /tarjetas/{id}` (superadmin). Las listas vienen ordenadas por `orden`.
+ * `TarjetaResponseDetail`: respuesta de `POST /tarjetas/`, `PATCH /tarjetas/{id}`, publicar y
+ * despublicar. Trae todas las listas (visibles y ocultas), sin theme, SEO ni vitrina.
+ */
+export interface TarjetaDetalle extends Tarjeta {
+	user: Usuario;
+	secciones: TarjetaSeccion[];
+	contactos: TarjetaContacto[];
+	ubicaciones: TarjetaUbicacion[];
+	redes: TarjetaSocial[];
+	educaciones: TarjetaEducacion[];
+	certificaciones: TarjetaCertificacion[];
+	faqs: TarjetaFaq[];
+}
+
+/**
+ * La tarjeta con todo su contenido tal como la ve su dueño (`TarjetaResponseMe`): `tarjeta` de
+ * `GET /usuarios/me` y `GET /tarjetas/{id}/completa`. Theme, SEO y vitrina comparten el id de la
+ * tarjeta y cada uno se edita con su propio PATCH.
  */
 export interface TarjetaCompleta extends Tarjeta {
 	theme: TarjetaTheme;
 	seo: TarjetaSeo;
 	secciones: TarjetaSeccion[];
 	contactos: TarjetaContacto[];
-	/** Cada una con sus horarios */
 	ubicaciones: TarjetaUbicacion[];
-	sociales: TarjetaSocial[];
-	vitrina: VitrinaCompleta;
-	educacion: TarjetaEducacion[];
+	redes: TarjetaSocial[];
+	educaciones: TarjetaEducacion[];
 	certificaciones: TarjetaCertificacion[];
-	faq: TarjetaFaq[];
-	propietario: TarjetaPropietario;
+	faqs: TarjetaFaq[];
+	vitrina: VitrinaCompleta;
 }
 
 /**
- * `GET /public/tarjetas/{slug}`: lo que ve cualquier visitante. Solo tarjetas publicadas de
- * cuentas activas, solo lo visible (`is_visible`) y sin datos de la cuenta.
+ * `GET /tarjetas/public/{slug}` (`TarjetaPublic`): lo que ve un visitante. Solo lo visible, ya
+ * ordenado, sin auditoría ni datos de la cuenta. El editor arma la misma forma con `aPublica()`.
  */
-export type TarjetaPublica = Omit<TarjetaCompleta, 'propietario' | 'user_id'>;
+export interface TarjetaPublica extends TarjetaDatos {
+	id: string;
+	theme: TarjetaThemePublico;
+	seo: TarjetaSeoPublico;
+	secciones: TarjetaSeccionPublica[];
+	contactos: TarjetaContactoPublico[];
+	ubicaciones: TarjetaUbicacionPublica[];
+	redes: TarjetaSocialPublica[];
+	educaciones: TarjetaEducacionPublica[];
+	certificaciones: TarjetaCertificacionPublica[];
+	faqs: TarjetaFaqPublica[];
+	vitrina: VitrinaPublica;
+}
+
+/** Datos mínimos de una tarjeta: los guarda la sesión para el menú del panel */
+export type TarjetaResumen = Pick<
+	Tarjeta,
+	| 'id'
+	| 'slug'
+	| 'prefijo'
+	| 'nombres'
+	| 'apellidos'
+	| 'cargo'
+	| 'rubro'
+	| 'profile_url'
+	| 'is_public'
+	| 'published_at'
+	| 'updated_at'
+>;
 
 /**
- * Tarjeta nueva con todo su contenido en una sola petición. La usan `POST /tarjetas/mia` (owner),
- * `POST /tarjetas` (superadmin, con `user_id`) y `POST /usuarios` (anidada en el usuario).
+ * `POST /tarjetas/` (`TarjetaCreateNested`): una por usuario, con su árbol en una transacción. Nace
+ * despublicada; sin theme, SEO o vitrina se crean con sus valores por defecto y las 8 secciones las
+ * crea el backend. `user_id` (solo admin) crea la tarjeta de otra cuenta.
  */
-export interface TarjetaNuevaRequest {
+export interface TarjetaCreateRequest {
 	slug: string;
 	rubro: string;
 	nombres: string;
@@ -140,72 +181,60 @@ export interface TarjetaNuevaRequest {
 	profile_url?: string | null;
 	photo_usuario_url?: string | null;
 	logo_empresa_url?: string | null;
-	/** Por defecto 'derecha' */
 	nombre_empresa_posicion?: NombreEmpresaPosicion;
 	cover_url?: string | null;
 	qr_pago_url?: string | null;
-	/** Por defecto false (borrador). true solo si la cuenta tiene plan pro (si no, 403 PLAN_REQUERIDO) */
-	is_public?: boolean;
-	/** Sin tema: los colores del preset que sugiere el rubro */
-	theme?: Partial<TarjetaThemeUpdateRequest>;
-	seo?: Partial<TarjetaSeoUpdateRequest>;
-	/** Sin secciones: las 9, visibles y en el orden por defecto */
-	secciones?: TarjetaSeccionInput[];
-	contactos?: TarjetaContactoCreateRequest[];
-	/** Cada ubicación puede traer sus horarios */
-	ubicaciones?: TarjetaUbicacionCreateRequest[];
-	sociales?: TarjetaSocialCreateRequest[];
-	/** Configuración, categorías e ítems (con imágenes) de la vitrina */
-	vitrina?: VitrinaNuevaRequest;
-	educacion?: TarjetaEducacionCreateRequest[];
-	certificaciones?: TarjetaCertificacionCreateRequest[];
-	faq?: TarjetaFaqCreateRequest[];
+	theme?: TarjetaThemeCreateRequest | null;
+	seo?: TarjetaSeoUpdateRequest | null;
+	vitrina?: VitrinaCreateRequest | null;
+	/** Máximo 10 */
+	contactos?: TarjetaContactoInput[];
+	/** Máximo 10 */
+	ubicaciones?: TarjetaUbicacionInput[];
+	/** Máximo 24 */
+	redes?: TarjetaSocialInput[];
+	/** Máximo 10 */
+	educaciones?: TarjetaEducacionInput[];
+	/** Máximo 10 */
+	certificaciones?: TarjetaCertificacionInput[];
+	/** Máximo 30 */
+	faqs?: TarjetaFaqInput[];
+	user_id?: string;
 }
 
-/** `POST /tarjetas` (superadmin): tarjeta para un usuario que aún no tiene */
-export interface TarjetaCreateRequest extends TarjetaNuevaRequest {
-	user_id: string;
-}
-
-/** `PATCH /tarjetas/{id}`. `slug` solo lo acepta el superadmin */
-export interface TarjetaUpdateRequest {
+/**
+ * `PATCH /tarjetas/{id}` (`TarjetaUpdateNested`). Un campo que no se envía no cambia. Cada lista es
+ * el estado final: ausente o null no se toca, [] elimina todo; un elemento sin id se crea, con id se
+ * actualiza y uno existente que no viene se elimina. `secciones` lleva siempre las 8.
+ */
+export interface TarjetaUpdateRequest extends Partial<
+	Omit<TarjetaDatos, 'nombres' | 'slug' | 'rubro'>
+> {
 	slug?: string;
 	rubro?: string;
-	prefijo?: string | null;
 	nombres?: string;
-	apellidos?: string | null;
-	cargo?: string | null;
-	nombre_empresa?: string | null;
-	acerca_de_mi?: string | null;
-	profile_url?: string | null;
-	photo_usuario_url?: string | null;
-	logo_empresa_url?: string | null;
-	nombre_empresa_posicion?: NombreEmpresaPosicion;
-	cover_url?: string | null;
-	qr_pago_url?: string | null;
+	secciones?: TarjetaSeccionNestedItem[] | null;
+	contactos?: TarjetaContactoNestedItem[] | null;
+	ubicaciones?: TarjetaUbicacionNestedItem[] | null;
+	redes?: TarjetaSocialNestedItem[] | null;
+	educaciones?: TarjetaEducacionNestedItem[] | null;
+	certificaciones?: TarjetaCertificacionNestedItem[] | null;
+	faqs?: TarjetaFaqNestedItem[] | null;
 }
 
-/** `PATCH /tarjetas/{id}/publicacion`. Publicar fija `published_at` la primera vez */
-export interface TarjetaPublicacionRequest {
-	is_public: boolean;
-}
-
-export type TarjetaEstado = 'publicada' | 'borrador';
-
-/** Filtros de `GET /tarjetas` */
+/** Filtros de `GET /tarjetas/` (un user solo ve la suya) */
 export interface TarjetaFiltros extends PaginationParams {
-	/** Busca en nombre, slug, rubro, empresa y email del propietario */
-	q?: string;
-	rubro?: string;
-	estado?: TarjetaEstado;
+	user_id?: string;
+	is_public?: boolean;
 }
 
-/** `GET /tarjetas/slug-disponible?slug=&excluir=` y `GET /public/slug-disponible?slug=` (registro) */
+/** `GET /tarjetas/public/slug-disponible/{slug}`. Con sesión, el slug propio cuenta como disponible */
 export interface SlugDisponibilidad {
 	slug: string;
 	disponible: boolean;
-	/** Por qué no está disponible (reservado, en uso…) */
-	motivo: string | null;
-	/** Alternativa libre parecida */
-	sugerencia: string | null;
+}
+
+/** `POST /tarjetas/despublicar-vencidas` */
+export interface TarjetasDespublicadasResponse {
+	despublicadas: number;
 }

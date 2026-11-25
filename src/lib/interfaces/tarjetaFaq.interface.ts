@@ -1,20 +1,28 @@
 import type { Timestamps } from './common.interface';
 
-export interface TarjetaFaq extends Timestamps {
+/** `TarjetaFaqPublic` */
+export interface TarjetaFaqPublica {
 	id: string;
-	tarjeta_id: string;
 	pregunta: string;
 	respuesta: string;
+}
+
+/** `TarjetaFaqResponse` */
+export interface TarjetaFaq extends TarjetaFaqPublica, Timestamps {
+	tarjeta_id: string;
 	is_visible: boolean;
 	orden: number;
 }
 
-/** `POST /tarjetas/{id}/faq` */
-export interface TarjetaFaqCreateRequest {
+/** `TarjetaFaqCreate` */
+export interface TarjetaFaqInput {
 	pregunta: string;
 	respuesta: string;
 	is_visible?: boolean;
+	orden?: number;
 }
 
-/** `PATCH /faq/{id}` */
-export type TarjetaFaqUpdateRequest = Partial<TarjetaFaqCreateRequest>;
+/** `TarjetaFaqNestedItem` */
+export interface TarjetaFaqNestedItem extends TarjetaFaqInput {
+	id?: string | null;
+}

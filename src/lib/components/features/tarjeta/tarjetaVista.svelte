@@ -6,17 +6,16 @@
 -->
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { DownloadIcon, QrcodeIcon } from '#lib/icons/outline/index.ts';
+	import { DownloadIcon, QrcodeIcon, ShareIcon } from '#lib/icons/outline/index.ts';
 	import { LOGOS_ME } from '#lib/constants/assets.ts';
 	import { tipografiaPorId } from '#lib/config/tipografiasTarjeta.config.ts';
 	import type { SeccionClave, TarjetaPublica } from '#lib/interfaces/index.ts';
 	import { QrCode } from '#lib/components/ui/index.ts';
 	import { cn } from '#lib/utils/cn.ts';
-	import { nombreCompleto, seccionesVisibles, tituloSeccion } from '#lib/utils/tarjeta.ts';
+	import { enlaceAgenda, nombreCompleto, tituloSeccion } from '#lib/utils/tarjeta.ts';
 	import { variablesTema } from '#lib/utils/temaTarjeta.ts';
-	import { urlPublicaTarjeta } from '#lib/utils/urlPublica.ts';
+	import { urlPublicaTarjeta, urlQrTarjeta } from '#lib/utils/urlPublica.ts';
 	import GuardarContacto from './guardarContacto.svelte';
-	import AccionesSeccion from './secciones/accionesSeccion.svelte';
 	import AcercaSeccion from './secciones/acercaSeccion.svelte';
 	import CertificacionesSeccion from './secciones/certificacionesSeccion.svelte';
 	import ContactoSeccion from './secciones/contactoSeccion.svelte';
@@ -31,6 +30,7 @@
 	import TarjetaHoja from './ui/tarjetaHoja.svelte';
 
 	interface Props {
+		/** La forma pública (`GET /tarjetas/public/{slug}`, o `aPublica()` en el editor): solo lo visible, en orden */
 		tarjeta: TarjetaPublica;
 		/** vista-previa: inerte (no se navega desde el panel) y sin landmarks de página */
 		modo?: 'publica' | 'vista-previa';
@@ -43,7 +43,9 @@
 	const tipografia = $derived(tipografiaPorId(tema.tipografia));
 	const estilo = $derived(variablesTema(tema, tema.tipografia));
 	const url = $derived(urlPublicaTarjeta(tarjeta.slug));
-	const secciones = $derived(seccionesVisibles(tarjeta.secciones));
+	// El QR abre /t/{id}: sigue funcionando impreso aunque la tarjeta cambie de enlace
+	const urlQr = $derived(urlQrTarjeta(tarjeta.id));
+	const agenda = $derived(enlaceAgenda(tarjeta.redes));
 	const publica = $derived(modo === 'publica');
 
 	let hoja = $state<'qr' | 'pago' | null>(null);
@@ -55,21 +57,19 @@
 			case 'acerca':
 				return !!tarjeta.acerca_de_mi?.trim();
 			case 'contacto':
-				return tarjeta.contactos.some((c) => c.is_visible);
-			case 'acciones':
-				return true;
+				return tarjeta.contactos.length > 0 || !!agenda || !!tarjeta.qr_pago_url;
 			case 'vitrina':
-				return tarjeta.vitrina.items.some((i) => i.is_visible);
+				return tarjeta.vitrina.items.length > 0;
 			case 'ubicacion':
-				return tarjeta.ubicaciones.some((u) => u.is_visible);
+				return tarjeta.ubicaciones.length > 0;
 			case 'redes':
-				return tarjeta.sociales.some((s) => s.is_visible);
+				return tarjeta.redes.length > 0;
 			case 'educacion':
-				return tarjeta.educacion.some((e) => e.is_visible);
+				return tarjeta.educaciones.length > 0;
 			case 'certificaciones':
-				return tarjeta.certificaciones.some((c) => c.is_visible);
+				return tarjeta.certificaciones.length > 0;
 			case 'faq':
-				return tarjeta.faq.some((f) => f.is_visible);
+				return tarjeta.faqs.length > 0;
 		}
 	}
 
@@ -134,28 +134,27 @@
 			this={publica ? 'main' : 'div'}
 			class="space-y-10 px-5 pt-9 pb-32 @4xl:px-0 @4xl:pt-2"
 		>
-			{#each secciones as seccion (seccion.id)}
+			{#each tarjeta.secciones as seccion (seccion.clave)}
 				{#if tieneContenido(seccion.clave)}
 					{@const titulo = tituloSeccion(seccion)}
-					{#if seccion.clave === 'acciones'}
-						<AccionesSeccion
-							{tarjeta}
-							{titulo}
-							onPagar={() => (hoja = 'pago')}
-							onCompartir={compartir}
-						/>
-					{:else if seccion.clave === 'acerca'}
+					{#if seccion.clave === 'acerca'}
 						<AcercaSeccion {titulo} texto={tarjeta.acerca_de_mi ?? ''} />
 					{:else if seccion.clave === 'vitrina'}
 						<VitrinaSeccion {titulo} vitrina={tarjeta.vitrina} contactos={tarjeta.contactos} />
 					{:else if seccion.clave === 'ubicacion'}
 						<UbicacionSeccion {titulo} ubicaciones={tarjeta.ubicaciones} />
 					{:else if seccion.clave === 'contacto'}
-						<ContactoSeccion {titulo} contactos={tarjeta.contactos} forma={tema.icono_forma} />
+						<ContactoSeccion
+							{titulo}
+							contactos={tarjeta.contactos}
+							forma={tema.icono_forma}
+							{agenda}
+							onPagar={tarjeta.qr_pago_url ? () => (hoja = 'pago') : undefined}
+						/>
 					{:else if seccion.clave === 'redes'}
-						<RedesSeccion {titulo} sociales={tarjeta.sociales} forma={tema.icono_forma} />
+						<RedesSeccion {titulo} redes={tarjeta.redes} forma={tema.icono_forma} />
 					{:else if seccion.clave === 'educacion'}
-						<EducacionSeccion {titulo} educacion={tarjeta.educacion} />
+						<EducacionSeccion {titulo} educaciones={tarjeta.educaciones} />
 					{:else if seccion.clave === 'certificaciones'}
 						<CertificacionesSeccion
 							{titulo}
@@ -163,7 +162,7 @@
 							forma={tema.icono_forma}
 						/>
 					{:else if seccion.clave === 'faq'}
-						<FaqSeccion {titulo} faq={tarjeta.faq} />
+						<FaqSeccion {titulo} faqs={tarjeta.faqs} />
 					{/if}
 				{/if}
 			{/each}
@@ -171,14 +170,24 @@
 			<footer
 				class="flex flex-col items-center gap-4 border-t border-t-borde pt-8 text-sm text-t-texto-sec"
 			>
-				<button
-					type="button"
-					onclick={() => (hoja = 'qr')}
-					class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 font-semibold text-t-texto focus-visible:outline-2 focus-visible:outline-t-primario"
-				>
-					<QrcodeIcon class="size-5" />
-					Mostrar el código QR de esta tarjeta
-				</button>
+				<div class="flex flex-wrap justify-center gap-2">
+					<button
+						type="button"
+						onclick={compartir}
+						class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 font-semibold text-t-texto focus-visible:outline-2 focus-visible:outline-t-primario"
+					>
+						<ShareIcon class="size-5" />
+						Compartir
+					</button>
+					<button
+						type="button"
+						onclick={() => (hoja = 'qr')}
+						class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 font-semibold text-t-texto focus-visible:outline-2 focus-visible:outline-t-primario"
+					>
+						<QrcodeIcon class="size-5" />
+						Código QR
+					</button>
+				</div>
 				<a
 					href={resolve('/')}
 					class="inline-flex items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-t-primario"
@@ -213,7 +222,7 @@
 		<div class="rounded-2xl bg-white p-4" data-qr-contenedor>
 			<span data-qr-tarjeta class="contents">
 				<QrCode
-					value={url}
+					value={urlQr}
 					label="Código QR que abre la tarjeta de {nombreCompleto(tarjeta)}"
 					class="mx-auto w-full max-w-64"
 				/>

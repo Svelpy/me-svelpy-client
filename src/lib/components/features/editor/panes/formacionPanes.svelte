@@ -6,17 +6,12 @@
 	import { CertificateIcon, HelpCircleIcon, SchoolIcon } from '#lib/icons/outline/index.ts';
 	import type {
 		TarjetaCertificacion,
-		TarjetaCertificacionCreateRequest,
+		TarjetaCertificacionInput,
 		TarjetaEducacion,
-		TarjetaEducacionCreateRequest,
+		TarjetaEducacionInput,
 		TarjetaFaq,
-		TarjetaFaqCreateRequest
+		TarjetaFaqInput
 	} from '#lib/interfaces/index.ts';
-	import {
-		tarjetaCertificacionService,
-		tarjetaEducacionService,
-		tarjetaFaqService
-	} from '#lib/services/index.ts';
 	import { anioDe, ordenar } from '#lib/utils/tarjeta.ts';
 	import EditorPanel from '../editorPanel.svelte';
 	import { getEditor } from '../estadoEditor.svelte.ts';
@@ -34,6 +29,11 @@
 	let { tipo, alVolver }: Props = $props();
 
 	const editor = getEditor();
+	const educaciones = editor.servicioLista<'educaciones', TarjetaEducacionInput>('educaciones');
+	const certificaciones = editor.servicioLista<'certificaciones', TarjetaCertificacionInput>(
+		'certificaciones'
+	);
+	const faqs = editor.servicioLista<'faqs', TarjetaFaqInput>('faqs');
 </script>
 
 {#if tipo === 'educacion'}
@@ -45,12 +45,11 @@
 		<TituloSeccion clave="educacion" />
 		<div class="mt-6">
 			<PanelLista
-				items={ordenar(editor.tarjeta.educacion)}
-				padreId={editor.tarjeta.id}
-				servicio={tarjetaEducacionService}
-				aplicar={(educacion: TarjetaEducacion[]) => editor.actualizar({ educacion })}
+				items={ordenar(editor.tarjeta.educaciones)}
+				servicio={educaciones}
 				nombre={(e) => e.titulo ?? e.institucion}
 				singular="estudio"
+				plural="estudios"
 				agregarLabel="Agregar estudio"
 				vacio={{
 					titulo: 'Sin estudios',
@@ -73,7 +72,7 @@
 				}: {
 					inicial: TarjetaEducacion | null;
 					id: string;
-					guardar: (datos: TarjetaEducacionCreateRequest) => Promise<void>;
+					guardar: (datos: TarjetaEducacionInput) => Promise<void>;
 				})}
 					<EducacionForm {inicial} {id} {guardar} />
 				{/snippet}
@@ -90,12 +89,10 @@
 		<div class="mt-6">
 			<PanelLista
 				items={ordenar(editor.tarjeta.certificaciones)}
-				padreId={editor.tarjeta.id}
-				servicio={tarjetaCertificacionService}
-				aplicar={(certificaciones: TarjetaCertificacion[]) =>
-					editor.actualizar({ certificaciones })}
+				servicio={certificaciones}
 				nombre={(c) => c.nombre}
 				singular="certificación"
+				plural="certificaciones"
 				agregarLabel="Agregar certificación"
 				femenino
 				vacio={{
@@ -117,7 +114,7 @@
 				}: {
 					inicial: TarjetaCertificacion | null;
 					id: string;
-					guardar: (datos: TarjetaCertificacionCreateRequest) => Promise<void>;
+					guardar: (datos: TarjetaCertificacionInput) => Promise<void>;
 				})}
 					<CertificacionForm {inicial} {id} {guardar} />
 				{/snippet}
@@ -133,12 +130,11 @@
 		<TituloSeccion clave="faq" />
 		<div class="mt-6">
 			<PanelLista
-				items={ordenar(editor.tarjeta.faq)}
-				padreId={editor.tarjeta.id}
-				servicio={tarjetaFaqService}
-				aplicar={(faq: TarjetaFaq[]) => editor.actualizar({ faq })}
+				items={ordenar(editor.tarjeta.faqs)}
+				servicio={faqs}
 				nombre={(f) => f.pregunta}
 				singular="pregunta"
+				plural="preguntas"
 				agregarLabel="Agregar pregunta"
 				femenino
 				vacio={{
@@ -158,7 +154,7 @@
 				}: {
 					inicial: TarjetaFaq | null;
 					id: string;
-					guardar: (datos: TarjetaFaqCreateRequest) => Promise<void>;
+					guardar: (datos: TarjetaFaqInput) => Promise<void>;
 				})}
 					<FaqForm {inicial} {id} {guardar} />
 				{/snippet}

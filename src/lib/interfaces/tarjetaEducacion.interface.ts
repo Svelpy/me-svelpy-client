@@ -1,8 +1,8 @@
 import type { Timestamps } from './common.interface';
 
-export interface TarjetaEducacion extends Timestamps {
+/** `TarjetaEducacionPublic` */
+export interface TarjetaEducacionPublica {
 	id: string;
-	tarjeta_id: string;
 	institucion: string;
 	titulo: string | null;
 	area_estudio: string | null;
@@ -13,12 +13,17 @@ export interface TarjetaEducacion extends Timestamps {
 	fecha_fin: string | null;
 	/** Lo sigue cursando */
 	is_actual: boolean;
+}
+
+/** `TarjetaEducacionResponse` */
+export interface TarjetaEducacion extends TarjetaEducacionPublica, Timestamps {
+	tarjeta_id: string;
 	is_visible: boolean;
 	orden: number;
 }
 
-/** `POST /tarjetas/{id}/educacion` */
-export interface TarjetaEducacionCreateRequest {
+/** `TarjetaEducacionCreate` */
+export interface TarjetaEducacionInput {
 	institucion: string;
 	titulo?: string | null;
 	area_estudio?: string | null;
@@ -27,7 +32,10 @@ export interface TarjetaEducacionCreateRequest {
 	fecha_fin?: string | null;
 	is_actual?: boolean;
 	is_visible?: boolean;
+	orden?: number;
 }
 
-/** `PATCH /educacion/{id}` */
-export type TarjetaEducacionUpdateRequest = Partial<TarjetaEducacionCreateRequest>;
+/** `TarjetaEducacionNestedItem` */
+export interface TarjetaEducacionNestedItem extends TarjetaEducacionInput {
+	id?: string | null;
+}

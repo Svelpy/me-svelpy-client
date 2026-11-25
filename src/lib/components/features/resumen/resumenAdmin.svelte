@@ -1,45 +1,43 @@
 <script lang="ts">
-	import TarjetaFuentes from '#lib/components/features/tarjeta/tarjetaFuentes.svelte';
-	import { TIPOGRAFIAS_TARJETA } from '#lib/config/tipografiasTarjeta.config.ts';
 	import { resolve } from '$app/paths';
-	import type { ResumenAdmin } from '#lib/interfaces/index.ts';
-	import { formatNumber } from '#lib/utils/format.ts';
+	import { METODO_PAGO_LABEL } from '#lib/constants/data.ts';
+	import { formatNumber, formatRelativeTime } from '#lib/utils/format.ts';
+	import { formatearMonto } from '#lib/utils/plan.ts';
 	import MiniTarjeta from '../tarjetas/miniTarjeta.svelte';
-	import BarrasRubro from './barrasRubro.svelte';
+	import type { ResumenPanel } from './resumen.ts';
 
 	interface Props {
-		resumen: ResumenAdmin;
+		resumen: ResumenPanel;
 	}
 
 	let { resumen }: Props = $props();
 
-	const cifras = $derived([
-		{
-			valor: resumen.totales.publicadas,
-			etiqueta: resumen.totales.publicadas === 1 ? 'tarjeta publicada' : 'tarjetas publicadas'
-		},
-		{
-			valor: resumen.totales.borradores,
-			etiqueta: resumen.totales.borradores === 1 ? 'borrador' : 'borradores'
-		},
-		{
-			valor: resumen.totales.usuarios_activos,
-			etiqueta: resumen.totales.usuarios_activos === 1 ? 'cuenta activa' : 'cuentas activas'
-		},
-		{
-			valor: resumen.totales.cuentas_pro,
-			etiqueta: resumen.totales.cuentas_pro === 1 ? 'cuenta Pro' : 'cuentas Pro'
-		},
-		{
-			valor: resumen.totales.usuarios_sin_tarjeta,
-			etiqueta:
-				resumen.totales.usuarios_sin_tarjeta === 1 ? 'cuenta sin tarjeta' : 'cuentas sin tarjeta'
-		}
-	]);
-</script>
+	const plural = (valor: number, uno: string, varios: string) => (valor === 1 ? uno : varios);
 
-<!-- Las mini-tarjetas muestran el nombre con la fuente de cada una -->
-<TarjetaFuentes tipografias={TIPOGRAFIAS_TARJETA} precargar={false} />
+	const cifras = $derived(
+		[
+			{
+				valor: resumen.totales.publicadas,
+				etiqueta: plural(resumen.totales.publicadas, 'tarjeta publicada', 'tarjetas publicadas')
+			},
+			{
+				valor: resumen.totales.borradores,
+				etiqueta: plural(resumen.totales.borradores, 'borrador', 'borradores')
+			},
+			{
+				valor: resumen.totales.cuentasActivas,
+				etiqueta: plural(resumen.totales.cuentasActivas, 'cuenta activa', 'cuentas activas')
+			},
+			resumen.totales.cuentasPro !== null && {
+				valor: resumen.totales.cuentasPro,
+				etiqueta: plural(resumen.totales.cuentasPro, 'cuenta Pro', 'cuentas Pro')
+			}
+		].filter((cifra): cifra is { valor: number; etiqueta: string } => !!cifra)
+	);
+
+	const enlace =
+		'text-sm font-semibold text-light-two_d hover:text-light-two dark:text-dark-two_d dark:hover:text-dark-two';
+</script>
 
 <!-- Cifras en una línea: valor grande y lo que cuenta debajo, sin cajas -->
 <dl
@@ -55,48 +53,71 @@
 	{/each}
 </dl>
 
-{#if resumen.totales.usuarios_sin_tarjeta > 0}
-	<p class="mt-5 text-sm text-light-two_d dark:text-dark-two_d">
-		Hay cuentas esperando su tarjeta.
-		<a
-			href={resolve('/panel/tarjetas/nueva')}
-			class="font-semibold text-light-two underline decoration-light-four underline-offset-4 hover:decoration-light-two dark:text-dark-two dark:decoration-dark-four"
-		>
-			Crear una tarjeta
-		</a>
-	</p>
-{/if}
-
-<div class="mt-10 grid gap-12 xl:grid-cols-[minmax(0,1fr)_20rem]">
-	<section aria-labelledby="recientes">
+<div class="mt-10 grid gap-12 xl:grid-cols-[minmax(0,1fr)_22rem]">
+	<section aria-labelledby="tarjetas-recientes">
 		<div class="flex items-baseline justify-between gap-4">
-			<h2 id="recientes" class="font-display text-xl font-semibold">Actualizadas hace poco</h2>
-			<a
-				href={resolve('/panel/tarjetas')}
-				class="text-sm font-semibold text-light-two_d hover:text-light-two dark:text-dark-two_d dark:hover:text-dark-two"
-			>
-				Ver todas
-			</a>
+			<h2 id="tarjetas-recientes" class="font-display text-xl font-semibold">Tarjetas</h2>
+			<a href={resolve('/panel/tarjetas')} class={enlace}>Ver todas</a>
 		</div>
-		<!-- En el celular bastan 3: el resto está a un toque en "Ver todas" -->
-		<ul
-			class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-3 max-sm:[&>li:nth-child(n+4)]:hidden"
-		>
-			{#each resumen.recientes as tarjeta (tarjeta.id)}
-				<li>
-					<MiniTarjeta {tarjeta} href={resolve('/panel/tarjetas/[id]', { id: tarjeta.id })} />
-				</li>
-			{/each}
-		</ul>
+		{#if resumen.tarjetas.length === 0}
+			<p class="mt-5 text-sm text-light-two_d dark:text-dark-two_d">
+				Todavía no hay tarjetas. Se crean al registrarse o desde una cuenta.
+			</p>
+		{:else}
+			<!-- En el celular bastan 3: el resto está a un toque en "Ver todas" -->
+			<ul
+				class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-3 max-sm:[&>li:nth-child(n+4)]:hidden"
+			>
+				{#each resumen.tarjetas as tarjeta (tarjeta.id)}
+					<li>
+						<MiniTarjeta {tarjeta} href={resolve('/panel/tarjetas/[id]', { id: tarjeta.id })} />
+					</li>
+				{/each}
+			</ul>
+		{/if}
 	</section>
 
-	<section aria-labelledby="por-rubro">
-		<h2 id="por-rubro" class="font-display text-xl font-semibold">Tarjetas por rubro</h2>
-		<p class="mt-1 text-sm text-light-two_d dark:text-dark-two_d">
-			Elige un rubro para ver sus tarjetas.
-		</p>
-		<div class="mt-5">
-			<BarrasRubro filas={resumen.por_rubro} />
+	<section aria-labelledby="pagos-recientes">
+		<div class="flex items-baseline justify-between gap-4">
+			<h2 id="pagos-recientes" class="font-display text-xl font-semibold">Últimos pagos</h2>
+			<a href={resolve('/panel/pagos')} class={enlace}>Ver todos</a>
 		</div>
+		{#if resumen.pagos.length === 0}
+			<p class="mt-5 text-sm text-light-two_d dark:text-dark-two_d">
+				Aún no hay pagos. Se registran desde la cuenta de cada persona.
+			</p>
+		{:else}
+			<ul class="mt-5 divide-y divide-light-four/35 dark:divide-dark-one_d">
+				{#each resumen.pagos as pago (pago.id)}
+					<li class="flex items-start justify-between gap-4 py-3 first:pt-0">
+						<div class="min-w-0">
+							<a
+								href={resolve('/panel/usuarios/[id]', { id: pago.user_id })}
+								class="block truncate text-sm font-medium hover:underline"
+							>
+								{pago.user.email}
+							</a>
+							<p class="text-xs text-light-two_d dark:text-dark-two_d">
+								{pago.reverses_id
+									? 'Anulación'
+									: `${pago.plan.nombre}, ${METODO_PAGO_LABEL[pago.metodo]}`},
+								{formatRelativeTime(pago.created_at)}
+							</p>
+						</div>
+						<p
+							class={[
+								'shrink-0 text-sm font-semibold tabular-nums',
+								pago.reverses_id && 'text-light-two_d dark:text-dark-two_d'
+							]}
+						>
+							{pago.reverses_id ? '−' : ''}{formatearMonto(
+								pago.monto.replace(/^-/, ''),
+								pago.moneda
+							)}
+						</p>
+					</li>
+				{/each}
+			</ul>
+		{/if}
 	</section>
 </div>

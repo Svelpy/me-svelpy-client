@@ -1,6 +1,9 @@
 <script lang="ts">
 	import TarjetaFuentes from '#lib/components/features/tarjeta/tarjetaFuentes.svelte';
-	import { TIPOGRAFIAS_TARJETA } from '#lib/config/tipografiasTarjeta.config.ts';
+	import {
+		TIPOGRAFIA_POR_DEFECTO,
+		tipografiaPorId
+	} from '#lib/config/tipografiasTarjeta.config.ts';
 	import { goto, invalidate } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -13,12 +16,11 @@
 		Avatar,
 		Button,
 		EmptyState,
-		Input,
 		PageHeader,
 		Pagination,
 		SegmentedControl
 	} from '#lib/components/ui/index.ts';
-	import { IdIcon, LayoutGridIcon, ListIcon, SearchIcon } from '#lib/icons/outline/index.ts';
+	import { IdIcon, LayoutGridIcon, ListIcon, XIcon } from '#lib/icons/outline/index.ts';
 	import { errorService } from '#lib/services/index.ts';
 	import { formatDate } from '#lib/utils/format.ts';
 	import { nombreCompleto } from '#lib/utils/tarjeta.ts';
@@ -26,9 +28,6 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-
-	let busqueda = $state(page.url.searchParams.get('q') ?? '');
-	let temporizador: ReturnType<typeof setTimeout> | undefined;
 
 	/** Cambia un filtro en la URL (y vuelve a la página 1 salvo que cambie la página) */
 	function filtrar(cambios: Record<string, string | null>) {
@@ -40,35 +39,21 @@
 		});
 	}
 
-	function buscar(valor: string) {
-		busqueda = valor;
-		clearTimeout(temporizador);
-		temporizador = setTimeout(() => filtrar({ q: valor.trim() || null }), 300);
-	}
-
 	const editar = (id: string) => resolve('/panel/tarjetas/[id]', { id });
+	const conFiltros = $derived(data.estado !== null || !!data.filtros.user_id);
 </script>
 
-<!-- Las mini-tarjetas muestran el nombre con la fuente de cada una -->
-<TarjetaFuentes tipografias={TIPOGRAFIAS_TARJETA} precargar={false} />
+<!-- Las mini-tarjetas usan la tipografía por defecto (el listado no trae el tema) -->
+<TarjetaFuentes tipografias={[tipografiaPorId(TIPOGRAFIA_POR_DEFECTO)]} precargar={false} />
 
 <MainLayout title="Tarjetas | Panel ME" noIndex>
-	<PageHeader title="Tarjetas" description="Todas las tarjetas, cada una con sus propios colores.">
+	<PageHeader title="Tarjetas" description="Todas las tarjetas de ME, publicadas y en borrador.">
 		{#snippet actions()}
 			<Button href={resolve('/panel/tarjetas/nueva')} variant="accent">Nueva tarjeta</Button>
 		{/snippet}
 	</PageHeader>
 
 	<div class="mt-8 flex flex-col gap-3 lg:flex-row lg:items-end">
-		<Input
-			type="search"
-			label="Buscar"
-			placeholder="Nombre, enlace, rubro, empresa o correo"
-			icon={SearchIcon}
-			value={busqueda}
-			oninput={(event) => buscar(event.currentTarget.value)}
-			class="lg:w-96"
-		/>
 		<SegmentedControl
 			label="Estado"
 			options={[
@@ -76,9 +61,21 @@
 				{ value: 'publicada', label: 'Publicadas' },
 				{ value: 'borrador', label: 'Borradores' }
 			]}
-			value={data.filtros.estado ?? 'todas'}
+			value={data.estado ?? 'todas'}
 			onchange={(valor) => filtrar({ estado: valor === 'todas' ? null : valor })}
 		/>
+		{#if data.filtros.user_id}
+			<!-- Desde una cuenta: su tarjeta. Se quita para volver al directorio completo -->
+			<button
+				type="button"
+				onclick={() => filtrar({ cuenta: null })}
+				class="inline-flex h-10 items-center gap-2 self-start rounded-full border border-light-four/60 px-4 text-sm font-medium hover:bg-light-one_d focus-visible:outline-2 focus-visible:outline-light-three lg:self-auto dark:border-dark-four/60 dark:hover:bg-dark-one_d dark:focus-visible:outline-dark-three"
+			>
+				De una sola cuenta
+				<XIcon class="size-4" />
+				<span class="sr-only">Quitar el filtro de cuenta</span>
+			</button>
+		{/if}
 		<SegmentedControl
 			label="Vista"
 			labelOculta
@@ -105,22 +102,14 @@
 			{#if listado.data.length === 0}
 				<EmptyState
 					icono={IdIcon}
-					titulo={data.filtros.q || data.filtros.estado
-						? 'Ninguna tarjeta coincide'
-						: 'Todavía no hay tarjetas'}
-					descripcion={data.filtros.q || data.filtros.estado
-						? 'Prueba con otro nombre o quita los filtros.'
-						: 'Crea la primera para una cuenta de propietario.'}
+					titulo={conFiltros ? 'Ninguna tarjeta coincide' : 'Todavía no hay tarjetas'}
+					descripcion={conFiltros
+						? 'Prueba con otro estado o quita los filtros.'
+						: 'Se crean al registrarse o desde la cuenta de cada persona.'}
 				>
 					{#snippet acciones()}
-						{#if data.filtros.q || data.filtros.estado}
-							<Button
-								variant="secondary"
-								onclick={() => {
-									busqueda = '';
-									filtrar({ q: null, estado: null });
-								}}
-							>
+						{#if conFiltros}
+							<Button variant="secondary" onclick={() => filtrar({ estado: null, cuenta: null })}>
 								Quitar filtros
 							</Button>
 						{:else}
@@ -145,7 +134,7 @@
 							<tr>
 								<th scope="col" class="px-4 py-3">Tarjeta</th>
 								<th scope="col" class="px-4 py-3">Rubro</th>
-								<th scope="col" class="px-4 py-3">Propietario</th>
+								<th scope="col" class="px-4 py-3">Cuenta</th>
 								<th scope="col" class="px-4 py-3">Estado</th>
 								<th scope="col" class="px-4 py-3">Actualizada</th>
 							</tr>
@@ -174,8 +163,13 @@
 										</a>
 									</td>
 									<td class="px-4 py-3 text-light-two_d dark:text-dark-two_d">{tarjeta.rubro}</td>
-									<td class="px-4 py-3 text-light-two_d dark:text-dark-two_d">
-										{tarjeta.propietario.email}
+									<td class="px-4 py-3">
+										<a
+											href={resolve('/panel/usuarios/[id]', { id: tarjeta.user_id })}
+											class="text-light-two_d hover:text-light-two hover:underline dark:text-dark-two_d dark:hover:text-dark-two"
+										>
+											{tarjeta.user.email}
+										</a>
 									</td>
 									<td class="px-4 py-3"><EstadoPublicacion publicada={tarjeta.is_public} /></td>
 									<td class="px-4 py-3 text-light-two_d tabular-nums dark:text-dark-two_d">

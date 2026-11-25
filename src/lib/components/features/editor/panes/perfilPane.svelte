@@ -3,7 +3,6 @@
 	import { AlertBox, Button, Input, Select } from '#lib/components/ui/index.ts';
 	import { NOMBRE_EMPRESA_POSICION_LABEL, PREFIJOS_SUGERIDOS } from '#lib/constants/data.ts';
 	import type { NombreEmpresaPosicion } from '#lib/interfaces/index.ts';
-	import { tarjetaService } from '#lib/services/index.ts';
 	import { currentRole } from '#lib/stores/index.ts';
 	import { alert } from '#lib/utils/alert.ts';
 	import { canCambiarSlug } from '#lib/utils/rbac.utils.ts';
@@ -73,11 +72,9 @@
 		event.preventDefault();
 		estado.enviar(tarjetaEditarSchema, { ...datos, slug }, async (validos) => {
 			const { slug: nuevoSlug, ...resto } = validos;
-			const respuesta = await tarjetaService.actualizar(
-				editor.tarjeta.id,
-				puedeCambiarSlug ? { ...resto, slug: nuevoSlug } : resto
-			);
-			editor.guardado(respuesta);
+			// Solo se envía el enlace si cambió (y solo los admins pueden cambiarlo)
+			const cambiaSlug = puedeCambiarSlug && nuevoSlug !== editor.tarjeta.slug;
+			await editor.guardarDatos(cambiaSlug ? { ...resto, slug: nuevoSlug } : resto);
 			alert('success', 'Cambios guardados');
 		});
 	}
@@ -141,13 +138,13 @@
 		</div>
 
 		{#if puedeCambiarSlug}
-			<!-- Solo el superadmin cambia el enlace -->
+			<!-- Solo los admins cambian el enlace -->
 			<CampoEnlace
 				bind:value={slug}
 				required
-				excluirId={editor.tarjeta.id}
 				actual={editor.tarjeta.slug}
-				hint="Cambiarlo rompe los QR ya impresos."
+				pistas={[apellidos, rubro]}
+				hint="Los QR siguen funcionando, pero los enlaces que ya compartió dejan de abrir."
 				error={estado.errores.slug}
 			/>
 		{:else}
@@ -155,7 +152,7 @@
 				<p class="text-sm font-medium">Enlace de la tarjeta</p>
 				<p class="mt-1.5 font-mono text-[0.9375rem]">{DOMINIO_PUBLICO}/{editor.tarjeta.slug}</p>
 				<p class="mt-1 text-xs text-light-two_d dark:text-dark-two_d">
-					Para cambiarla, escríbenos: tus QR impresos dejarían de funcionar.
+					Para cambiarlo, escríbenos: los enlaces que ya compartiste dejarían de abrir.
 				</p>
 			</div>
 		{/if}

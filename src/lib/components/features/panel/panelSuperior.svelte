@@ -1,6 +1,6 @@
 <!--
-	Carcasa del owner: gestiona una sola cosa (su tarjeta), así que el menú es una barra superior y
-	el editor con su vista previa ocupa todo el ancho.
+	Carcasa del user: gestiona una sola cosa (su tarjeta), así que el menú es una barra superior y
+	el editor con su vista previa ocupa todo el ancho. Sin el correo verificado, una franja lo recuerda.
 -->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
@@ -9,10 +9,11 @@
 	import { ThemeToggle } from '#lib/components/ui/index.ts';
 	import { PANEL_NAVIGATION } from '#lib/config/navigation.config.ts';
 	import { LOGOS_ME } from '#lib/constants/index.ts';
-	import { currentRole } from '#lib/stores/index.ts';
+	import { currentRole, currentUserStore } from '#lib/stores/index.ts';
 	import { filterNavigation, isNavItemActive } from '#lib/utils/navigation.ts';
 	import { getHomeRoute } from '#lib/utils/rbac.utils.ts';
 	import { resolveStaticRoute } from '#lib/utils/resolveRoute.ts';
+	import AvisoVerificacion from './avisoVerificacion.svelte';
 	import MenuUsuario from './menuUsuario.svelte';
 
 	interface Props {
@@ -94,6 +95,10 @@
 			</div>
 		</div>
 	</header>
+
+	{#if $currentUserStore && !$currentUserStore.user.email_verified_at}
+		<AvisoVerificacion email={$currentUserStore.user.email} />
+	{/if}
 
 	<main id="contenido" tabindex="-1" class="outline-none">
 		{@render children()}

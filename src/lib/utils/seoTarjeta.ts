@@ -52,10 +52,10 @@ export function descripcionSeoTarjeta(tarjeta: DatosSeo): string {
 	return recortar(`${nombreCompleto(tarjeta)}, ${quien}.${acerca ? ` ${acerca}` : ''}`, 160);
 }
 
-/** Imagen para compartir (absoluta). Las data: de los datos de prueba no sirven a las redes */
+/** Imagen para compartir (absoluta): la del SEO, la foto de perfil o la del sitio */
 export function imagenSeoTarjeta(tarjeta: DatosSeo): string {
 	const imagen = [tarjeta.seo.og_image_url, tarjeta.profile_url].find(
-		(url): url is string => !!url && !url.startsWith('data:')
+		(url): url is string => !!url
 	);
 	return urlAbsoluta(imagen ?? APP_SITE_CONFIG.DEFAULT_OG_IMAGE);
 }

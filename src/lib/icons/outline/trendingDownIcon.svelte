@@ -13,7 +13,8 @@
 	stroke-linecap="round"
 	stroke-linejoin="round"
 	class="icon icon-tabler icons-tabler-outline icon-tabler-trending-down {className}"
-	><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7l6 6l4 -4l8 8" /><path
-		d="M21 10l0 7l-7 0"
-	/></svg
 >
+	<path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7l6 6l4 -4l8 8" /><path
+		d="M21 10l0 7l-7 0"
+	/>
+</svg>

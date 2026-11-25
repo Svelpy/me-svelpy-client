@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-svelte';
-import { tarjetaDePrueba } from './tarjetaDePrueba.ts';
+import { aPublica } from '#lib/utils/tarjeta.ts';
+import { tarjetaCompletaDePrueba, tarjetaDePrueba } from './tarjetaDePrueba.ts';
 import TarjetaVista from './tarjetaVista.svelte';
 
 /** Títulos de las secciones, en el orden en que aparecen */
@@ -15,23 +16,30 @@ describe('TarjetaVista', () => {
 			.element(screen.getByRole('heading', { level: 1, name: 'Dra. Lucía Prueba' }))
 			.toBeVisible();
 		// Vitrina, ubicación, redes, formación y certificaciones están vacías: no se muestran
-		expect(titulos(screen.container)).toEqual([
-			'Accesos rápidos',
-			'Acerca de mí',
-			'Contacto',
-			'Preguntas frecuentes'
-		]);
+		expect(titulos(screen.container)).toEqual(['Acerca de mí', 'Contacto', 'Preguntas frecuentes']);
 	});
 
 	it('respeta el orden, la visibilidad y el título propio de cada sección', async () => {
-		const base = tarjetaDePrueba();
+		const base = tarjetaCompletaDePrueba();
 		const secciones = base.secciones.map((seccion) => {
 			if (seccion.clave === 'faq') return { ...seccion, orden: -1, titulo: 'Dudas frecuentes' };
 			if (seccion.clave === 'acerca') return { ...seccion, is_visible: false };
 			return seccion;
 		});
-		const screen = await render(TarjetaVista, { tarjeta: { ...base, secciones } });
-		expect(titulos(screen.container)).toEqual(['Dudas frecuentes', 'Accesos rápidos', 'Contacto']);
+		// Lo mismo que publica la API: solo lo visible, en su orden
+		const screen = await render(TarjetaVista, { tarjeta: aPublica({ ...base, secciones }) });
+		expect(titulos(screen.container)).toEqual(['Dudas frecuentes', 'Contacto']);
+	});
+
+	it('el QR de pago y la agenda se ofrecen en Contacto', async () => {
+		const screen = await render(TarjetaVista, {
+			tarjeta: tarjetaDePrueba({
+				qr_pago_url: 'https://res.cloudinary.com/demo/qr.png',
+				redes: [{ id: 'r1', red: 'calendly', url: 'https://calendly.com/lucia', username: null }]
+			})
+		});
+		await expect.element(screen.getByRole('button', { name: 'Pagar con QR' })).toBeVisible();
+		await expect.element(screen.getByRole('link', { name: 'Agendar cita' })).toBeVisible();
 	});
 
 	it('entrega la paleta del profesional como variables del tema', async () => {

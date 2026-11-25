@@ -1,7 +1,7 @@
 <!--
 	Registro propio en tres pasos, uno por pantalla: el enlace (lo que se comparte), el acceso y los
 	datos de la persona. A la derecha (escritorio) la tarjeta se arma mientras se escribe. Nace con el
-	plan Free (edita todo, no publica) y entra directo al editor.
+	plan Free (edita todo, no publica) y el correo sin verificar; entra directo al editor.
 	`?enlace=` llega desde la landing con el enlace ya elegido.
 -->
 <script lang="ts">
@@ -34,6 +34,7 @@
 	import { authStore } from '#lib/stores/index.ts';
 	import { alert } from '#lib/utils/alert.ts';
 	import { limpiarSlugEscrito } from '#lib/utils/slug.ts';
+	import { aplicarTipografiaDeRubro, temaDeRubro } from '#lib/utils/temaInicial.ts';
 	import { validateSchema } from '#lib/utils/validateSchema.ts';
 	import { emailSchema, passwordSchema, slugSchema } from '#lib/zod/common.ts';
 	import { registroSchema } from '#lib/zod/usuario.schema.ts';
@@ -46,7 +47,7 @@
 		1: {
 			titulo: 'Elige tu enlace',
 			texto:
-				'Es lo que compartirás y lo que lleva tu código QR. Elígelo con calma: después solo lo cambia soporte.'
+				'Es lo que compartirás con tus clientes. Elígelo con calma: después solo lo cambia soporte.'
 		},
 		2: {
 			titulo: 'Crea tu acceso',
@@ -101,10 +102,9 @@
 			// La revisión en vivo no terminó: se pregunta antes de seguir
 			revisandoEnlace = true;
 			try {
-				const respuesta = await tarjetaService.slugDisponiblePublico(slug);
+				const respuesta = await tarjetaService.slugDisponible(slug);
 				if (!respuesta.disponible) {
-					const sugerencia = respuesta.sugerencia ? ` Prueba con ${respuesta.sugerencia}.` : '';
-					estado.errores = { slug: `${respuesta.motivo ?? 'No está disponible.'}${sugerencia}` };
+					estado.errores = { slug: 'Ya está en uso. Elige otro.' };
 					return;
 				}
 			} catch {
@@ -134,10 +134,14 @@
 		const cuerpo = {
 			email,
 			password,
-			tarjeta: { prefijo, nombres, apellidos, cargo, rubro, slug }
+			tarjeta: { prefijo, nombres, apellidos, cargo, rubro, slug, theme: temaDeRubro(rubro) }
 		};
 		const creada = await estado.enviar(registroSchema, cuerpo, async (validos) => {
-			await authStore.registrar(validos);
+			const sesion = await authStore.registrar(validos);
+			// La API crea la tarjeta con la tipografía 1: se aplica la que sugiere el rubro
+			if (sesion.tarjeta && (await aplicarTipografiaDeRubro(sesion.tarjeta.id, rubro))) {
+				await authStore.refreshUser().catch(() => null);
+			}
 			alert('success', 'Tu tarjeta está lista para editar');
 			await goto(resolve('/panel/mi-tarjeta'), { replace: true });
 		});
@@ -245,7 +249,7 @@
 										bind:estado={estadoEnlace}
 										label="Tu enlace"
 										required
-										publico
+										pistas={[apellidos, rubro]}
 										size="lg"
 										hint="Solo minúsculas, números y guiones. Por ejemplo: dra-fabiola-pediatra."
 										error={errorDe('slug', 'tarjeta.slug')}

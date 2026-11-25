@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { PhoneIcon, WhatsappIcon } from '#lib/icons/outline/index.ts';
-	import type { FabPosicion, TarjetaContacto } from '#lib/interfaces/index.ts';
+	import type { FabPosicion, TarjetaContactoPublico } from '#lib/interfaces/index.ts';
 	import { telUrl, whatsappUrl } from '#lib/utils/contacto.ts';
 	import { contactoPrincipal, whatsappPrincipal } from '#lib/utils/tarjeta.ts';
 
 	interface Props {
-		contactos: TarjetaContacto[];
+		contactos: TarjetaContactoPublico[];
 		lado: FabPosicion;
 		/** fija en la página; absoluta dentro de una vista previa */
 		modo?: 'fija' | 'absoluta';

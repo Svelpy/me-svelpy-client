@@ -1,9 +1,7 @@
 import type { Timestamps } from './common.interface';
 
-/** SEO propio de cada tarjeta (`tarjeta_seo`). Lo que queda en null se genera desde la tarjeta. */
-export interface TarjetaSeo extends Timestamps {
-	id: string;
-	tarjeta_id: string;
+/** `TarjetaSeoPublic`. Lo que queda en null lo genera el frontend desde la tarjeta */
+export interface TarjetaSeoPublico {
 	/** Máximo 70 caracteres; null = nombre y cargo */
 	meta_title: string | null;
 	/** Máximo 160 caracteres; null = se arma con cargo, empresa, ciudad y "acerca de mí" */
@@ -14,10 +12,10 @@ export interface TarjetaSeo extends Timestamps {
 	robots_index: boolean;
 }
 
-/** `PUT /tarjetas/{id}/seo` */
-export interface TarjetaSeoUpdateRequest {
-	meta_title: string | null;
-	meta_description: string | null;
-	og_image_url: string | null;
-	robots_index: boolean;
+/** `TarjetaSeoResponse`. Su id es el de la tarjeta */
+export interface TarjetaSeo extends TarjetaSeoPublico, Timestamps {
+	id: string;
 }
+
+/** `PATCH /tarjeta-seos/{id}` (`TarjetaSeoUpdate`) y `TarjetaSeoCreate`: lo que no se envía no cambia */
+export type TarjetaSeoUpdateRequest = Partial<TarjetaSeoPublico>;

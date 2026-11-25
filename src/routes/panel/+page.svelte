@@ -1,11 +1,15 @@
 <script lang="ts">
 	import { invalidate } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import Mantenimiento from '#lib/components/features/resumen/mantenimiento.svelte';
 	import ResumenAdmin from '#lib/components/features/resumen/resumenAdmin.svelte';
 	import { ResumenSkeleton } from '#lib/components/skeletons/index.ts';
 	import { AlertBox, Button, PageHeader } from '#lib/components/ui/index.ts';
 	import { MainLayout } from '#lib/components/layout/index.ts';
+	import { Action, Module } from '#lib/config/permissions.config.ts';
 	import { errorService } from '#lib/services/index.ts';
+	import { currentRole } from '#lib/stores/index.ts';
+	import { can } from '#lib/utils/rbac.utils.ts';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -34,4 +38,8 @@
 			</AlertBox>
 		{/await}
 	</div>
+
+	{#if can($currentRole, Module.MANTENIMIENTO, Action.UPDATE)}
+		<Mantenimiento onDespublicadas={() => invalidate('app:resumen')} />
+	{/if}
 </MainLayout>

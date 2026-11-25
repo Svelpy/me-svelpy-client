@@ -1,5 +1,5 @@
 import { schemaDeRubro } from '#lib/config/rubros.config.ts';
-import type { TarjetaPublica, TarjetaUbicacion } from '#lib/interfaces/index.ts';
+import type { TarjetaPublica, TarjetaUbicacionPublica } from '#lib/interfaces/index.ts';
 import { numeroInternacional, websiteUrl } from './contacto';
 import { horaCorta } from './horarios';
 import { imagenSeoTarjeta } from './seoTarjeta';
@@ -7,14 +7,14 @@ import {
 	contactoPrincipal,
 	contactosDeTipo,
 	nombreCompleto,
-	ordenar,
+	numeroDe,
 	tituloSeccion
 } from './tarjeta';
 
 /**
  * Datos estructurados (JSON-LD, Schema.org) de una tarjeta pública: lo que leen Google y las IAs
  * (GEO). Un @graph con la persona, su negocio (con el tipo de su rubro, direcciones, horarios y
- * catálogo) y sus preguntas frecuentes. Solo usa datos visibles.
+ * catálogo) y sus preguntas frecuentes. La tarjeta pública ya trae solo lo visible, en su orden.
  */
 
 const DIAS_SCHEMA = [
@@ -28,7 +28,7 @@ const DIAS_SCHEMA = [
 	'Sunday'
 ];
 
-function direccion(ubicacion: TarjetaUbicacion) {
+function direccion(ubicacion: TarjetaUbicacionPublica) {
 	return {
 		'@type': 'PostalAddress',
 		streetAddress: ubicacion.direccion,
@@ -38,13 +38,15 @@ function direccion(ubicacion: TarjetaUbicacion) {
 	};
 }
 
-function coordenadas(ubicacion: TarjetaUbicacion) {
-	return ubicacion.lat !== null && ubicacion.lng !== null
-		? { '@type': 'GeoCoordinates', latitude: ubicacion.lat, longitude: ubicacion.lng }
+function coordenadas(ubicacion: TarjetaUbicacionPublica) {
+	const latitude = numeroDe(ubicacion.lat);
+	const longitude = numeroDe(ubicacion.lng);
+	return latitude !== null && longitude !== null
+		? { '@type': 'GeoCoordinates', latitude, longitude }
 		: undefined;
 }
 
-function horarios(ubicacion: TarjetaUbicacion) {
+function horarios(ubicacion: TarjetaUbicacionPublica) {
 	return ubicacion.horarios.map((franja) => ({
 		'@type': 'OpeningHoursSpecification',
 		dayOfWeek: `https://schema.org/${DIAS_SCHEMA[franja.dia_semana]}`,
@@ -53,27 +55,21 @@ function horarios(ubicacion: TarjetaUbicacion) {
 	}));
 }
 
-/** Imagen absoluta o nada (las data: de los datos de prueba no sirven fuera de la página) */
+/** Imagen absoluta o nada */
 function imagen(url: string | null): string | undefined {
-	return url && !url.startsWith('data:') ? url : undefined;
+	return url && /^https?:/i.test(url) ? url : undefined;
 }
 
 export function construirJsonLd(tarjeta: TarjetaPublica, url: string): Record<string, unknown> {
-	const visibles = new Set(tarjeta.secciones.filter((s) => s.is_visible).map((s) => s.clave));
+	const visibles = new Set(tarjeta.secciones.map((s) => s.clave));
 	const personaId = `${url}#persona`;
 	const negocioId = `${url}#negocio`;
 
 	const telefono = contactoPrincipal(tarjeta.contactos, 'phone');
 	const correo = contactoPrincipal(tarjeta.contactos, 'email');
 	const sitios = contactosDeTipo(tarjeta.contactos, 'website').map((s) => websiteUrl(s.valor));
-	const redes = visibles.has('redes')
-		? ordenar(tarjeta.sociales)
-				.filter((s) => s.is_visible)
-				.map((s) => s.url)
-		: [];
-	const ubicaciones = visibles.has('ubicacion')
-		? ordenar(tarjeta.ubicaciones).filter((u) => u.is_visible)
-		: [];
+	const redes = visibles.has('redes') ? tarjeta.redes.map((r) => r.url) : [];
+	const ubicaciones = visibles.has('ubicacion') ? tarjeta.ubicaciones : [];
 	const [principal, ...otras] = ubicaciones;
 
 	const persona: Record<string, unknown> = {
@@ -95,7 +91,7 @@ export function construirJsonLd(tarjeta: TarjetaPublica, url: string): Record<st
 	};
 
 	if (visibles.has('educacion')) {
-		const estudios = ordenar(tarjeta.educacion).filter((e) => e.is_visible);
+		const estudios = tarjeta.educaciones;
 		if (estudios.length > 0) {
 			persona.alumniOf = estudios.map((e) => ({
 				'@type': 'EducationalOrganization',
@@ -104,7 +100,7 @@ export function construirJsonLd(tarjeta: TarjetaPublica, url: string): Record<st
 		}
 	}
 	if (visibles.has('certificaciones')) {
-		const credenciales = ordenar(tarjeta.certificaciones).filter((c) => c.is_visible);
+		const credenciales = tarjeta.certificaciones;
 		if (credenciales.length > 0) {
 			persona.hasCredential = credenciales.map((c) => ({
 				'@type': 'EducationalOccupationalCredential',
@@ -152,7 +148,7 @@ export function construirJsonLd(tarjeta: TarjetaPublica, url: string): Record<st
 
 	if (visibles.has('vitrina')) {
 		const seccion = tarjeta.secciones.find((s) => s.clave === 'vitrina');
-		const items = ordenar(tarjeta.vitrina.items).filter((i) => i.is_visible);
+		const items = tarjeta.vitrina.items;
 		if (items.length > 0) {
 			negocio.hasOfferCatalog = {
 				'@type': 'OfferCatalog',
@@ -168,7 +164,10 @@ export function construirJsonLd(tarjeta: TarjetaPublica, url: string): Record<st
 						})
 					},
 					...(tarjeta.vitrina.mostrar_precios &&
-						item.precio !== null && { price: item.precio, priceCurrency: tarjeta.vitrina.moneda })
+						numeroDe(item.precio) !== null && {
+							price: numeroDe(item.precio),
+							priceCurrency: tarjeta.vitrina.moneda
+						})
 				}))
 			};
 		}
@@ -177,7 +176,7 @@ export function construirJsonLd(tarjeta: TarjetaPublica, url: string): Record<st
 	const grafo: Record<string, unknown>[] = [persona, negocio];
 
 	if (visibles.has('faq')) {
-		const preguntas = ordenar(tarjeta.faq).filter((f) => f.is_visible);
+		const preguntas = tarjeta.faqs;
 		if (preguntas.length > 0) {
 			grafo.push({
 				'@type': 'FAQPage',

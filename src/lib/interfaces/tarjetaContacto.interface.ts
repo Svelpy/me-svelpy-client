@@ -2,9 +2,9 @@ import type { Timestamps } from './common.interface';
 
 export type ContactoTipo = 'phone' | 'email' | 'website';
 
-export interface TarjetaContacto extends Timestamps {
+/** Contacto visible de una tarjeta publicada (`TarjetaContactoPublic`) */
+export interface TarjetaContactoPublico {
 	id: string;
-	tarjeta_id: string;
 	tipo: ContactoTipo;
 	/** Número, correo o URL */
 	valor: string;
@@ -12,21 +12,29 @@ export interface TarjetaContacto extends Timestamps {
 	etiqueta: string | null;
 	/** Solo en teléfonos: el número tiene WhatsApp */
 	is_wpp: boolean;
-	/** El principal de su tipo: va al .vcf, a los accesos rápidos y al botón flotante */
+	/** El principal de su tipo: va al .vcf y al botón flotante */
 	is_primary: boolean;
+}
+
+/** `TarjetaContactoResponse` */
+export interface TarjetaContacto extends TarjetaContactoPublico, Timestamps {
+	tarjeta_id: string;
 	is_visible: boolean;
 	orden: number;
 }
 
-/** `POST /tarjetas/{id}/contactos`. Se agrega al final de la lista */
-export interface TarjetaContactoCreateRequest {
+/** `TarjetaContactoCreate` (dentro de `POST /tarjetas/`) */
+export interface TarjetaContactoInput {
 	tipo: ContactoTipo;
 	valor: string;
 	etiqueta?: string | null;
 	is_wpp?: boolean;
 	is_primary?: boolean;
 	is_visible?: boolean;
+	orden?: number;
 }
 
-/** `PATCH /contactos/{id}` */
-export type TarjetaContactoUpdateRequest = Partial<TarjetaContactoCreateRequest>;
+/** `TarjetaContactoNestedItem` (lista de `PATCH /tarjetas/{id}`): sin id se crea, con id se actualiza */
+export interface TarjetaContactoNestedItem extends TarjetaContactoInput {
+	id?: string | null;
+}

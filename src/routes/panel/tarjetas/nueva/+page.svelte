@@ -17,7 +17,7 @@
 	<div class="max-w-3xl">
 		<PageHeader
 			title="Nueva tarjeta"
-			description="Para una cuenta de propietario que aún no tiene. Nace en borrador con el tema que sugiere su rubro."
+			description="Para una cuenta que aún no tiene. Nace en borrador con el tema que sugiere su rubro."
 			volver={{ href: resolve('/panel/tarjetas'), label: 'Tarjetas' }}
 		/>
 		<div class="mt-8">
@@ -27,7 +27,7 @@
 				{#if cuentas.length === 0}
 					<EmptyState
 						icono={UserPlusIcon}
-						titulo="Todas las cuentas ya tienen tarjeta"
+						titulo="No hay cuentas activas"
 						descripcion="Crea una cuenta nueva; puedes armar su tarjeta en el mismo paso."
 					>
 						{#snippet acciones()}

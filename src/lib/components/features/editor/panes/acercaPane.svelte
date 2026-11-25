@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { AlertBox, Button, TextArea } from '#lib/components/ui/index.ts';
-	import { tarjetaService } from '#lib/services/index.ts';
 	import { alert } from '#lib/utils/alert.ts';
 	import { textoOpcional } from '#lib/zod/common.ts';
 	import { z } from 'zod';
@@ -32,7 +31,7 @@
 	function enviar(event: SubmitEvent) {
 		event.preventDefault();
 		estado.enviar(esquema, { acerca_de_mi: texto }, async (validos) => {
-			editor.guardado(await tarjetaService.actualizar(editor.tarjeta.id, validos));
+			await editor.guardarDatos(validos);
 			alert('success', 'Cambios guardados');
 		});
 	}

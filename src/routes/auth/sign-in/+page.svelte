@@ -4,7 +4,7 @@
 	import { page } from '$app/state';
 	import { AlertBox, Button, Input } from '#lib/components/ui/index.ts';
 	import { MainLayout } from '#lib/components/layout/index.ts';
-	import { APP_SITE_CONFIG, LOGOS_ME } from '#lib/constants/index.ts';
+	import { LOGOS_ME } from '#lib/constants/index.ts';
 	import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from '#lib/icons/outline/index.ts';
 	import { errorService } from '#lib/services/index.ts';
 	import { authStore, currentRole } from '#lib/stores/index.ts';
@@ -16,12 +16,10 @@
 		resolveStaticRoute,
 		SIGN_IN_REASON_MESSAGES,
 		SIGN_IN_REASON_PARAM,
-		validateSchema,
-		whatsappUrl
+		validateSchema
 	} from '#lib/utils/index.ts';
+	import { rutaConQuery } from '#lib/utils/resolveRoute.ts';
 	import { signInSchema } from '#lib/zod/auth.schema.ts';
-	// Solo con datos de prueba: se borra junto con src/lib/mocks
-	import DemoAccounts from '#lib/mocks/demoAccounts.svelte';
 
 	let email = $state('');
 	let password = $state('');
@@ -36,9 +34,9 @@
 		return isSignInReason(value) ? value : null;
 	});
 
-	const ayudaUrl = whatsappUrl(
-		APP_SITE_CONFIG.SOPORTE_WHATSAPP,
-		'Hola, olvidé la contraseña de mi panel de ME.'
+	// Recuperar la contraseña con el correo ya escrito
+	const recuperarUrl = $derived(
+		rutaConQuery(resolve('/auth/forgot-password'), { email: email.trim() })
 	);
 
 	// Vuelve a la página pedida antes del login solo si es interna y el rol puede abrirla;
@@ -84,13 +82,6 @@
 		} finally {
 			isLoading = false;
 		}
-	}
-
-	function usarCuenta(correo: string, clave: string) {
-		email = correo;
-		password = clave;
-		fieldErrors = {};
-		formError = '';
 	}
 </script>
 
@@ -176,12 +167,10 @@
 		<p class="mt-5 text-sm text-light-two_d dark:text-dark-two_d">
 			¿Olvidaste tu contraseña?
 			<a
-				href={ayudaUrl}
-				target="_blank"
-				rel="external noopener noreferrer"
+				href={recuperarUrl}
 				class="font-semibold text-light-two underline decoration-light-four underline-offset-4 hover:decoration-light-two dark:text-dark-two dark:decoration-dark-four dark:hover:decoration-dark-two"
 			>
-				Escríbenos por WhatsApp
+				Te enviamos un enlace
 			</a>
 		</p>
 		<p class="mt-2 text-sm text-light-two_d dark:text-dark-two_d">
@@ -193,9 +182,5 @@
 				Crea tu tarjeta
 			</a>
 		</p>
-
-		<!-- <div class="mt-12">
-			<DemoAccounts onUsar={usarCuenta} />
-		</div> -->
 	</main>
 </MainLayout>

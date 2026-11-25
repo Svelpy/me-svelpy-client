@@ -1,0 +1,1231 @@
+{
+	"TarjetaPublic": {
+		"id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+		"slug": "dra-ana-perez",
+		"rubro": "Pediatría",
+		"prefijo": "Dra.",
+		"nombres": "Ana María",
+		"apellidos": "Pérez Quispe",
+		"cargo": "Médica pediatra",
+		"nombre_empresa": "Clínica Los Andes",
+		"acerca_de_mi": "Pediatra con 8 años de experiencia en atención infantil.",
+		"profile_url": "https://res.cloudinary.com/demo/image/upload/v1/perfil.jpg",
+		"photo_usuario_url": "https://res.cloudinary.com/demo/image/upload/v1/foto.jpg",
+		"logo_empresa_url": "https://res.cloudinary.com/demo/image/upload/v1/logo.png",
+		"nombre_empresa_posicion": "derecha",
+		"cover_url": "https://res.cloudinary.com/demo/image/upload/v1/portada.jpg",
+		"qr_pago_url": "https://res.cloudinary.com/demo/image/upload/v1/qr-pago.png",
+		"theme": {
+			"tipografia": 1,
+			"color_fondo": "#FFFFFF",
+			"color_superficie": "#F6F7F9",
+			"color_borde": "#E3E6EB",
+			"color_titulo": "#111827",
+			"color_texto": "#374151",
+			"color_texto_secundario": "#6B7280",
+			"color_primario": "#2563EB",
+			"color_texto_sobre_primario": "#FFFFFF",
+			"color_secundario": "#E0E7FF",
+			"color_texto_sobre_secundario": "#1E3A8A",
+			"color_overlay_portada": "#000000",
+			"overlay_opacidad": 40,
+			"color_precio": "#047857",
+			"color_destacado": "#F59E0B",
+			"color_texto_sobre_destacado": "#111827",
+			"color_icono": "#2563EB",
+			"color_fondo_icono": "#EFF6FF",
+			"icono_forma": "circulo",
+			"color_icono_social": "#374151",
+			"color_fondo_icono_social": "#F3F4F6",
+			"color_fab_fondo": "#2563EB",
+			"color_fab_icono": "#FFFFFF",
+			"fab_posicion": "derecha"
+		},
+		"seo": {
+			"meta_title": "Dra. Ana Pérez · Pediatra en La Paz",
+			"meta_description": "Consultas pediátricas, controles de crecimiento y vacunación en La Paz.",
+			"og_image_url": "https://res.cloudinary.com/demo/image/upload/v1/og-ana-perez.jpg",
+			"robots_index": true
+		},
+		"secciones": [
+			{
+				"clave": "acerca",
+				"titulo": "Sobre mí"
+			},
+			{
+				"clave": "contacto",
+				"titulo": "Contáctame"
+			},
+			{
+				"clave": "vitrina",
+				"titulo": "Servicios"
+			},
+			{
+				"clave": "ubicacion",
+				"titulo": "Dónde atiendo"
+			},
+			{
+				"clave": "redes",
+				"titulo": "Sígueme"
+			},
+			{
+				"clave": "educacion",
+				"titulo": "Formación"
+			},
+			{
+				"clave": "faq",
+				"titulo": "Preguntas frecuentes"
+			}
+		],
+		"contactos": [
+			{
+				"id": "c51ce410-c124-4a10-8e4d-2b3a4c5d6e7f",
+				"tipo": "phone",
+				"valor": "+59170000001",
+				"etiqueta": "Celular",
+				"is_wpp": true,
+				"is_primary": true
+			},
+			{
+				"id": "aab32389-22bc-4c56-8a7e-3f2e1d0c9b01",
+				"tipo": "email",
+				"valor": "consultas@draanaperez.com",
+				"etiqueta": "Correo de consultas",
+				"is_wpp": false,
+				"is_primary": true
+			},
+			{
+				"id": "9bf31c7f-f062-4a3a-8b2b-5c4d3e2f1a02",
+				"tipo": "website",
+				"valor": "https://draanaperez.com",
+				"etiqueta": "Sitio web",
+				"is_wpp": false,
+				"is_primary": false
+			}
+		],
+		"ubicaciones": [
+			{
+				"id": "1679091c-5a88-4faf-8c1b-0a9b8c7d6e5f",
+				"nombre": "Consultorio Sopocachi",
+				"direccion": "Av. 6 de Agosto 2170, Edificio Torre Azul, piso 4",
+				"ciudad": "La Paz",
+				"departamento": "La Paz",
+				"pais": "Bolivia",
+				"maps_url": "https://maps.app.goo.gl/AbCdEf123456",
+				"lat": "-16.509710",
+				"lng": "-68.123920",
+				"horarios": [
+					{
+						"dia_semana": 1,
+						"hora_inicio": "08:30",
+						"hora_fin": "12:30"
+					},
+					{
+						"dia_semana": 1,
+						"hora_inicio": "14:30",
+						"hora_fin": "18:30"
+					},
+					{
+						"dia_semana": 6,
+						"hora_inicio": "09:00",
+						"hora_fin": "13:00"
+					}
+				]
+			},
+			{
+				"id": "1679091c-5a88-4faf-8c1b-0a9b8c7d6e60",
+				"nombre": "Clínica Calacoto",
+				"direccion": "Calle 21 de Calacoto 8350",
+				"ciudad": "La Paz",
+				"departamento": "La Paz",
+				"pais": "Bolivia",
+				"maps_url": "https://maps.app.goo.gl/GhIjKl789012",
+				"lat": "-16.540120",
+				"lng": "-68.078450",
+				"horarios": [
+					{
+						"dia_semana": 1,
+						"hora_inicio": "08:30",
+						"hora_fin": "12:30"
+					},
+					{
+						"dia_semana": 1,
+						"hora_inicio": "14:30",
+						"hora_fin": "18:30"
+					},
+					{
+						"dia_semana": 6,
+						"hora_inicio": "09:00",
+						"hora_fin": "13:00"
+					}
+				]
+			},
+			{
+				"id": "1679091c-5a88-4faf-8c1b-0a9b8c7d6e61",
+				"nombre": "Centro Médico El Alto",
+				"direccion": "Av. Juan Pablo II 1450, Ciudad Satélite",
+				"ciudad": "El Alto",
+				"departamento": "La Paz",
+				"pais": "Bolivia",
+				"maps_url": "https://maps.app.goo.gl/MnOpQr345678",
+				"lat": "-16.523400",
+				"lng": "-68.168900",
+				"horarios": [
+					{
+						"dia_semana": 1,
+						"hora_inicio": "08:30",
+						"hora_fin": "12:30"
+					},
+					{
+						"dia_semana": 1,
+						"hora_inicio": "14:30",
+						"hora_fin": "18:30"
+					},
+					{
+						"dia_semana": 6,
+						"hora_inicio": "09:00",
+						"hora_fin": "13:00"
+					}
+				]
+			}
+		],
+		"redes": [
+			{
+				"id": "c20ad4d7-6fe9-4759-8aa2-7f1e2d3c4b5a",
+				"red": "instagram",
+				"url": "https://www.instagram.com/dra.ana.perez",
+				"username": "dra.ana.perez"
+			},
+			{
+				"id": "c20ad4d7-6fe9-4759-8aa2-7f1e2d3c4b5b",
+				"red": "facebook",
+				"url": "https://www.facebook.com/dra.ana.perez.pediatra",
+				"username": "dra.ana.perez.pediatra"
+			},
+			{
+				"id": "c20ad4d7-6fe9-4759-8aa2-7f1e2d3c4b5c",
+				"red": "linkedin",
+				"url": "https://www.linkedin.com/in/ana-perez-pediatra",
+				"username": "ana-perez-pediatra"
+			}
+		],
+		"educaciones": [
+			{
+				"id": "aab32389-22bc-4c56-8a7e-3f2e1d0c9b8a",
+				"institucion": "Universidad Mayor de San Andrés",
+				"titulo": "Licenciatura en Medicina",
+				"area_estudio": "Medicina",
+				"descripcion": "Formación general con internado rotatorio.",
+				"fecha_inicio": "2012-02-01",
+				"fecha_fin": "2018-12-15",
+				"is_actual": false
+			},
+			{
+				"id": "aab32389-22bc-4c56-8a7e-3f2e1d0c9b8b",
+				"institucion": "Hospital del Niño Dr. Ovidio Aliaga Uría",
+				"titulo": "Especialidad en Pediatría",
+				"area_estudio": "Pediatría",
+				"descripcion": "Residencia de tres años en pediatría clínica.",
+				"fecha_inicio": "2019-03-01",
+				"fecha_fin": "2022-02-28",
+				"is_actual": false
+			},
+			{
+				"id": "aab32389-22bc-4c56-8a7e-3f2e1d0c9b8c",
+				"institucion": "Universidad Católica Boliviana",
+				"titulo": "Diplomado en Gestión Hospitalaria",
+				"area_estudio": "Gestión en salud",
+				"descripcion": "Programa ejecutivo de fin de semana.",
+				"fecha_inicio": "2023-08-01",
+				"fecha_fin": "2024-06-30",
+				"is_actual": false
+			}
+		],
+		"certificaciones": [
+			{
+				"id": "9bf31c7f-f062-4a3a-8b2b-5c4d3e2f1a0b",
+				"nombre": "Certificación en Ecografía Básica",
+				"entidad_emisora": "Sociedad Boliviana de Ecografía",
+				"codigo_credencial": "SBE-2024-0153",
+				"url_credencial": "https://sbe.example.org/credenciales/SBE-2024-0153",
+				"fecha_emision": "2024-05-10",
+				"fecha_expiracion": "2029-05-10",
+				"no_expira": false,
+				"descripcion": "Curso teórico-práctico de 120 horas."
+			},
+			{
+				"id": "9bf31c7f-f062-4a3a-8b2b-5c4d3e2f1a0c",
+				"nombre": "Reanimación Neonatal (NRP)",
+				"entidad_emisora": "Sociedad Boliviana de Pediatría",
+				"codigo_credencial": "SBP-NRP-2025-0412",
+				"url_credencial": "https://sbp.example.org/credenciales/SBP-NRP-2025-0412",
+				"fecha_emision": "2025-03-20",
+				"fecha_expiracion": "2027-03-20",
+				"no_expira": false,
+				"descripcion": "Reanimación del recién nacido en sala de partos."
+			},
+			{
+				"id": "9bf31c7f-f062-4a3a-8b2b-5c4d3e2f1a0d",
+				"nombre": "Soporte Vital Pediátrico Avanzado (PALS)",
+				"entidad_emisora": "Colegio Médico de La Paz",
+				"codigo_credencial": "CMLP-PALS-2023-0098",
+				"url_credencial": "https://colmedlp.example.org/credenciales/CMLP-PALS-2023-0098",
+				"fecha_emision": "2023-09-05",
+				"fecha_expiracion": "2025-09-05",
+				"no_expira": false,
+				"descripcion": "Manejo de emergencias pediátricas; vencida, oculta en la tarjeta."
+			}
+		],
+		"faqs": [
+			{
+				"id": "6512bd43-d9ca-4a6e-8b0b-1f2e3d4c5b6a",
+				"pregunta": "¿Atiende fines de semana?",
+				"respuesta": "Sí, los sábados de 9:00 a 13:00."
+			},
+			{
+				"id": "6512bd43-d9ca-4a6e-8b0b-1f2e3d4c5b6b",
+				"pregunta": "¿Trabaja con seguros de salud?",
+				"respuesta": "Sí, con la Caja Nacional de Salud y los principales seguros privados."
+			},
+			{
+				"id": "6512bd43-d9ca-4a6e-8b0b-1f2e3d4c5b6c",
+				"pregunta": "¿Hace consultas a domicilio?",
+				"respuesta": "Solo en la zona sur de La Paz, con cita previa."
+			}
+		],
+		"vitrina": {
+			"mostrar_precios": true,
+			"moneda": "BOB",
+			"campo1_nombre": "Duración",
+			"campo2_nombre": "Modalidad",
+			"campo3_nombre": "Edad",
+			"campo4_nombre": "Incluye",
+			"categorias": [
+				{
+					"id": "1f0e3dad-9990-4345-8b6a-5c4d3e2f1a09",
+					"nombre": "Consultas"
+				},
+				{
+					"id": "1f0e3dad-9990-4345-8b6a-5c4d3e2f1a10",
+					"nombre": "Paquetes"
+				},
+				{
+					"id": "1f0e3dad-9990-4345-8b6a-5c4d3e2f1a11",
+					"nombre": "Talleres"
+				}
+			],
+			"items": [
+				{
+					"id": "e4da3b7f-bbce-4a4b-8f3c-2d1e0f9a8b7c",
+					"categoria_id": "1f0e3dad-9990-4345-8b6a-5c4d3e2f1a09",
+					"titulo": "Consulta pediátrica",
+					"descripcion": "Evaluación general, control de crecimiento y orientación a padres.",
+					"precio": "250.00",
+					"precio_anterior": "300.00",
+					"precio_etiqueta": "por sesión",
+					"campo1": "45 minutos",
+					"campo2": "Presencial",
+					"campo3": "0 a 14 años",
+					"campo4": "Informe escrito",
+					"destacado": true,
+					"imagenes": [
+						{
+							"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2b",
+							"url": "https://res.cloudinary.com/demo/image/upload/v1/consulta.jpg",
+							"alt": "Consultorio pediátrico",
+							"orden": 0
+						},
+						{
+							"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2c",
+							"url": "https://res.cloudinary.com/demo/image/upload/v1/sala-espera.jpg",
+							"alt": "Sala de espera con juegos",
+							"orden": 1
+						},
+						{
+							"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2d",
+							"url": "https://res.cloudinary.com/demo/image/upload/v1/control-crecimiento.jpg",
+							"alt": "Control de peso y talla",
+							"orden": 2
+						}
+					]
+				},
+				{
+					"id": "e4da3b7f-bbce-4a4b-8f3c-2d1e0f9a8b7d",
+					"categoria_id": "1f0e3dad-9990-4345-8b6a-5c4d3e2f1a10",
+					"titulo": "Paquete control del primer año",
+					"descripcion": "Seis controles de niño sano durante el primer año de vida.",
+					"precio": "1200.00",
+					"precio_anterior": "1500.00",
+					"precio_etiqueta": "desde",
+					"campo1": "6 sesiones",
+					"campo2": "Presencial",
+					"campo3": "0 a 12 meses",
+					"campo4": "Carnet de vacunas al día",
+					"destacado": false,
+					"imagenes": [
+						{
+							"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2b",
+							"url": "https://res.cloudinary.com/demo/image/upload/v1/consulta.jpg",
+							"alt": "Consultorio pediátrico",
+							"orden": 0
+						},
+						{
+							"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2c",
+							"url": "https://res.cloudinary.com/demo/image/upload/v1/sala-espera.jpg",
+							"alt": "Sala de espera con juegos",
+							"orden": 1
+						},
+						{
+							"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2d",
+							"url": "https://res.cloudinary.com/demo/image/upload/v1/control-crecimiento.jpg",
+							"alt": "Control de peso y talla",
+							"orden": 2
+						}
+					]
+				},
+				{
+					"id": "e4da3b7f-bbce-4a4b-8f3c-2d1e0f9a8b7e",
+					"categoria_id": "1f0e3dad-9990-4345-8b6a-5c4d3e2f1a09",
+					"titulo": "Teleconsulta de seguimiento",
+					"descripcion": "Revisión de resultados y ajuste de tratamiento por videollamada.",
+					"precio": "150.00",
+					"precio_anterior": "180.00",
+					"precio_etiqueta": "por llamada",
+					"campo1": "20 minutos",
+					"campo2": "Virtual",
+					"campo3": "Pacientes en tratamiento",
+					"campo4": "Receta digital",
+					"destacado": false,
+					"imagenes": [
+						{
+							"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2b",
+							"url": "https://res.cloudinary.com/demo/image/upload/v1/consulta.jpg",
+							"alt": "Consultorio pediátrico",
+							"orden": 0
+						},
+						{
+							"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2c",
+							"url": "https://res.cloudinary.com/demo/image/upload/v1/sala-espera.jpg",
+							"alt": "Sala de espera con juegos",
+							"orden": 1
+						},
+						{
+							"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2d",
+							"url": "https://res.cloudinary.com/demo/image/upload/v1/control-crecimiento.jpg",
+							"alt": "Control de peso y talla",
+							"orden": 2
+						}
+					]
+				}
+			]
+		}
+	},
+	"UsuarioResponseMe": {
+		"id": "8f14e45f-ceea-467a-9575-6b3f0c1a2b3c",
+		"email": "ana@example.com",
+		"rol": "user",
+		"plan_id": "7b1e9c40-0000-4000-8000-000000000002",
+		"plan_vence_at": "2027-01-15T14:30:00Z",
+		"is_active": true,
+		"email_verified_at": "2026-01-15T15:00:00Z",
+		"created_at": "2026-01-15T14:30:00Z",
+		"updated_at": "2026-02-01T09:00:00Z",
+		"plan": {
+			"id": "7b1e9c40-0000-4000-8000-000000000002",
+			"codigo": "pro",
+			"nombre": "Pro",
+			"precio": "80.00",
+			"moneda": "USD",
+			"duracion_dias": 365,
+			"is_visible": true,
+			"created_at": "2026-01-15T14:30:00Z",
+			"updated_at": "2026-02-01T09:00:00Z"
+		},
+		"tarjeta": {
+			"id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+			"user_id": "8f14e45f-ceea-467a-9575-6b3f0c1a2b3c",
+			"slug": "dra-ana-perez",
+			"rubro": "Pediatría",
+			"prefijo": "Dra.",
+			"nombres": "Ana María",
+			"apellidos": "Pérez Quispe",
+			"cargo": "Médica pediatra",
+			"nombre_empresa": "Clínica Los Andes",
+			"acerca_de_mi": "Pediatra con 8 años de experiencia en atención infantil.",
+			"profile_url": "https://res.cloudinary.com/demo/image/upload/v1/perfil.jpg",
+			"photo_usuario_url": "https://res.cloudinary.com/demo/image/upload/v1/foto.jpg",
+			"logo_empresa_url": "https://res.cloudinary.com/demo/image/upload/v1/logo.png",
+			"nombre_empresa_posicion": "derecha",
+			"cover_url": "https://res.cloudinary.com/demo/image/upload/v1/portada.jpg",
+			"qr_pago_url": "https://res.cloudinary.com/demo/image/upload/v1/qr-pago.png",
+			"is_public": true,
+			"published_at": "2026-01-20T10:00:00Z",
+			"created_at": "2026-01-15T14:30:00Z",
+			"updated_at": "2026-02-01T09:00:00Z",
+			"theme": {
+				"id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+				"preset": "claro",
+				"tipografia": 1,
+				"color_fondo": "#FFFFFF",
+				"color_superficie": "#F6F7F9",
+				"color_borde": "#E3E6EB",
+				"color_titulo": "#111827",
+				"color_texto": "#374151",
+				"color_texto_secundario": "#6B7280",
+				"color_primario": "#2563EB",
+				"color_texto_sobre_primario": "#FFFFFF",
+				"color_secundario": "#E0E7FF",
+				"color_texto_sobre_secundario": "#1E3A8A",
+				"color_overlay_portada": "#000000",
+				"overlay_opacidad": 40,
+				"color_precio": "#047857",
+				"color_destacado": "#F59E0B",
+				"color_texto_sobre_destacado": "#111827",
+				"color_icono": "#2563EB",
+				"color_fondo_icono": "#EFF6FF",
+				"icono_forma": "circulo",
+				"color_icono_social": "#374151",
+				"color_fondo_icono_social": "#F3F4F6",
+				"color_fab_fondo": "#2563EB",
+				"color_fab_icono": "#FFFFFF",
+				"fab_posicion": "derecha",
+				"created_at": "2026-01-15T14:30:00Z",
+				"updated_at": "2026-02-01T09:00:00Z"
+			},
+			"seo": {
+				"id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+				"meta_title": "Dra. Ana Pérez · Pediatra en La Paz",
+				"meta_description": "Consultas pediátricas, controles de crecimiento y vacunación en La Paz.",
+				"og_image_url": "https://res.cloudinary.com/demo/image/upload/v1/og-ana-perez.jpg",
+				"robots_index": true,
+				"created_at": "2026-01-15T14:30:00Z",
+				"updated_at": "2026-02-01T09:00:00Z"
+			},
+			"secciones": [
+				{
+					"id": "45c48cce-2e2d-4fbd-aa1a-9b8c7d6e5f40",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"clave": "acerca",
+					"titulo": "Sobre mí",
+					"is_visible": true,
+					"orden": 0,
+					"created_at": "2026-01-15T14:30:00Z",
+					"updated_at": "2026-02-01T09:00:00Z"
+				},
+				{
+					"id": "45c48cce-2e2d-4fbd-aa1a-9b8c7d6e5f41",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"clave": "contacto",
+					"titulo": "Contáctame",
+					"is_visible": true,
+					"orden": 1,
+					"created_at": "2026-01-15T14:31:00Z",
+					"updated_at": "2026-01-20T11:15:00Z"
+				},
+				{
+					"id": "45c48cce-2e2d-4fbd-aa1a-9b8c7d6e5f42",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"clave": "vitrina",
+					"titulo": "Servicios",
+					"is_visible": true,
+					"orden": 2,
+					"created_at": "2026-01-16T10:00:00Z",
+					"updated_at": "2026-02-03T16:45:00Z"
+				},
+				{
+					"id": "45c48cce-2e2d-4fbd-aa1a-9b8c7d6e5f43",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"clave": "ubicacion",
+					"titulo": "Dónde atiendo",
+					"is_visible": true,
+					"orden": 3,
+					"created_at": "2026-01-15T14:30:00Z",
+					"updated_at": "2026-02-01T09:00:00Z"
+				},
+				{
+					"id": "45c48cce-2e2d-4fbd-aa1a-9b8c7d6e5f44",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"clave": "redes",
+					"titulo": "Sígueme",
+					"is_visible": true,
+					"orden": 4,
+					"created_at": "2026-01-15T14:31:00Z",
+					"updated_at": "2026-01-20T11:15:00Z"
+				},
+				{
+					"id": "45c48cce-2e2d-4fbd-aa1a-9b8c7d6e5f45",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"clave": "educacion",
+					"titulo": "Formación",
+					"is_visible": true,
+					"orden": 5,
+					"created_at": "2026-01-16T10:00:00Z",
+					"updated_at": "2026-02-03T16:45:00Z"
+				},
+				{
+					"id": "45c48cce-2e2d-4fbd-aa1a-9b8c7d6e5f46",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"clave": "certificaciones",
+					"titulo": "Certificaciones",
+					"is_visible": false,
+					"orden": 6,
+					"created_at": "2026-01-15T14:30:00Z",
+					"updated_at": "2026-02-01T09:00:00Z"
+				},
+				{
+					"id": "45c48cce-2e2d-4fbd-aa1a-9b8c7d6e5f47",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"clave": "faq",
+					"titulo": "Preguntas frecuentes",
+					"is_visible": true,
+					"orden": 7,
+					"created_at": "2026-01-15T14:31:00Z",
+					"updated_at": "2026-01-20T11:15:00Z"
+				}
+			],
+			"contactos": [
+				{
+					"id": "c51ce410-c124-4a10-8e4d-2b3a4c5d6e7f",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"tipo": "phone",
+					"valor": "+59170000001",
+					"etiqueta": "Celular",
+					"is_wpp": true,
+					"is_primary": true,
+					"is_visible": true,
+					"orden": 0,
+					"created_at": "2026-01-15T14:30:00Z",
+					"updated_at": "2026-02-01T09:00:00Z"
+				},
+				{
+					"id": "aab32389-22bc-4c56-8a7e-3f2e1d0c9b01",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"tipo": "email",
+					"valor": "consultas@draanaperez.com",
+					"etiqueta": "Correo de consultas",
+					"is_wpp": false,
+					"is_primary": true,
+					"is_visible": true,
+					"orden": 1,
+					"created_at": "2026-01-15T14:31:00Z",
+					"updated_at": "2026-01-20T11:15:00Z"
+				},
+				{
+					"id": "9bf31c7f-f062-4a3a-8b2b-5c4d3e2f1a02",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"tipo": "website",
+					"valor": "https://draanaperez.com",
+					"etiqueta": "Sitio web",
+					"is_wpp": false,
+					"is_primary": false,
+					"is_visible": false,
+					"orden": 2,
+					"created_at": "2026-01-16T10:00:00Z",
+					"updated_at": "2026-02-03T16:45:00Z"
+				}
+			],
+			"ubicaciones": [
+				{
+					"id": "1679091c-5a88-4faf-8c1b-0a9b8c7d6e5f",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"nombre": "Consultorio Sopocachi",
+					"direccion": "Av. 6 de Agosto 2170, Edificio Torre Azul, piso 4",
+					"ciudad": "La Paz",
+					"departamento": "La Paz",
+					"pais": "Bolivia",
+					"maps_url": "https://maps.app.goo.gl/AbCdEf123456",
+					"lat": "-16.509710",
+					"lng": "-68.123920",
+					"is_visible": true,
+					"orden": 0,
+					"created_at": "2026-01-15T14:30:00Z",
+					"updated_at": "2026-02-01T09:00:00Z",
+					"horarios": [
+						{
+							"id": "d3d94468-02a4-4c3b-9b8e-6f5e4d3c2b1a",
+							"ubicacion_id": "1679091c-5a88-4faf-8c1b-0a9b8c7d6e5f",
+							"dia_semana": 1,
+							"hora_inicio": "08:30",
+							"hora_fin": "12:30",
+							"created_at": "2026-01-15T14:30:00Z",
+							"updated_at": "2026-02-01T09:00:00Z"
+						},
+						{
+							"id": "d3d94468-02a4-4c3b-9b8e-6f5e4d3c2b1b",
+							"ubicacion_id": "1679091c-5a88-4faf-8c1b-0a9b8c7d6e5f",
+							"dia_semana": 1,
+							"hora_inicio": "14:30",
+							"hora_fin": "18:30",
+							"created_at": "2026-01-15T14:31:00Z",
+							"updated_at": "2026-01-20T11:15:00Z"
+						},
+						{
+							"id": "d3d94468-02a4-4c3b-9b8e-6f5e4d3c2b1c",
+							"ubicacion_id": "1679091c-5a88-4faf-8c1b-0a9b8c7d6e5f",
+							"dia_semana": 6,
+							"hora_inicio": "09:00",
+							"hora_fin": "13:00",
+							"created_at": "2026-01-16T10:00:00Z",
+							"updated_at": "2026-02-03T16:45:00Z"
+						}
+					]
+				},
+				{
+					"id": "1679091c-5a88-4faf-8c1b-0a9b8c7d6e60",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"nombre": "Clínica Calacoto",
+					"direccion": "Calle 21 de Calacoto 8350",
+					"ciudad": "La Paz",
+					"departamento": "La Paz",
+					"pais": "Bolivia",
+					"maps_url": "https://maps.app.goo.gl/GhIjKl789012",
+					"lat": "-16.540120",
+					"lng": "-68.078450",
+					"is_visible": true,
+					"orden": 1,
+					"created_at": "2026-01-15T14:31:00Z",
+					"updated_at": "2026-01-20T11:15:00Z",
+					"horarios": [
+						{
+							"id": "d3d94468-02a4-4c3b-9b8e-6f5e4d3c2b1a",
+							"ubicacion_id": "1679091c-5a88-4faf-8c1b-0a9b8c7d6e60",
+							"dia_semana": 1,
+							"hora_inicio": "08:30",
+							"hora_fin": "12:30",
+							"created_at": "2026-01-15T14:30:00Z",
+							"updated_at": "2026-02-01T09:00:00Z"
+						},
+						{
+							"id": "d3d94468-02a4-4c3b-9b8e-6f5e4d3c2b1b",
+							"ubicacion_id": "1679091c-5a88-4faf-8c1b-0a9b8c7d6e60",
+							"dia_semana": 1,
+							"hora_inicio": "14:30",
+							"hora_fin": "18:30",
+							"created_at": "2026-01-15T14:31:00Z",
+							"updated_at": "2026-01-20T11:15:00Z"
+						},
+						{
+							"id": "d3d94468-02a4-4c3b-9b8e-6f5e4d3c2b1c",
+							"ubicacion_id": "1679091c-5a88-4faf-8c1b-0a9b8c7d6e60",
+							"dia_semana": 6,
+							"hora_inicio": "09:00",
+							"hora_fin": "13:00",
+							"created_at": "2026-01-16T10:00:00Z",
+							"updated_at": "2026-02-03T16:45:00Z"
+						}
+					]
+				},
+				{
+					"id": "1679091c-5a88-4faf-8c1b-0a9b8c7d6e61",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"nombre": "Centro Médico El Alto",
+					"direccion": "Av. Juan Pablo II 1450, Ciudad Satélite",
+					"ciudad": "El Alto",
+					"departamento": "La Paz",
+					"pais": "Bolivia",
+					"maps_url": "https://maps.app.goo.gl/MnOpQr345678",
+					"lat": "-16.523400",
+					"lng": "-68.168900",
+					"is_visible": false,
+					"orden": 2,
+					"created_at": "2026-01-16T10:00:00Z",
+					"updated_at": "2026-02-03T16:45:00Z",
+					"horarios": [
+						{
+							"id": "d3d94468-02a4-4c3b-9b8e-6f5e4d3c2b1a",
+							"ubicacion_id": "1679091c-5a88-4faf-8c1b-0a9b8c7d6e61",
+							"dia_semana": 1,
+							"hora_inicio": "08:30",
+							"hora_fin": "12:30",
+							"created_at": "2026-01-15T14:30:00Z",
+							"updated_at": "2026-02-01T09:00:00Z"
+						},
+						{
+							"id": "d3d94468-02a4-4c3b-9b8e-6f5e4d3c2b1b",
+							"ubicacion_id": "1679091c-5a88-4faf-8c1b-0a9b8c7d6e61",
+							"dia_semana": 1,
+							"hora_inicio": "14:30",
+							"hora_fin": "18:30",
+							"created_at": "2026-01-15T14:31:00Z",
+							"updated_at": "2026-01-20T11:15:00Z"
+						},
+						{
+							"id": "d3d94468-02a4-4c3b-9b8e-6f5e4d3c2b1c",
+							"ubicacion_id": "1679091c-5a88-4faf-8c1b-0a9b8c7d6e61",
+							"dia_semana": 6,
+							"hora_inicio": "09:00",
+							"hora_fin": "13:00",
+							"created_at": "2026-01-16T10:00:00Z",
+							"updated_at": "2026-02-03T16:45:00Z"
+						}
+					]
+				}
+			],
+			"redes": [
+				{
+					"id": "c20ad4d7-6fe9-4759-8aa2-7f1e2d3c4b5a",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"red": "instagram",
+					"url": "https://www.instagram.com/dra.ana.perez",
+					"username": "dra.ana.perez",
+					"is_visible": true,
+					"orden": 0,
+					"created_at": "2026-01-15T14:30:00Z",
+					"updated_at": "2026-02-01T09:00:00Z"
+				},
+				{
+					"id": "c20ad4d7-6fe9-4759-8aa2-7f1e2d3c4b5b",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"red": "facebook",
+					"url": "https://www.facebook.com/dra.ana.perez.pediatra",
+					"username": "dra.ana.perez.pediatra",
+					"is_visible": true,
+					"orden": 1,
+					"created_at": "2026-01-15T14:31:00Z",
+					"updated_at": "2026-01-20T11:15:00Z"
+				},
+				{
+					"id": "c20ad4d7-6fe9-4759-8aa2-7f1e2d3c4b5c",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"red": "linkedin",
+					"url": "https://www.linkedin.com/in/ana-perez-pediatra",
+					"username": "ana-perez-pediatra",
+					"is_visible": false,
+					"orden": 2,
+					"created_at": "2026-01-16T10:00:00Z",
+					"updated_at": "2026-02-03T16:45:00Z"
+				}
+			],
+			"educaciones": [
+				{
+					"id": "aab32389-22bc-4c56-8a7e-3f2e1d0c9b8a",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"institucion": "Universidad Mayor de San Andrés",
+					"titulo": "Licenciatura en Medicina",
+					"area_estudio": "Medicina",
+					"descripcion": "Formación general con internado rotatorio.",
+					"fecha_inicio": "2012-02-01",
+					"fecha_fin": "2018-12-15",
+					"is_actual": false,
+					"is_visible": true,
+					"orden": 0,
+					"created_at": "2026-01-15T14:30:00Z",
+					"updated_at": "2026-02-01T09:00:00Z"
+				},
+				{
+					"id": "aab32389-22bc-4c56-8a7e-3f2e1d0c9b8b",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"institucion": "Hospital del Niño Dr. Ovidio Aliaga Uría",
+					"titulo": "Especialidad en Pediatría",
+					"area_estudio": "Pediatría",
+					"descripcion": "Residencia de tres años en pediatría clínica.",
+					"fecha_inicio": "2019-03-01",
+					"fecha_fin": "2022-02-28",
+					"is_actual": false,
+					"is_visible": true,
+					"orden": 1,
+					"created_at": "2026-01-15T14:31:00Z",
+					"updated_at": "2026-01-20T11:15:00Z"
+				},
+				{
+					"id": "aab32389-22bc-4c56-8a7e-3f2e1d0c9b8c",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"institucion": "Universidad Católica Boliviana",
+					"titulo": "Diplomado en Gestión Hospitalaria",
+					"area_estudio": "Gestión en salud",
+					"descripcion": "Programa ejecutivo de fin de semana.",
+					"fecha_inicio": "2023-08-01",
+					"fecha_fin": "2024-06-30",
+					"is_actual": false,
+					"is_visible": false,
+					"orden": 2,
+					"created_at": "2026-01-16T10:00:00Z",
+					"updated_at": "2026-02-03T16:45:00Z"
+				}
+			],
+			"certificaciones": [
+				{
+					"id": "9bf31c7f-f062-4a3a-8b2b-5c4d3e2f1a0b",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"nombre": "Certificación en Ecografía Básica",
+					"entidad_emisora": "Sociedad Boliviana de Ecografía",
+					"codigo_credencial": "SBE-2024-0153",
+					"url_credencial": "https://sbe.example.org/credenciales/SBE-2024-0153",
+					"fecha_emision": "2024-05-10",
+					"fecha_expiracion": "2029-05-10",
+					"no_expira": false,
+					"descripcion": "Curso teórico-práctico de 120 horas.",
+					"is_visible": true,
+					"orden": 0,
+					"created_at": "2026-01-15T14:30:00Z",
+					"updated_at": "2026-02-01T09:00:00Z"
+				},
+				{
+					"id": "9bf31c7f-f062-4a3a-8b2b-5c4d3e2f1a0c",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"nombre": "Reanimación Neonatal (NRP)",
+					"entidad_emisora": "Sociedad Boliviana de Pediatría",
+					"codigo_credencial": "SBP-NRP-2025-0412",
+					"url_credencial": "https://sbp.example.org/credenciales/SBP-NRP-2025-0412",
+					"fecha_emision": "2025-03-20",
+					"fecha_expiracion": "2027-03-20",
+					"no_expira": false,
+					"descripcion": "Reanimación del recién nacido en sala de partos.",
+					"is_visible": true,
+					"orden": 1,
+					"created_at": "2026-01-15T14:31:00Z",
+					"updated_at": "2026-01-20T11:15:00Z"
+				},
+				{
+					"id": "9bf31c7f-f062-4a3a-8b2b-5c4d3e2f1a0d",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"nombre": "Soporte Vital Pediátrico Avanzado (PALS)",
+					"entidad_emisora": "Colegio Médico de La Paz",
+					"codigo_credencial": "CMLP-PALS-2023-0098",
+					"url_credencial": "https://colmedlp.example.org/credenciales/CMLP-PALS-2023-0098",
+					"fecha_emision": "2023-09-05",
+					"fecha_expiracion": "2025-09-05",
+					"no_expira": false,
+					"descripcion": "Manejo de emergencias pediátricas; vencida, oculta en la tarjeta.",
+					"is_visible": false,
+					"orden": 2,
+					"created_at": "2026-01-16T10:00:00Z",
+					"updated_at": "2026-02-03T16:45:00Z"
+				}
+			],
+			"faqs": [
+				{
+					"id": "6512bd43-d9ca-4a6e-8b0b-1f2e3d4c5b6a",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"pregunta": "¿Atiende fines de semana?",
+					"respuesta": "Sí, los sábados de 9:00 a 13:00.",
+					"is_visible": true,
+					"orden": 0,
+					"created_at": "2026-01-15T14:30:00Z",
+					"updated_at": "2026-02-01T09:00:00Z"
+				},
+				{
+					"id": "6512bd43-d9ca-4a6e-8b0b-1f2e3d4c5b6b",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"pregunta": "¿Trabaja con seguros de salud?",
+					"respuesta": "Sí, con la Caja Nacional de Salud y los principales seguros privados.",
+					"is_visible": true,
+					"orden": 1,
+					"created_at": "2026-01-15T14:31:00Z",
+					"updated_at": "2026-01-20T11:15:00Z"
+				},
+				{
+					"id": "6512bd43-d9ca-4a6e-8b0b-1f2e3d4c5b6c",
+					"tarjeta_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+					"pregunta": "¿Hace consultas a domicilio?",
+					"respuesta": "Solo en la zona sur de La Paz, con cita previa.",
+					"is_visible": false,
+					"orden": 2,
+					"created_at": "2026-01-16T10:00:00Z",
+					"updated_at": "2026-02-03T16:45:00Z"
+				}
+			],
+			"vitrina": {
+				"id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+				"mostrar_precios": true,
+				"moneda": "BOB",
+				"campo1_nombre": "Duración",
+				"campo2_nombre": "Modalidad",
+				"campo3_nombre": "Edad",
+				"campo4_nombre": "Incluye",
+				"created_at": "2026-01-15T14:30:00Z",
+				"updated_at": "2026-02-01T09:00:00Z",
+				"categorias": [
+					{
+						"id": "1f0e3dad-9990-4345-8b6a-5c4d3e2f1a09",
+						"vitrina_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+						"nombre": "Consultas",
+						"is_visible": true,
+						"orden": 0,
+						"created_at": "2026-01-15T14:30:00Z",
+						"updated_at": "2026-02-01T09:00:00Z"
+					},
+					{
+						"id": "1f0e3dad-9990-4345-8b6a-5c4d3e2f1a10",
+						"vitrina_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+						"nombre": "Paquetes",
+						"is_visible": true,
+						"orden": 1,
+						"created_at": "2026-01-15T14:31:00Z",
+						"updated_at": "2026-01-20T11:15:00Z"
+					},
+					{
+						"id": "1f0e3dad-9990-4345-8b6a-5c4d3e2f1a11",
+						"vitrina_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+						"nombre": "Talleres",
+						"is_visible": false,
+						"orden": 2,
+						"created_at": "2026-01-16T10:00:00Z",
+						"updated_at": "2026-02-03T16:45:00Z"
+					}
+				],
+				"items": [
+					{
+						"id": "e4da3b7f-bbce-4a4b-8f3c-2d1e0f9a8b7c",
+						"vitrina_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+						"categoria_id": "1f0e3dad-9990-4345-8b6a-5c4d3e2f1a09",
+						"titulo": "Consulta pediátrica",
+						"descripcion": "Evaluación general, control de crecimiento y orientación a padres.",
+						"precio": "250.00",
+						"precio_anterior": "300.00",
+						"precio_etiqueta": "por sesión",
+						"campo1": "45 minutos",
+						"campo2": "Presencial",
+						"campo3": "0 a 14 años",
+						"campo4": "Informe escrito",
+						"destacado": true,
+						"is_visible": true,
+						"orden": 0,
+						"created_at": "2026-01-15T14:30:00Z",
+						"updated_at": "2026-02-01T09:00:00Z",
+						"categoria": {
+							"id": "1f0e3dad-9990-4345-8b6a-5c4d3e2f1a09",
+							"vitrina_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+							"nombre": "Consultas",
+							"is_visible": true,
+							"orden": 0,
+							"created_at": "2026-01-15T14:30:00Z",
+							"updated_at": "2026-02-01T09:00:00Z"
+						},
+						"imagenes": [
+							{
+								"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2b",
+								"item_id": "e4da3b7f-bbce-4a4b-8f3c-2d1e0f9a8b7c",
+								"url": "https://res.cloudinary.com/demo/image/upload/v1/consulta.jpg",
+								"alt": "Consultorio pediátrico",
+								"orden": 0,
+								"created_at": "2026-01-15T14:30:00Z",
+								"updated_at": "2026-02-01T09:00:00Z"
+							},
+							{
+								"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2c",
+								"item_id": "e4da3b7f-bbce-4a4b-8f3c-2d1e0f9a8b7c",
+								"url": "https://res.cloudinary.com/demo/image/upload/v1/sala-espera.jpg",
+								"alt": "Sala de espera con juegos",
+								"orden": 1,
+								"created_at": "2026-01-15T14:31:00Z",
+								"updated_at": "2026-01-20T11:15:00Z"
+							},
+							{
+								"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2d",
+								"item_id": "e4da3b7f-bbce-4a4b-8f3c-2d1e0f9a8b7c",
+								"url": "https://res.cloudinary.com/demo/image/upload/v1/control-crecimiento.jpg",
+								"alt": "Control de peso y talla",
+								"orden": 2,
+								"created_at": "2026-01-16T10:00:00Z",
+								"updated_at": "2026-02-03T16:45:00Z"
+							}
+						]
+					},
+					{
+						"id": "e4da3b7f-bbce-4a4b-8f3c-2d1e0f9a8b7d",
+						"vitrina_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+						"categoria_id": "1f0e3dad-9990-4345-8b6a-5c4d3e2f1a10",
+						"titulo": "Paquete control del primer año",
+						"descripcion": "Seis controles de niño sano durante el primer año de vida.",
+						"precio": "1200.00",
+						"precio_anterior": "1500.00",
+						"precio_etiqueta": "desde",
+						"campo1": "6 sesiones",
+						"campo2": "Presencial",
+						"campo3": "0 a 12 meses",
+						"campo4": "Carnet de vacunas al día",
+						"destacado": false,
+						"is_visible": true,
+						"orden": 1,
+						"created_at": "2026-01-15T14:31:00Z",
+						"updated_at": "2026-01-20T11:15:00Z",
+						"categoria": {
+							"id": "1f0e3dad-9990-4345-8b6a-5c4d3e2f1a10",
+							"vitrina_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+							"nombre": "Paquetes",
+							"is_visible": true,
+							"orden": 1,
+							"created_at": "2026-01-15T14:31:00Z",
+							"updated_at": "2026-01-20T11:15:00Z"
+						},
+						"imagenes": [
+							{
+								"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2b",
+								"item_id": "e4da3b7f-bbce-4a4b-8f3c-2d1e0f9a8b7d",
+								"url": "https://res.cloudinary.com/demo/image/upload/v1/consulta.jpg",
+								"alt": "Consultorio pediátrico",
+								"orden": 0,
+								"created_at": "2026-01-15T14:30:00Z",
+								"updated_at": "2026-02-01T09:00:00Z"
+							},
+							{
+								"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2c",
+								"item_id": "e4da3b7f-bbce-4a4b-8f3c-2d1e0f9a8b7d",
+								"url": "https://res.cloudinary.com/demo/image/upload/v1/sala-espera.jpg",
+								"alt": "Sala de espera con juegos",
+								"orden": 1,
+								"created_at": "2026-01-15T14:31:00Z",
+								"updated_at": "2026-01-20T11:15:00Z"
+							},
+							{
+								"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2d",
+								"item_id": "e4da3b7f-bbce-4a4b-8f3c-2d1e0f9a8b7d",
+								"url": "https://res.cloudinary.com/demo/image/upload/v1/control-crecimiento.jpg",
+								"alt": "Control de peso y talla",
+								"orden": 2,
+								"created_at": "2026-01-16T10:00:00Z",
+								"updated_at": "2026-02-03T16:45:00Z"
+							}
+						]
+					},
+					{
+						"id": "e4da3b7f-bbce-4a4b-8f3c-2d1e0f9a8b7e",
+						"vitrina_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+						"categoria_id": "1f0e3dad-9990-4345-8b6a-5c4d3e2f1a09",
+						"titulo": "Teleconsulta de seguimiento",
+						"descripcion": "Revisión de resultados y ajuste de tratamiento por videollamada.",
+						"precio": "150.00",
+						"precio_anterior": "180.00",
+						"precio_etiqueta": "por llamada",
+						"campo1": "20 minutos",
+						"campo2": "Virtual",
+						"campo3": "Pacientes en tratamiento",
+						"campo4": "Receta digital",
+						"destacado": false,
+						"is_visible": false,
+						"orden": 2,
+						"created_at": "2026-01-16T10:00:00Z",
+						"updated_at": "2026-02-03T16:45:00Z",
+						"categoria": {
+							"id": "1f0e3dad-9990-4345-8b6a-5c4d3e2f1a09",
+							"vitrina_id": "3f1c2a9e-8b7d-4c6e-9a1b-2c3d4e5f6a7b",
+							"nombre": "Consultas",
+							"is_visible": true,
+							"orden": 0,
+							"created_at": "2026-01-15T14:30:00Z",
+							"updated_at": "2026-02-01T09:00:00Z"
+						},
+						"imagenes": [
+							{
+								"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2b",
+								"item_id": "e4da3b7f-bbce-4a4b-8f3c-2d1e0f9a8b7e",
+								"url": "https://res.cloudinary.com/demo/image/upload/v1/consulta.jpg",
+								"alt": "Consultorio pediátrico",
+								"orden": 0,
+								"created_at": "2026-01-15T14:30:00Z",
+								"updated_at": "2026-02-01T09:00:00Z"
+							},
+							{
+								"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2c",
+								"item_id": "e4da3b7f-bbce-4a4b-8f3c-2d1e0f9a8b7e",
+								"url": "https://res.cloudinary.com/demo/image/upload/v1/sala-espera.jpg",
+								"alt": "Sala de espera con juegos",
+								"orden": 1,
+								"created_at": "2026-01-15T14:31:00Z",
+								"updated_at": "2026-01-20T11:15:00Z"
+							},
+							{
+								"id": "a87ff679-a2f3-4e1d-9c8b-7a6f5e4d3c2d",
+								"item_id": "e4da3b7f-bbce-4a4b-8f3c-2d1e0f9a8b7e",
+								"url": "https://res.cloudinary.com/demo/image/upload/v1/control-crecimiento.jpg",
+								"alt": "Control de peso y talla",
+								"orden": 2,
+								"created_at": "2026-01-16T10:00:00Z",
+								"updated_at": "2026-02-03T16:45:00Z"
+							}
+						]
+					}
+				]
+			}
+		}
+	},
+	"UsuarioResponseItemList": {
+		"id": "8f14e45f-ceea-467a-9575-6b3f0c1a2b3c",
+		"email": "ana@example.com",
+		"rol": "user",
+		"plan_id": "7b1e9c40-0000-4000-8000-000000000002",
+		"plan_vence_at": "2027-01-15T14:30:00Z",
+		"is_active": true,
+		"email_verified_at": "2026-01-15T15:00:00Z",
+		"created_at": "2026-01-15T14:30:00Z",
+		"updated_at": "2026-02-01T09:00:00Z",
+		"plan": {
+			"id": "7b1e9c40-0000-4000-8000-000000000002",
+			"nombre": "Pro"
+		}
+	},
+	"PagoResponseItemList": {
+		"id": "c4ca4238-a0b9-4382-8dcc-509a6f75849b",
+		"user_id": "8f14e45f-ceea-467a-9575-6b3f0c1a2b3c",
+		"plan_id": "7b1e9c40-0000-4000-8000-000000000002",
+		"monto": "-80.00",
+		"moneda": "USD",
+		"metodo": "qr",
+		"referencia_externa": "TRX-20260115-0001",
+		"comprobante_url": "https://res.cloudinary.com/demo/image/upload/v1/comprobante.jpg",
+		"periodo_inicio": "2026-01-15T14:30:00Z",
+		"periodo_fin": "2027-01-15T14:30:00Z",
+		"reverses_id": "c81e728d-9d4c-4f63-9f5a-1e2d3c4b5a69",
+		"idempotency_key": "pago-8f14e45f-20260115-0001",
+		"created_at": "2026-01-15T14:30:00Z",
+		"updated_at": "2026-01-15T14:30:00Z",
+		"user": {
+			"id": "8f14e45f-ceea-467a-9575-6b3f0c1a2b3c",
+			"email": "ana@example.com"
+		},
+		"plan": {
+			"id": "7b1e9c40-0000-4000-8000-000000000002",
+			"nombre": "Pro"
+		}
+	},
+	"PagoResponseDetail": {
+		"id": "c4ca4238-a0b9-4382-8dcc-509a6f75849b",
+		"user_id": "8f14e45f-ceea-467a-9575-6b3f0c1a2b3c",
+		"plan_id": "7b1e9c40-0000-4000-8000-000000000002",
+		"monto": "-80.00",
+		"moneda": "USD",
+		"metodo": "qr",
+		"referencia_externa": "TRX-20260115-0001",
+		"comprobante_url": "https://res.cloudinary.com/demo/image/upload/v1/comprobante.jpg",
+		"periodo_inicio": "2026-01-15T14:30:00Z",
+		"periodo_fin": "2027-01-15T14:30:00Z",
+		"reverses_id": "c81e728d-9d4c-4f63-9f5a-1e2d3c4b5a69",
+		"idempotency_key": "pago-8f14e45f-20260115-0001",
+		"created_at": "2026-01-15T14:30:00Z",
+		"updated_at": "2026-01-15T14:30:00Z",
+		"user": {
+			"id": "8f14e45f-ceea-467a-9575-6b3f0c1a2b3c",
+			"email": "ana@example.com",
+			"rol": "user",
+			"plan_id": "7b1e9c40-0000-4000-8000-000000000002",
+			"plan_vence_at": "2027-01-15T14:30:00Z",
+			"is_active": true,
+			"email_verified_at": "2026-01-15T15:00:00Z",
+			"created_at": "2026-01-15T14:30:00Z",
+			"updated_at": "2026-02-01T09:00:00Z"
+		},
+		"plan": {
+			"id": "7b1e9c40-0000-4000-8000-000000000002",
+			"codigo": "pro",
+			"nombre": "Pro",
+			"precio": "80.00",
+			"moneda": "USD",
+			"duracion_dias": 365,
+			"is_visible": true,
+			"created_at": "2026-01-15T14:30:00Z",
+			"updated_at": "2026-02-01T09:00:00Z"
+		}
+	},
+	"PlanResponse": {
+		"id": "7b1e9c40-0000-4000-8000-000000000002",
+		"codigo": "pro",
+		"nombre": "Pro",
+		"precio": "80.00",
+		"moneda": "USD",
+		"duracion_dias": 365,
+		"is_visible": true,
+		"created_at": "2026-01-15T14:30:00Z",
+		"updated_at": "2026-02-01T09:00:00Z"
+	}
+}
