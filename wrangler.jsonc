@@ -14,6 +14,11 @@
 	// El dominio no puede seguir asignado a otro proyecto (p. ej. el de Pages).
 	"routes": [{ "pattern": "me.svelpy.com", "custom_domain": true }],
 	"observability": {
-		"enabled": true
+		"logs": {
+      "enabled": true,
+      "invocation_logs": true,
+      "persist": true
+    }
+
 	}
 }
