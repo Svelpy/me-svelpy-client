@@ -4,11 +4,15 @@
 	// Worker generado por @sveltejs/adapter-cloudflare al hacer `pnpm build`
 	"main": ".svelte-kit/cloudflare/_worker.js",
 	"compatibility_date": "2026-11-01",
+	// El runtime de SvelteKit usa `node:async_hooks` (AsyncLocalStorage)
 	"compatibility_flags": ["nodejs_compat"],
 	"assets": {
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"
 	},
+	// Dominio propio: `wrangler deploy` lo asocia y crea el DNS y el certificado.
+	// El dominio no puede seguir asignado a otro proyecto (p. ej. el de Pages).
+	"routes": [{ "pattern": "me.svelpy.com", "custom_domain": true }],
 	"observability": {
 		"enabled": true
 	}

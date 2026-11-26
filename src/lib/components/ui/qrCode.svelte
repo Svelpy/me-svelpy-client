@@ -1,5 +1,10 @@
+<!--
+	QR como SVG, igual en el servidor y en el navegador. Se importa solo el codificador de `qrcode`
+	(`lib/core/qrcode.js`, JavaScript puro): la entrada principal del paquete en el servidor arrastra
+	sus renderizadores PNG/archivo (`fs`, `zlib`, `stream`…), que el Worker de Cloudflare no tiene.
+-->
 <script lang="ts">
-	import QRCode from 'qrcode';
+	import { create } from 'qrcode/lib/core/qrcode.js';
 	import { cn } from '#lib/utils/index.ts';
 
 	interface Props {
@@ -17,7 +22,7 @@
 
 	// Un solo path con un cuadrado por módulo oscuro: escala nítido a cualquier tamaño
 	const qr = $derived.by(() => {
-		const { modules } = QRCode.create(value, { errorCorrectionLevel: 'M' });
+		const { modules } = create(value, { errorCorrectionLevel: 'M' });
 		let path = '';
 		for (let row = 0; row < modules.size; row++) {
 			for (let col = 0; col < modules.size; col++) {
